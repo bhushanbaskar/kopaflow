@@ -43,7 +43,7 @@ export function FilterBar({
   return (
     <div
       className={cn(
-        "bg-white border border-black/[0.06] rounded-2xl p-2.5 sm:p-3 shadow-xs flex flex-wrap items-center justify-between gap-2.5 text-xs select-none",
+        "bg-white border border-black/[0.06] rounded-lg p-2.5 sm:p-3 shadow-xs flex flex-wrap items-center justify-between gap-2.5 text-xs select-none",
         className
       )}
     >
@@ -56,7 +56,7 @@ export function FilterBar({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
-            className="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-black/[0.06] rounded-full text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-950/10 focus:bg-white text-xs transition-all"
+            className="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-black/[0.06] rounded-md text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-950/10 focus:bg-white text-xs transition-all"
           />
         </div>
 
@@ -66,7 +66,7 @@ export function FilterBar({
             <select
               value={filterValue}
               onChange={(e) => onFilterChange(e.target.value)}
-              className="bg-gray-50 border border-black/[0.06] rounded-full px-3 py-1.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-950/10 focus:bg-white text-xs cursor-pointer transition-all"
+              className="bg-gray-50 border border-black/[0.06] rounded-md px-3 py-1.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-950/10 focus:bg-white text-xs cursor-pointer transition-all"
             >
               <option value="ALL">All {filterLabel}s</option>
               {filterOptions.map((opt) => (
@@ -84,7 +84,7 @@ export function FilterBar({
             <select
               value={secondaryFilterValue}
               onChange={(e) => onSecondaryFilterChange(e.target.value)}
-              className="bg-gray-50 border border-black/[0.06] rounded-full px-3 py-1.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-950/10 focus:bg-white text-xs cursor-pointer transition-all"
+              className="bg-gray-50 border border-black/[0.06] rounded-md px-3 py-1.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-950/10 focus:bg-white text-xs cursor-pointer transition-all"
             >
               <option value="ALL">All {secondaryFilterLabel}s</option>
               {secondaryFilterOptions.map((opt) => (
@@ -99,7 +99,7 @@ export function FilterBar({
         {onReset && (
           <button
             onClick={onReset}
-            className="inline-flex items-center gap-1 text-gray-500 hover:text-gray-900 px-2.5 py-1.5 rounded-full hover:bg-gray-100 touch-press transition-colors font-medium text-[11px]"
+            className="inline-flex items-center gap-1 text-gray-500 hover:text-gray-900 px-2.5 py-1.5 rounded-md hover:bg-gray-100 touch-press transition-colors font-medium text-[11px]"
             title="Reset Filters"
           >
             <RotateCcw className="w-3 h-3" />

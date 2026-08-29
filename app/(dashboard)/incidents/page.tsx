@@ -13,7 +13,7 @@ export default function IncidentsPage() {
   return (
     <div className="space-y-3 max-w-5xl mx-auto pb-4">
       {/* Header */}
-      <div className="bg-white p-3.5 sm:p-4 rounded-[5px] border border-black/[0.07] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+      <div className="bg-white p-3.5 sm:p-4 rounded-lg border border-black/[0.07] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-base sm:text-lg font-bold font-mono tracking-tight text-gray-950">
@@ -27,7 +27,7 @@ export default function IncidentsPage() {
         </div>
 
         <div className="flex items-center gap-1.5 text-xs font-mono">
-          <span className="bg-red-50 border border-red-200/60 px-2 py-0.5 rounded-[3px] text-red-800 font-semibold">
+          <span className="bg-red-50 border border-red-200/60 px-2 py-0.5 rounded text-red-800 font-semibold">
             Active: <strong>{MOCK_INCIDENTS.length} Disruptions</strong>
           </span>
         </div>
@@ -39,13 +39,13 @@ export default function IncidentsPage() {
           <div
             key={inc.id}
             onClick={() => openDrawer("INCIDENT", inc.id)}
-            className="bg-white border border-black/[0.07] rounded-[5px] p-3.5 shadow-sm hover:border-black/[0.14] cursor-pointer touch-press transition-colors space-y-2.5"
+            className="bg-white border border-black/[0.07] rounded-lg p-3 sm:p-3.5 shadow-xs hover:border-black/[0.14] cursor-pointer touch-press transition-colors space-y-2.5"
           >
             {/* Top Row: Code, Title & Severity */}
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="font-mono font-bold text-xs bg-red-100 text-red-950 px-1.5 py-0.2 rounded-[3px] border border-red-200/80">
+                  <span className="font-mono font-bold text-xs bg-red-100 text-red-950 px-1.5 py-0.2 rounded border border-red-200/80">
                     {inc.code}
                   </span>
                   <span className="text-[10px] font-mono text-gray-500">{inc.reportedTime}</span>
@@ -62,12 +62,12 @@ export default function IncidentsPage() {
             </div>
 
             {/* Impact Box */}
-            <div className="p-2.5 bg-red-50/50 border border-red-200/60 rounded-[4px] text-xs text-red-950 leading-relaxed">
+            <div className="p-2.5 bg-red-50/50 border border-red-200/60 rounded-md text-xs text-red-950 leading-relaxed">
               {inc.impactSummary}
             </div>
 
             {/* Optimization Recommendation */}
-            <div className="p-2.5 bg-emerald-50/60 border border-emerald-200/60 rounded-[4px] space-y-1">
+            <div className="p-2.5 bg-emerald-50/60 border border-emerald-200/60 rounded-md space-y-1">
               <div className="text-[9.5px] font-bold font-mono uppercase text-emerald-900">
                 Detour Directive
               </div>

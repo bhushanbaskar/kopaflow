@@ -11,7 +11,7 @@ export default function LiveRoutesPage() {
   return (
     <div className="space-y-3 max-w-5xl mx-auto pb-4">
       {/* Header */}
-      <div className="bg-white p-3.5 sm:p-4 rounded-[5px] border border-black/[0.07] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+      <div className="bg-white p-3.5 sm:p-4 rounded-lg border border-black/[0.07] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-base sm:text-lg font-bold font-mono tracking-tight text-gray-950">
@@ -25,10 +25,10 @@ export default function LiveRoutesPage() {
         </div>
 
         <div className="flex items-center gap-1.5 text-xs font-mono">
-          <span className="bg-gray-50 px-2 py-0.5 rounded-[3px] border border-black/[0.07] text-gray-800">
+          <span className="bg-gray-50 px-2 py-0.5 rounded border border-black/[0.07] text-gray-800">
             Active Routes: <strong>{MOCK_BUS_ROUTES.length}</strong>
           </span>
-          <span className="bg-emerald-50 px-2 py-0.5 rounded-[3px] border border-emerald-300/40 text-emerald-800">
+          <span className="bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300/40 text-emerald-800">
             Network: <strong>69.5 km</strong>
           </span>
         </div>
@@ -39,13 +39,13 @@ export default function LiveRoutesPage() {
         {MOCK_BUS_ROUTES.map((route) => (
           <div
             key={route.id}
-            className="bg-white border border-black/[0.07] rounded-[5px] p-3.5 shadow-sm space-y-2.5"
+            className="bg-white border border-black/[0.07] rounded-lg p-3 sm:p-3.5 shadow-xs space-y-2.5"
           >
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="flex items-center gap-1.5">
                   <span
-                    className="font-mono font-bold text-xs px-1.5 py-0.2 rounded-[3px] text-white"
+                    className="font-mono font-bold text-xs px-1.5 py-0.2 rounded text-white"
                     style={{ backgroundColor: route.color }}
                   >
                     {route.routeNumber}
@@ -69,7 +69,7 @@ export default function LiveRoutesPage() {
             </div>
 
             {/* Quick Metrics Row */}
-            <div className="grid grid-cols-3 gap-2 p-2 bg-gray-50/80 rounded-[4px] border border-black/[0.05] text-xs font-mono">
+            <div className="grid grid-cols-3 gap-2 p-2 bg-gray-50/80 rounded-md border border-black/[0.05] text-xs font-mono">
               <div>
                 <span className="text-[9.5px] text-gray-500 uppercase">Headway</span>
                 <div className="font-bold text-gray-950 mt-0.5">Every {route.frequencyMinutes}m</div>

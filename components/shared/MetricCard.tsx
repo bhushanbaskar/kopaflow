@@ -23,7 +23,7 @@ export function MetricCard({
   value,
   unit,
   subtext,
-  sourceType = "SIMULATED",
+  sourceType,
   statusVariant = "neutral",
   delta,
   className,
@@ -47,31 +47,60 @@ export function MetricCard({
     <div
       onClick={onClick}
       className={cn(
-        "rounded-[20px] border p-3.5 shadow-xs transition-all relative select-none",
+        "rounded-lg border p-2.5 sm:p-3.5 shadow-xs transition-all relative select-none",
+        "flex flex-row items-center justify-between sm:flex-col sm:items-stretch sm:justify-start gap-2 sm:gap-0",
         cardVariants[statusVariant],
-        onClick && "cursor-pointer hover:shadow-md hover:border-black/[0.12] touch-press",
+        onClick && "cursor-pointer hover:shadow-sm hover:border-black/[0.12] touch-press",
         className
       )}
     >
-      <div className="flex items-center justify-between gap-1.5 mb-1.5">
-        <div className="flex items-center gap-1.5">
+      {/* Mobile: Left info / Desktop: Top header */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5 mb-0.5 sm:mb-1.5">
           <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", accentPills[statusVariant])} />
-          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider font-mono">
+          <span className="text-[10px] font-bold text-gray-600 uppercase tracking-wider font-mono truncate">
             {label}
           </span>
+          <div className="sm:hidden ml-1 shrink-0">
+            {sourceType && <DataSourceBadge type={sourceType} className="text-[7.5px] px-1 py-0" />}
+          </div>
         </div>
-        {sourceType && <DataSourceBadge type={sourceType} />}
+
+        {/* Mobile subtext */}
+        {subtext && (
+          <div className="text-[11px] text-gray-500 truncate sm:hidden font-medium">
+            {subtext}
+          </div>
+        )}
       </div>
 
-      <div className="flex items-baseline gap-1 my-0.5">
-        <span className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-gray-950">
-          {value}
-        </span>
-        {unit && <span className="text-xs font-medium text-gray-500 font-mono">{unit}</span>}
+      {/* Mobile: Right value & delta / Desktop: Middle value */}
+      <div className="flex items-center gap-2 sm:flex-col sm:items-start sm:gap-0 shrink-0">
+        <div className="flex items-baseline gap-1 sm:my-0.5">
+          <span className="text-base sm:text-2xl font-bold font-mono tracking-tight text-gray-950">
+            {value}
+          </span>
+          {unit && <span className="text-xs font-medium text-gray-500 font-mono">{unit}</span>}
+        </div>
+
+        {/* Mobile inline delta */}
+        {delta && (
+          <span
+            className={cn(
+              "font-mono text-[9.5px] sm:hidden px-1.5 py-0.5 rounded font-semibold",
+              delta.isPositiveGood
+                ? "text-emerald-800 bg-emerald-100/70"
+                : "text-amber-800 bg-amber-100/70"
+            )}
+          >
+            {delta.value}
+          </span>
+        )}
       </div>
 
+      {/* Desktop subtext & delta footer */}
       {(subtext || delta) && (
-        <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-black/[0.04] text-[10.5px] text-gray-500">
+        <div className="hidden sm:flex items-center justify-between mt-2 pt-1.5 border-t border-black/[0.04] text-[10.5px] text-gray-500">
           {subtext && <span className="truncate">{subtext}</span>}
           {delta && (
             <span
@@ -87,6 +116,11 @@ export function MetricCard({
           )}
         </div>
       )}
+
+      {/* Desktop Top Right Source Badge */}
+      <div className="hidden sm:block absolute top-3 right-3">
+        {sourceType && <DataSourceBadge type={sourceType} />}
+      </div>
     </div>
   );
 }

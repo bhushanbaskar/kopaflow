@@ -11,7 +11,7 @@ export default function TrafficPage() {
   return (
     <div className="space-y-3 max-w-5xl mx-auto pb-4">
       {/* Header */}
-      <div className="bg-white p-3.5 sm:p-4 rounded-[5px] border border-black/[0.07] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+      <div className="bg-white p-3.5 sm:p-4 rounded-lg border border-black/[0.07] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-base sm:text-lg font-bold font-mono tracking-tight text-gray-950">
@@ -25,7 +25,7 @@ export default function TrafficPage() {
         </div>
 
         <div className="flex items-center gap-1.5 text-xs font-mono">
-          <span className="bg-red-50 border border-red-200/60 px-2 py-0.5 rounded-[3px] text-red-800 font-semibold">
+          <span className="bg-red-50 border border-red-200/60 px-2 py-0.5 rounded text-red-800 font-semibold">
             Congested: <strong>2 Corridors</strong>
           </span>
         </div>
@@ -36,13 +36,13 @@ export default function TrafficPage() {
         {MOCK_ROAD_SEGMENTS.map((seg) => (
           <div
             key={seg.id}
-            className="bg-white border border-black/[0.07] rounded-[5px] p-3 sm:p-3.5 shadow-sm space-y-2.5"
+            className="bg-white border border-black/[0.07] rounded-lg p-3 sm:p-3.5 shadow-xs space-y-2.5"
           >
             {/* Top Row: Road ID & Congestion Status */}
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="font-mono font-bold text-xs bg-gray-100 px-1.5 py-0.2 rounded-[3px] text-gray-900 border border-black/[0.05]">
+                  <span className="font-mono font-bold text-xs bg-gray-100 px-1.5 py-0.2 rounded text-gray-900 border border-black/[0.05]">
                     {seg.code}
                   </span>
                   <span className="font-semibold text-xs text-gray-900">{seg.name}</span>
@@ -66,7 +66,7 @@ export default function TrafficPage() {
             </div>
 
             {/* Metrics Bar */}
-            <div className="grid grid-cols-3 gap-2 p-2 bg-gray-50/80 rounded-[4px] border border-black/[0.05] text-xs font-mono">
+            <div className="grid grid-cols-3 gap-2 p-2 bg-gray-50/80 rounded-md border border-black/[0.05] text-xs font-mono">
               <div>
                 <span className="text-[9.5px] text-gray-500 uppercase">Current Speed</span>
                 <div className="font-bold text-gray-950 mt-0.5">{formatSpeedKmh(seg.currentSpeedKmh)}</div>
@@ -98,7 +98,7 @@ export default function TrafficPage() {
 
             {/* Bottleneck Recommendation */}
             {seg.congestionIndex > 0.6 && (
-              <div className="p-2.5 bg-red-50/60 border border-red-200/80 rounded-[4px] text-xs space-y-1">
+              <div className="p-2.5 bg-red-50/60 border border-red-200/80 rounded-md text-xs space-y-1">
                 <div className="flex items-center gap-1.5 font-bold font-mono text-red-950 text-[11px]">
                   <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
                   <span>Active Congestion Bottleneck</span>

@@ -48,3 +48,26 @@ export function formatTimestamp(date: Date = new Date()): string {
   const pad = (n: number) => n.toString().padStart(2, "0");
   return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
 }
+
+export function formatTimeAgo(isoString: string): string {
+  try {
+    const date = new Date(isoString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHrs = Math.floor(diffMin / 60);
+    const diffDays = Math.floor(diffHrs / 24);
+
+    if (diffMin < 1) return "Just now";
+    if (diffMin < 60) return `${diffMin} min ago`;
+    if (diffHrs === 1) return "1 hour ago";
+    if (diffHrs < 24) return `${diffHrs} hours ago`;
+    if (diffDays === 1) return "Yesterday";
+    if (diffDays < 7) return `${diffDays} days ago`;
+    return date.toLocaleDateString("en-IN", { month: "short", day: "numeric" });
+  } catch {
+    return "Recently";
+  }
+}
+

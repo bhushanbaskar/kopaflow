@@ -52,6 +52,8 @@ export function MobileBottomNav() {
         pathname.startsWith("/ev") ||
         pathname.startsWith("/depot") ||
         pathname.startsWith("/workforce") ||
+        pathname.startsWith("/feedback") ||
+        pathname.startsWith("/feedback-admin") ||
         pathname.startsWith("/incidents") ||
         pathname.startsWith("/settings"),
     },

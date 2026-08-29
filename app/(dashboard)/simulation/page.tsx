@@ -76,13 +76,13 @@ export default function SimulationPage() {
   return (
     <div className="space-y-3.5 max-w-5xl mx-auto pb-6">
       {/* Header */}
-      <div className="bg-white p-3.5 sm:p-4 rounded-[5px] border border-black/[0.07] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-white p-3.5 sm:p-4 rounded-lg border border-black/[0.07] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-base sm:text-lg font-bold font-mono tracking-tight text-gray-950">
               NETWORK SIMULATOR
             </h1>
-            <DataSourceBadge type="SIMULATED" />
+            <DataSourceBadge type="LIVE" />
           </div>
           <p className="text-xs text-gray-500 mt-0.5">
             Compare the baseline uncoordinated operating plan against the Kopar-Move integrated optimization plan.
@@ -92,7 +92,7 @@ export default function SimulationPage() {
         <div className="flex items-center gap-1.5">
           <button
             onClick={handleReset}
-            className="p-1.5 rounded-[4px] text-xs font-mono text-gray-700 bg-gray-50 hover:bg-gray-100 border border-black/[0.07] touch-press"
+            className="p-1.5 rounded-md text-xs font-mono text-gray-700 bg-gray-50 hover:bg-gray-100 border border-black/[0.07] touch-press"
             title="Reset to Normal"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -100,7 +100,7 @@ export default function SimulationPage() {
           <button
             onClick={handleRunSimulation}
             disabled={isSimulating}
-            className="flex-1 sm:flex-initial py-2 px-3.5 bg-gray-950 hover:bg-gray-900 disabled:opacity-50 text-white rounded-[4px] text-xs font-mono font-bold flex items-center justify-center gap-1.5 touch-press shadow-sm"
+            className="flex-1 sm:flex-initial py-2 px-3.5 bg-gray-950 hover:bg-gray-900 disabled:opacity-50 text-white rounded-md text-xs font-mono font-bold flex items-center justify-center gap-1.5 touch-press shadow-xs"
           >
             <Play className="w-3 h-3 fill-emerald-400 text-emerald-400" />
             <span>{isSimulating ? "SIMULATING..." : "RUN SIMULATION"}</span>
@@ -109,7 +109,7 @@ export default function SimulationPage() {
       </div>
 
       {/* Preset Scenarios Selector Chips (Horizontally Scrollable) */}
-      <div className="bg-white border border-black/[0.07] rounded-[5px] p-3 shadow-sm space-y-2">
+      <div className="bg-white border border-black/[0.07] rounded-lg p-3 shadow-xs space-y-2">
         <div className="text-[10px] font-mono font-bold text-gray-500 uppercase">
           Select Simulation Scenario
         </div>
@@ -119,7 +119,7 @@ export default function SimulationPage() {
             <button
               key={scen.id}
               onClick={() => handleScenarioChange(scen.id)}
-              className={`px-2.5 py-1 rounded-[3px] text-xs font-mono whitespace-nowrap transition-colors touch-press ${
+              className={`px-2.5 py-1 rounded text-xs font-mono whitespace-nowrap transition-colors touch-press ${
                 selectedScenarioKey === scen.id
                   ? "bg-gray-950 text-white font-bold"
                   : "bg-gray-50 text-gray-700 hover:bg-gray-100 border border-black/[0.06]"
@@ -132,7 +132,7 @@ export default function SimulationPage() {
 
         {/* Multiplier Sliders Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1 text-xs font-mono">
-          <div className="space-y-0.5 bg-gray-50/70 p-2 rounded-[4px] border border-black/[0.05]">
+          <div className="space-y-0.5 bg-gray-50/70 p-2 rounded-md border border-black/[0.05]">
             <div className="flex justify-between text-[10.5px]">
               <span className="text-gray-500">Commuters:</span>
               <span className="font-bold text-gray-900">{Math.round(passengerMultiplier * 100)}%</span>
@@ -148,7 +148,7 @@ export default function SimulationPage() {
             />
           </div>
 
-          <div className="space-y-0.5 bg-gray-50/70 p-2 rounded-[4px] border border-black/[0.05]">
+          <div className="space-y-0.5 bg-gray-50/70 p-2 rounded-md border border-black/[0.05]">
             <div className="flex justify-between text-[10.5px]">
               <span className="text-gray-500">Crop Harvest:</span>
               <span className="font-bold text-emerald-800">{Math.round(agriMultiplier * 100)}%</span>
@@ -164,7 +164,7 @@ export default function SimulationPage() {
             />
           </div>
 
-          <div className="space-y-0.5 bg-gray-50/70 p-2 rounded-[4px] border border-black/[0.05]">
+          <div className="space-y-0.5 bg-gray-50/70 p-2 rounded-md border border-black/[0.05]">
             <div className="flex justify-between text-[10.5px]">
               <span className="text-gray-500">Traffic Load:</span>
               <span className="font-bold text-amber-800">{Math.round(trafficMultiplier * 100)}%</span>
@@ -180,7 +180,7 @@ export default function SimulationPage() {
             />
           </div>
 
-          <div className="space-y-0.5 bg-gray-50/70 p-2 rounded-[4px] border border-black/[0.05]">
+          <div className="space-y-0.5 bg-gray-50/70 p-2 rounded-md border border-black/[0.05]">
             <div className="flex justify-between text-[10.5px]">
               <span className="text-gray-500">EV Fleet:</span>
               <span className="font-bold text-purple-800">{Math.round(evMultiplier * 100)}%</span>
@@ -209,7 +209,7 @@ export default function SimulationPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
           {/* 1. Bus Utilization */}
-          <div className="bg-white border border-black/[0.07] rounded-[5px] p-3 shadow-sm space-y-1">
+          <div className="bg-white border border-black/[0.07] rounded-lg p-3 shadow-xs space-y-1">
             <div className="text-[9.5px] font-mono text-gray-500 uppercase">Bus Capacity Utilization</div>
             <div className="flex items-baseline justify-between font-mono">
               <span className="text-xs text-gray-400 line-through">Base: {baseline.busCapacityUtilizationPercentage}%</span>
@@ -222,7 +222,7 @@ export default function SimulationPage() {
           </div>
 
           {/* 2. Agri Truck Trips */}
-          <div className="bg-white border border-black/[0.07] rounded-[5px] p-3 shadow-sm space-y-1">
+          <div className="bg-white border border-black/[0.07] rounded-lg p-3 shadow-xs space-y-1">
             <div className="text-[9.5px] font-mono text-gray-500 uppercase">Dedicated Agri Truck Trips</div>
             <div className="flex items-baseline justify-between font-mono">
               <span className="text-xs text-gray-400 line-through">Base: {baseline.dedicatedAgriTruckTrips} trips</span>
@@ -235,7 +235,7 @@ export default function SimulationPage() {
           </div>
 
           {/* 3. Delivery Time */}
-          <div className="bg-white border border-black/[0.07] rounded-[5px] p-3 shadow-sm space-y-1">
+          <div className="bg-white border border-black/[0.07] rounded-lg p-3 shadow-xs space-y-1">
             <div className="text-[9.5px] font-mono text-gray-500 uppercase">Farmer Delivery Time</div>
             <div className="flex items-baseline justify-between font-mono">
               <span className="text-xs text-gray-400 line-through">Base: {baseline.avgFarmerDeliveryTimeMin}m</span>
@@ -248,7 +248,7 @@ export default function SimulationPage() {
           </div>
 
           {/* 4. Congestion */}
-          <div className="bg-white border border-black/[0.07] rounded-[5px] p-3 shadow-sm space-y-1">
+          <div className="bg-white border border-black/[0.07] rounded-lg p-3 shadow-xs space-y-1">
             <div className="text-[9.5px] font-mono text-gray-500 uppercase">Congestion Index</div>
             <div className="flex items-baseline justify-between font-mono">
               <span className="text-xs text-gray-400 line-through">Base: {baseline.networkCongestionIndex}</span>
@@ -261,7 +261,7 @@ export default function SimulationPage() {
           </div>
 
           {/* 5. Freight Cost */}
-          <div className="bg-white border border-black/[0.07] rounded-[5px] p-3 shadow-sm space-y-1">
+          <div className="bg-white border border-black/[0.07] rounded-lg p-3 shadow-xs space-y-1">
             <div className="text-[9.5px] font-mono text-gray-500 uppercase">Logistics Cost / Quintal</div>
             <div className="flex items-baseline justify-between font-mono">
               <span className="text-xs text-gray-400 line-through">Base: {formatInr(baseline.logisticsFreightCostPerQuintalInr)}</span>
@@ -274,7 +274,7 @@ export default function SimulationPage() {
           </div>
 
           {/* 6. CO2 Saved */}
-          <div className="bg-white border border-black/[0.07] rounded-[5px] p-3 shadow-sm space-y-1">
+          <div className="bg-white border border-black/[0.07] rounded-lg p-3 shadow-xs space-y-1">
             <div className="text-[9.5px] font-mono text-gray-500 uppercase">Daily CO2 Emissions</div>
             <div className="flex items-baseline justify-between font-mono">
               <span className="text-xs text-gray-400 line-through">Base: {baseline.dailyCo2EmissionsKg}kg</span>
@@ -289,7 +289,7 @@ export default function SimulationPage() {
       </div>
 
       {/* Visual Recharts Bar Comparison */}
-      <div className="bg-white border border-black/[0.07] rounded-[5px] p-3.5 shadow-sm space-y-2">
+      <div className="bg-white border border-black/[0.07] rounded-lg p-3.5 shadow-xs space-y-2">
         <div className="text-xs font-bold font-mono text-gray-950 uppercase">
           Visual Impact Delta Comparison
         </div>

@@ -345,3 +345,154 @@ export interface SimulationScenario {
   baseline: NetworkMetrics;
   optimized: NetworkMetrics;
 }
+
+// ==========================================
+// PUBLIC FEEDBACK & COMPLAINT DOMAIN TYPES
+// ==========================================
+
+export type FeedbackCategory =
+  | "BUS_SERVICE"
+  | "ROAD_TRAFFIC"
+  | "ROAD_SAFETY"
+  | "AGRI_LOGISTICS"
+  | "EV_CHARGING"
+  | "BUS_STOP"
+  | "OTHER";
+
+export type FeedbackIssueType =
+  // Bus Service
+  | "BUS_NOT_ARRIVED"
+  | "BUS_DELAYED"
+  | "OVERCROWDING"
+  | "ROUTE_ISSUE"
+  | "DRIVER_SERVICE_ISSUE"
+  | "BUS_CONDITION"
+  // Road & Traffic
+  | "POTHOLE"
+  | "ROAD_BLOCKAGE"
+  | "HEAVY_CONGESTION"
+  | "DAMAGED_ROAD"
+  | "UNSAFE_INTERSECTION"
+  | "MISSING_SIGNAGE"
+  // Road Safety
+  | "ACCIDENT_HAZARD"
+  | "LACK_OF_STREETLIGHT"
+  | "SPEEDING_ZONE"
+  | "PEDESTRIAN_RISK"
+  // Agricultural Logistics
+  | "DELIVERY_DELAY"
+  | "PICKUP_ISSUE"
+  | "DAMAGED_GOODS"
+  | "LOGISTICS_ROUTE_ISSUE"
+  // EV Charging
+  | "CHARGER_UNAVAILABLE"
+  | "CHARGER_MALFUNCTION"
+  | "LONG_QUEUE"
+  | "INCORRECT_AVAILABILITY"
+  | "PAYMENT_ISSUE"
+  // Bus Stop & General
+  | "BUS_STOP_DAMAGED"
+  | "MISSING_TIMETABLE"
+  | "OTHER_ISSUE";
+
+export type FeedbackStatus =
+  | "SUBMITTED"
+  | "UNDER_REVIEW"
+  | "ASSIGNED"
+  | "IN_PROGRESS"
+  | "RESOLVED"
+  | "CLOSED"
+  | "REJECTED";
+
+export type CitizenSeverity = "LOW" | "NORMAL" | "URGENT";
+
+export type OperationalPriority = "LOW" | "NORMAL" | "HIGH" | "CRITICAL";
+
+export type OperationalTeam =
+  | "DEPOT_TEAM"
+  | "TRAFFIC_TEAM"
+  | "ROAD_MAINTENANCE"
+  | "EV_OPERATIONS"
+  | "LOGISTICS_TEAM"
+  | "SAFETY_TEAM";
+
+export interface FeedbackAttachment {
+  id: string;
+  feedbackId: string;
+  url: string;
+  fileName: string;
+  mimeType: string;
+  fileSizeBytes: number;
+  createdAt: string;
+}
+
+export interface FeedbackUpdate {
+  id: string;
+  feedbackId: string;
+  status: FeedbackStatus;
+  message: string;
+  isPublic: boolean; // TRUE: Citizen-visible update; FALSE: Internal staff-only note
+  authorName: string;
+  authorRole: string;
+  createdAt: string;
+}
+
+export interface FeedbackAssignment {
+  id: string;
+  feedbackId: string;
+  team: OperationalTeam;
+  assignedTo?: string;
+  assignedAt: string;
+  note?: string;
+}
+
+export interface FeedbackReport {
+  id: string;
+  referenceCode: string; // e.g. "KM-2026-004821"
+  userId?: string;
+  citizenName?: string;
+  citizenPhone?: string;
+  citizenEmail?: string;
+  isAnonymous: boolean;
+
+  category: FeedbackCategory;
+  issueType: FeedbackIssueType;
+  issueTitle: string;
+  description: string;
+
+  status: FeedbackStatus;
+  citizenSeverity: CitizenSeverity;
+  operationalPriority: OperationalPriority;
+
+  location: GeoLocation;
+  locationName: string;
+
+  relatedEntityType?: "BUS" | "ROUTE" | "ROAD_SEGMENT" | "EV_CHARGER" | "VILLAGE" | "DEPOT";
+  relatedEntityId?: string;
+  relatedEntityName?: string;
+
+  attachments: FeedbackAttachment[];
+  updates: FeedbackUpdate[];
+  assignment?: FeedbackAssignment;
+
+  occurredAt: string;
+  createdAt: string;
+  updatedAt: string;
+  resolvedAt?: string;
+
+  // Operational Intelligence Signals
+  isRecurring?: boolean;
+  recurringCount?: number;
+  promotedIncidentId?: string; // Links to RoadIncident when promoted
+  verifiedBy?: string;
+}
+
+export interface FeedbackAnalyticsSummary {
+  openReportsCount: number;
+  resolvedReportsCount: number;
+  avgResolutionHours: number;
+  reportsThisWeekCount: number;
+  safetyReportsCount: number;
+  recurringIssuesCount: number;
+}
+

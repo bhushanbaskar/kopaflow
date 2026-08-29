@@ -24,7 +24,7 @@ export function MobileHeader() {
   // Route title mapper for mobile context
   const getContextTitle = () => {
     if (pathname === "/dashboard" || pathname === "/") return "Kopargaon Network";
-    if (pathname.startsWith("/map")) return "Spatial GIS Map";
+    if (pathname.startsWith("/map")) return "2D Map";
     if (pathname.startsWith("/routes")) return "Transit Routes";
     if (pathname.startsWith("/buses")) return "Bus Fleet";
     if (pathname.startsWith("/logistics")) return "Agri Logistics";
@@ -34,6 +34,9 @@ export function MobileHeader() {
     if (pathname.startsWith("/ev")) return "EV Grid";
     if (pathname.startsWith("/depot")) return "Depot Ops";
     if (pathname.startsWith("/workforce")) return "Workforce";
+    if (pathname.startsWith("/feedback-admin")) return "Feedback Ops";
+    if (pathname.startsWith("/feedback/new")) return "Report Issue";
+    if (pathname.startsWith("/feedback")) return "Feedback";
     if (pathname.startsWith("/incidents")) return "Incidents";
     if (pathname.startsWith("/settings")) return "Settings";
     if (pathname.startsWith("/more")) return "Operations Hub";

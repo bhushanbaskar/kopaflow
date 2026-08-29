@@ -56,7 +56,7 @@ export default function BusFleetPage() {
   return (
     <div className="space-y-3.5 max-w-5xl mx-auto pb-4">
       {/* Header */}
-      <div className="bg-white p-3.5 sm:p-4 rounded-[22px] border border-black/[0.06] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+      <div className="bg-white p-3.5 sm:p-4 rounded-lg border border-black/[0.06] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-base sm:text-lg font-bold font-mono tracking-tight text-gray-950">
@@ -70,17 +70,17 @@ export default function BusFleetPage() {
         </div>
 
         <div className="flex items-center gap-1.5 text-xs font-mono">
-          <span className="bg-gray-100 px-2.5 py-1 rounded-full text-gray-800 font-semibold shadow-xs">
+          <span className="bg-gray-100 px-2.5 py-1 rounded text-gray-800 font-semibold shadow-xs">
             Active: <strong>{filteredBuses.length}</strong>
           </span>
-          <span className="bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200/80 text-purple-800 font-semibold shadow-xs">
+          <span className="bg-purple-50 px-2.5 py-1 rounded border border-purple-200/80 text-purple-800 font-semibold shadow-xs">
             EV: <strong>3</strong>
           </span>
         </div>
       </div>
 
       {/* Search & Mobile Filter Chips */}
-      <div className="bg-white border border-black/[0.06] rounded-[22px] p-3 shadow-xs space-y-2.5">
+      <div className="bg-white border border-black/[0.06] rounded-lg p-3 shadow-xs space-y-2.5">
         <div className="relative">
           <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
@@ -88,7 +88,7 @@ export default function BusFleetPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search bus number, driver, or route..."
-            className="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-black/[0.06] rounded-full text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-950/10 focus:bg-white transition-all"
+            className="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-black/[0.06] rounded text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-950/10 focus:bg-white transition-all"
           />
         </div>
 
@@ -98,7 +98,7 @@ export default function BusFleetPage() {
             <button
               key={chip.value}
               onClick={() => setStatusFilter(chip.value)}
-              className={`px-3 py-1 rounded-full text-[10.5px] font-mono whitespace-nowrap transition-all touch-press ${
+              className={`px-3 py-1 rounded text-[10.5px] font-mono whitespace-nowrap transition-all touch-press ${
                 statusFilter === chip.value
                   ? "bg-gray-950 text-white font-bold shadow-xs"
                   : "bg-gray-100/70 text-gray-600 hover:bg-gray-200/80 border border-black/[0.04]"
@@ -116,12 +116,12 @@ export default function BusFleetPage() {
           <div
             key={bus.id}
             onClick={() => openDrawer("BUS", bus.id)}
-            className="app-card rounded-[22px] p-3.5 sm:p-4 hover:border-black/[0.12] cursor-pointer touch-press transition-all space-y-3"
+            className="app-card rounded-lg p-3.5 sm:p-4 hover:border-black/[0.12] cursor-pointer touch-press transition-all space-y-3"
           >
             {/* Top Row: Bus ID + Plate & Status */}
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-start gap-2.5">
-                <div className="w-10 h-10 rounded-full bg-gray-900 text-white flex items-center justify-center text-sm shadow-xs font-mono shrink-0">
+                <div className="w-9 h-9 rounded-lg bg-gray-900 text-white flex items-center justify-center text-xs shadow-xs font-mono shrink-0">
                   🚍
                 </div>
                 <div>
@@ -129,11 +129,11 @@ export default function BusFleetPage() {
                     <span className="text-xs font-mono font-bold text-gray-950">
                       {bus.busNumber}
                     </span>
-                    <span className="text-[10px] font-mono text-gray-500 bg-gray-100 px-2 py-0.2 rounded-full">
+                    <span className="text-[10px] font-mono text-gray-500 bg-gray-100 px-2 py-0.2 rounded">
                       {bus.plateNumber}
                     </span>
                     {bus.propulsion === "ELECTRIC" && (
-                      <span className="inline-flex items-center gap-0.5 text-[9px] font-mono font-bold text-purple-700 bg-purple-50 border border-purple-200/80 px-2 py-0.2 rounded-full">
+                      <span className="inline-flex items-center gap-0.5 text-[9px] font-mono font-bold text-purple-700 bg-purple-50 border border-purple-200/80 px-2 py-0.2 rounded">
                         <BatteryCharging className="w-2.5 h-2.5" />
                         <span>EV</span>
                       </span>
@@ -157,7 +157,7 @@ export default function BusFleetPage() {
             </div>
 
             {/* Middle Grid: Occupancy, Luggage & ETA */}
-            <div className="grid grid-cols-3 gap-2 p-2.5 bg-gray-50/80 rounded-2xl border border-black/[0.04] text-xs font-mono">
+            <div className="grid grid-cols-3 gap-2 p-2.5 bg-gray-50/80 rounded-md border border-black/[0.04] text-xs font-mono">
               <div>
                 <span className="text-[9px] text-gray-500 uppercase font-semibold">Occupancy</span>
                 <div className="font-bold text-gray-950 mt-0.5 text-xs sm:text-sm">{formatPercent(bus.occupancyPercentage)}</div>

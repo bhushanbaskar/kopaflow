@@ -123,13 +123,13 @@ export default function OptimizationEnginePage() {
   return (
     <div className="space-y-4 max-w-4xl mx-auto pb-6">
       {/* Header */}
-      <div className="bg-white p-3.5 sm:p-4 rounded-[22px] border border-black/[0.06] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-white p-3.5 sm:p-4 rounded-lg border border-black/[0.06] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-base sm:text-lg font-bold font-mono tracking-tight text-gray-950">
               OPTIMIZATION ENGINE
             </h1>
-            <DataSourceBadge type="SIMULATED" />
+            <DataSourceBadge type="LIVE" />
           </div>
           <p className="text-xs text-gray-500 mt-0.5">
             Multi-criteria heuristic solver optimizing bus capacity matching, road corridors, and EV queue balancing.
@@ -139,7 +139,7 @@ export default function OptimizationEnginePage() {
         <button
           onClick={handleRunOptimization}
           disabled={isRunning}
-          className="w-full sm:w-auto py-2.5 px-4 bg-gray-950 hover:bg-black disabled:opacity-50 text-white rounded-full text-xs font-mono font-bold flex items-center justify-center gap-1.5 touch-press shadow-md transition-all"
+          className="w-full sm:w-auto py-2.5 px-4 bg-gray-950 hover:bg-black disabled:opacity-50 text-white rounded-md text-xs font-mono font-bold flex items-center justify-center gap-1.5 touch-press shadow-sm transition-all"
         >
           <Play className="w-3.5 h-3.5 fill-emerald-400 text-emerald-400" />
           <span>{isRunning ? "SOLVING..." : "RUN OPTIMIZATION"}</span>
@@ -147,7 +147,7 @@ export default function OptimizationEnginePage() {
       </div>
 
       {/* Objectives Weighting (Mobile Sliders) */}
-      <div className="bg-white border border-black/[0.06] rounded-[24px] p-4 shadow-xs space-y-3">
+      <div className="bg-white border border-black/[0.06] rounded-lg p-3.5 sm:p-4 shadow-xs space-y-3">
         <div className="flex items-center justify-between border-b border-black/[0.04] pb-2.5">
           <span className="text-xs font-bold font-mono text-gray-950 uppercase flex items-center gap-1.5">
             <SlidersHorizontal className="w-3.5 h-3.5 text-blue-600" />
@@ -157,7 +157,7 @@ export default function OptimizationEnginePage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs">
-          <div className="space-y-1.5 app-card-green p-3 rounded-2xl shadow-xs">
+          <div className="space-y-1.5 app-card-green p-3 rounded-md shadow-xs">
             <div className="flex justify-between font-mono text-[11px]">
               <span className="text-emerald-950 font-semibold">Bus Capacity</span>
               <span className="font-bold text-emerald-800">{optimizationObjectives.capacityUtilizationWeight}%</span>
@@ -172,7 +172,7 @@ export default function OptimizationEnginePage() {
             />
           </div>
 
-          <div className="space-y-1.5 bg-gray-50/90 p-3 rounded-2xl border border-black/[0.04] shadow-xs">
+          <div className="space-y-1.5 bg-gray-50/90 p-3 rounded-md border border-black/[0.04] shadow-xs">
             <div className="flex justify-between font-mono text-[11px]">
               <span className="text-gray-700 font-semibold">Operating Cost</span>
               <span className="font-bold text-gray-950">{optimizationObjectives.operatingCostWeight}%</span>
@@ -187,7 +187,7 @@ export default function OptimizationEnginePage() {
             />
           </div>
 
-          <div className="space-y-1.5 app-card-blue p-3 rounded-2xl shadow-xs">
+          <div className="space-y-1.5 app-card-blue p-3 rounded-md shadow-xs">
             <div className="flex justify-between font-mono text-[11px]">
               <span className="text-blue-950 font-semibold">Travel Time</span>
               <span className="font-bold text-blue-950">{optimizationObjectives.travelTimeWeight}%</span>
@@ -202,7 +202,7 @@ export default function OptimizationEnginePage() {
             />
           </div>
 
-          <div className="space-y-1.5 app-card-peach p-3 rounded-2xl shadow-xs">
+          <div className="space-y-1.5 app-card-peach p-3 rounded-md shadow-xs">
             <div className="flex justify-between font-mono text-[11px]">
               <span className="text-amber-950 font-semibold">Congestion Relief</span>
               <span className="font-bold text-amber-900">{optimizationObjectives.congestionReductionWeight}%</span>
@@ -220,7 +220,7 @@ export default function OptimizationEnginePage() {
       </div>
 
       {/* Solver Execution Pipeline */}
-      <div className="bg-[#14151a] text-white rounded-[24px] p-4 border border-white/10 space-y-2.5 shadow-md">
+      <div className="bg-[#14151a] text-white rounded-lg p-3.5 sm:p-4 border border-white/10 space-y-2.5 shadow-md">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-emerald-400">
             <Cpu className="w-3.5 h-3.5" />
@@ -238,7 +238,7 @@ export default function OptimizationEnginePage() {
             return (
               <div
                 key={idx}
-                className={`p-2 rounded-xl flex items-center gap-2 transition-all ${
+                className={`p-2 rounded-md flex items-center gap-2 transition-all ${
                   isCurrent
                     ? "bg-white/10 text-amber-300 border border-amber-400/30 shadow-xs"
                     : isDone
@@ -274,12 +274,12 @@ export default function OptimizationEnginePage() {
           return (
             <div
               key={rec.id}
-              className="app-card rounded-[22px] p-4 shadow-xs space-y-3 transition-all"
+              className="app-card rounded-lg p-3.5 sm:p-4 shadow-xs space-y-3 transition-all"
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[9.5px] font-mono font-bold bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">
+                    <span className="text-[9.5px] font-mono font-bold bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
                       {rec.type}
                     </span>
                     <span className="text-[10px] font-mono font-bold text-emerald-800">
@@ -307,7 +307,7 @@ export default function OptimizationEnginePage() {
                 </button>
 
                 {isExpanded && (
-                  <ul className="mt-2 space-y-1 text-xs text-gray-600 list-disc list-inside bg-gray-50/90 p-3 rounded-2xl border border-black/[0.04] leading-relaxed">
+                  <ul className="mt-2 space-y-1 text-xs text-gray-600 list-disc list-inside bg-gray-50/90 p-3 rounded-md border border-black/[0.04] leading-relaxed">
                     {rec.explainableReasons.map((reason, idx) => (
                       <li key={idx} className="text-[10.5px]">{reason}</li>
                     ))}
@@ -325,7 +325,7 @@ export default function OptimizationEnginePage() {
                 <button
                   onClick={() => handleApplyRec(rec.id)}
                   disabled={isApplied}
-                  className={`px-4 py-1.5 rounded-full text-xs font-mono font-bold transition-all touch-press shadow-xs ${
+                  className={`px-4 py-1.5 rounded text-xs font-mono font-bold transition-all touch-press shadow-xs ${
                     isApplied
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-black/[0.04]"
                       : "bg-gray-950 hover:bg-black text-white"

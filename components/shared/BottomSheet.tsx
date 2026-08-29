@@ -73,7 +73,7 @@ export function BottomSheet() {
         style={{
           transform: touchDelta > 0 ? `translateY(${touchDelta}px)` : undefined,
         }}
-        className="relative w-full max-h-[88vh] lg:max-h-full lg:h-full lg:max-w-md bg-white rounded-t-[30px] lg:rounded-none border-t lg:border-t-0 lg:border-l border-black/[0.08] shadow-2xl flex flex-col z-10 transition-transform duration-100 ease-out pb-safe"
+        className="relative w-full max-h-[88vh] lg:max-h-full lg:h-full lg:max-w-md bg-white rounded-t-xl lg:rounded-none border-t lg:border-t-0 lg:border-l border-black/[0.08] shadow-2xl flex flex-col z-10 transition-transform duration-100 ease-out pb-safe"
       >
         {/* Mobile Drag Handle */}
         <div
@@ -82,10 +82,10 @@ export function BottomSheet() {
           onTouchEnd={handleTouchEnd}
           className="lg:hidden w-full pt-2.5 pb-1 flex justify-center cursor-grab active:cursor-grabbing select-none"
         >
-          <div className="w-10 h-1.2 rounded-full bg-gray-300" />
+          <div className="w-10 h-1 rounded-full bg-gray-300" />
         </div>
 
-        {/* 1. BUS TRACKING INSPECTOR (Uber / Google Maps style) */}
+        {/* 1. BUS TRACKING INSPECTOR */}
         {activeDrawerType === "BUS" && (() => {
           const bus = MOCK_BUS_FLEET.find((b) => b.id === selectedEntityId) || MOCK_BUS_FLEET[0];
 
@@ -95,7 +95,7 @@ export function BottomSheet() {
               <div className="px-4 py-3 border-b border-black/[0.05] flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10.5px] font-mono bg-gray-900 text-white px-2 py-0.5 rounded-full font-bold shadow-xs">
+                    <span className="text-[10.5px] font-mono bg-gray-900 text-white px-2 py-0.5 rounded font-bold shadow-xs">
                       {bus.plateNumber}
                     </span>
                     <StatusBadge
@@ -112,7 +112,7 @@ export function BottomSheet() {
                 </div>
                 <button
                   onClick={closeDrawer}
-                  className="p-1.5 rounded-full text-gray-400 hover:text-gray-900 hover:bg-gray-100 touch-press"
+                  className="p-1.5 rounded-md text-gray-400 hover:text-gray-900 hover:bg-gray-100 touch-press"
                   aria-label="Close sheet"
                 >
                   <X className="w-4 h-4" />
@@ -120,8 +120,8 @@ export function BottomSheet() {
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs">
-                {/* Visual Route Stepper (Uber Style) */}
-                <div className="bg-gray-50/90 p-3 rounded-2xl border border-black/[0.05] space-y-2">
+                {/* Visual Route Stepper */}
+                <div className="bg-gray-50/90 p-3 rounded-lg border border-black/[0.05] space-y-2">
                   <div className="flex items-center justify-between text-[10px] font-mono font-semibold text-gray-500 uppercase tracking-wider">
                     <span>Route Checkpoints</span>
                     <span className="text-blue-700">ETA Next: {bus.etaNextStopMinutes}m</span>
@@ -151,9 +151,9 @@ export function BottomSheet() {
                   </div>
                 </div>
 
-                {/* 2x2 Metric Cards (Subtle Colorful UI) */}
+                {/* 2x2 Metric Cards */}
                 <div className="grid grid-cols-2 gap-2.5">
-                  <div className="app-card-blue p-3 rounded-2xl">
+                  <div className="app-card-blue p-3 rounded-lg">
                     <div className="text-[9.5px] text-blue-800 uppercase font-mono font-semibold">
                       Passenger Load
                     </div>
@@ -165,7 +165,7 @@ export function BottomSheet() {
                     </div>
                   </div>
 
-                  <div className="app-card-green p-3 rounded-2xl">
+                  <div className="app-card-green p-3 rounded-lg">
                     <div className="text-[9.5px] text-emerald-800 uppercase font-mono font-semibold">
                       Cargo Luggage
                     </div>
@@ -177,7 +177,7 @@ export function BottomSheet() {
                     </div>
                   </div>
 
-                  <div className="app-card-peach p-3 rounded-2xl">
+                  <div className="app-card-peach p-3 rounded-lg">
                     <div className="text-[9.5px] text-amber-800 uppercase font-mono font-semibold">
                       Live Velocity
                     </div>
@@ -189,7 +189,7 @@ export function BottomSheet() {
                     </div>
                   </div>
 
-                  <div className="app-card-purple p-3 rounded-2xl">
+                  <div className="app-card-purple p-3 rounded-lg">
                     <div className="text-[9.5px] text-purple-800 uppercase font-mono font-semibold">
                       Energy / Battery
                     </div>
@@ -202,8 +202,8 @@ export function BottomSheet() {
                   </div>
                 </div>
 
-                {/* Driver / Crew Contact Card (Orbix Studio Mobile App Style) */}
-                <div className="bg-gray-900 text-white p-3.5 rounded-2xl shadow-md flex items-center justify-between">
+                {/* Driver / Crew Contact Card */}
+                <div className="bg-gray-900 text-white p-3.5 rounded-lg shadow-sm flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500 to-orange-500 text-white font-bold flex items-center justify-center text-sm shadow-sm">
                       {bus.driverName.charAt(0)}
@@ -211,7 +211,7 @@ export function BottomSheet() {
                     <div>
                       <div className="text-xs font-bold text-white flex items-center gap-1">
                         <span>{bus.driverName}</span>
-                        <span className="text-[9px] text-amber-400 bg-amber-400/15 px-1 py-0.2 rounded-full font-mono font-semibold">
+                        <span className="text-[9px] text-amber-400 bg-amber-400/15 px-1 py-0.2 rounded font-mono font-semibold">
                           ★ 4.9
                         </span>
                       </div>
@@ -245,7 +245,7 @@ export function BottomSheet() {
                 {/* Primary Action Button */}
                 <a
                   href="/matching"
-                  className="w-full py-2.5 px-4 bg-gray-950 hover:bg-black text-white rounded-2xl text-xs font-mono font-semibold flex items-center justify-center gap-1.5 touch-press shadow-md"
+                  className="w-full py-2.5 px-4 bg-gray-950 hover:bg-black text-white rounded-md text-xs font-mono font-semibold flex items-center justify-center gap-1.5 touch-press shadow-sm"
                 >
                   <span>Match Agri Cargo to this Bus</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -264,7 +264,7 @@ export function BottomSheet() {
               <div className="px-4 py-3 border-b border-black/[0.05] flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10.5px] font-mono bg-gray-900 text-white px-2 py-0.5 rounded-full font-bold shadow-xs">
+                    <span className="text-[10.5px] font-mono bg-gray-900 text-white px-2 py-0.5 rounded font-bold shadow-xs">
                       {s.code}
                     </span>
                     <StatusBadge
@@ -280,7 +280,7 @@ export function BottomSheet() {
                 </div>
                 <button
                   onClick={closeDrawer}
-                  className="p-1.5 rounded-full text-gray-400 hover:text-gray-900 hover:bg-gray-100 touch-press"
+                  className="p-1.5 rounded-md text-gray-400 hover:text-gray-900 hover:bg-gray-100 touch-press"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -289,13 +289,13 @@ export function BottomSheet() {
               <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs">
                 {/* 2x2 Metric Cards */}
                 <div className="grid grid-cols-2 gap-2.5">
-                  <div className="app-card-peach p-3 rounded-2xl">
+                  <div className="app-card-peach p-3 rounded-lg">
                     <div className="text-[9.5px] text-amber-900 uppercase font-mono font-semibold">APMC Deadline</div>
                     <div className="text-base font-bold font-mono text-amber-950 mt-0.5">{s.requiredArrivalDeadline}</div>
                     <div className="text-[9.5px] text-amber-700">Auction cutoff</div>
                   </div>
 
-                  <div className="app-card-green p-3 rounded-2xl">
+                  <div className="app-card-green p-3 rounded-lg">
                     <div className="text-[9.5px] text-emerald-900 uppercase font-mono font-semibold">Freight Savings</div>
                     <div className="text-base font-bold font-mono text-emerald-950 mt-0.5">{formatInr(s.freightCostInr)}</div>
                     <div className="text-[9.5px] text-emerald-700">vs ₹400 charter</div>
@@ -303,7 +303,7 @@ export function BottomSheet() {
                 </div>
 
                 {/* Farmer Contact Card */}
-                <div className="bg-gray-900 text-white p-3.5 rounded-2xl shadow-md flex items-center justify-between">
+                <div className="bg-gray-900 text-white p-3.5 rounded-lg shadow-sm flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
                     <div className="w-10 h-10 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-sm shadow-sm">
                       🌾
@@ -331,7 +331,7 @@ export function BottomSheet() {
 
                 <a
                   href="/matching"
-                  className="w-full py-2.5 px-4 bg-emerald-700 hover:bg-emerald-800 text-white rounded-2xl text-xs font-mono font-semibold flex items-center justify-center gap-1.5 touch-press shadow-md"
+                  className="w-full py-2.5 px-4 bg-emerald-700 hover:bg-emerald-800 text-white rounded-md text-xs font-mono font-semibold flex items-center justify-center gap-1.5 touch-press shadow-sm"
                 >
                   <span>Open Capacity Matching</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -350,7 +350,7 @@ export function BottomSheet() {
               <div className="px-4 py-3 border-b border-red-200 bg-red-50/40 flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10.5px] font-mono bg-red-600 text-white px-2 py-0.5 rounded-full font-bold shadow-xs">
+                    <span className="text-[10.5px] font-mono bg-red-600 text-white px-2 py-0.5 rounded font-bold shadow-xs">
                       {inc.code}
                     </span>
                     <StatusBadge label={inc.severity} variant="critical" size="sm" />
@@ -360,18 +360,18 @@ export function BottomSheet() {
                 </div>
                 <button
                   onClick={closeDrawer}
-                  className="p-1.5 rounded-full text-red-400 hover:text-red-900 hover:bg-red-100 touch-press"
+                  className="p-1.5 rounded-md text-red-400 hover:text-red-900 hover:bg-red-100 touch-press"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 space-y-3 text-xs">
-                <div className="p-3 bg-red-50/80 border border-red-200 rounded-2xl text-red-950 leading-relaxed text-xs">
+                <div className="p-3 bg-red-50/80 border border-red-200 rounded-lg text-red-950 leading-relaxed text-xs">
                   {inc.impactSummary}
                 </div>
 
-                <div className="app-card-green p-3.5 rounded-2xl space-y-1">
+                <div className="app-card-green p-3.5 rounded-lg space-y-1">
                   <div className="text-[10px] font-bold font-mono uppercase text-emerald-900">
                     Optimization Detour Directive
                   </div>
@@ -380,7 +380,7 @@ export function BottomSheet() {
 
                 <a
                   href="/incidents"
-                  className="w-full py-2.5 px-4 bg-gray-950 hover:bg-black text-white rounded-2xl text-xs font-mono font-semibold flex items-center justify-center gap-1.5 touch-press shadow-md"
+                  className="w-full py-2.5 px-4 bg-gray-950 hover:bg-black text-white rounded-md text-xs font-mono font-semibold flex items-center justify-center gap-1.5 touch-press shadow-sm"
                 >
                   <span>View Full Incident Cascade</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -398,7 +398,7 @@ export function BottomSheet() {
             <>
               <div className="px-4 py-3 border-b border-black/[0.05] flex items-start justify-between">
                 <div>
-                  <span className="text-[10.5px] font-mono bg-purple-600 text-white px-2 py-0.5 rounded-full font-bold shadow-xs">
+                  <span className="text-[10.5px] font-mono bg-purple-600 text-white px-2 py-0.5 rounded font-bold shadow-xs">
                     {ch.id}
                   </span>
                   <h2 className="text-base font-bold text-gray-950 font-mono mt-1">{ch.name}</h2>
@@ -406,7 +406,7 @@ export function BottomSheet() {
                 </div>
                 <button
                   onClick={closeDrawer}
-                  className="p-1.5 rounded-full text-gray-400 hover:text-gray-900 hover:bg-gray-100 touch-press"
+                  className="p-1.5 rounded-md text-gray-400 hover:text-gray-900 hover:bg-gray-100 touch-press"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -414,14 +414,14 @@ export function BottomSheet() {
 
               <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs">
                 <div className="grid grid-cols-2 gap-2.5">
-                  <div className="app-card-green p-3 rounded-2xl">
+                  <div className="app-card-green p-3 rounded-lg">
                     <div className="text-[9.5px] text-emerald-900 uppercase font-mono font-semibold">Available Plugs</div>
                     <div className="text-lg font-bold font-mono text-emerald-700 mt-0.5">
                       {ch.availableConnectors} / {ch.totalConnectors}
                     </div>
                   </div>
 
-                  <div className="app-card-purple p-3 rounded-2xl">
+                  <div className="app-card-purple p-3 rounded-lg">
                     <div className="text-[9.5px] text-purple-900 uppercase font-mono font-semibold">Average Wait</div>
                     <div className="text-lg font-bold font-mono text-purple-950 mt-0.5">
                       {ch.avgWaitTimeMinutes} min
@@ -431,7 +431,7 @@ export function BottomSheet() {
 
                 <a
                   href="/ev"
-                  className="w-full py-2.5 px-4 bg-gray-950 hover:bg-black text-white rounded-2xl text-xs font-mono font-semibold flex items-center justify-center gap-1.5 touch-press shadow-md"
+                  className="w-full py-2.5 px-4 bg-gray-950 hover:bg-black text-white rounded-md text-xs font-mono font-semibold flex items-center justify-center gap-1.5 touch-press shadow-sm"
                 >
                   <span>View All Chargers</span>
                   <ArrowRight className="w-3.5 h-3.5" />

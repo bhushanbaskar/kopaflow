@@ -14,7 +14,7 @@ export default function SafetyPage() {
   return (
     <div className="space-y-3 max-w-5xl mx-auto pb-4">
       {/* Header */}
-      <div className="bg-white p-3.5 sm:p-4 rounded-[5px] border border-black/[0.07] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+      <div className="bg-white p-3.5 sm:p-4 rounded-lg border border-black/[0.07] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-base sm:text-lg font-bold font-mono tracking-tight text-gray-950">
@@ -28,20 +28,20 @@ export default function SafetyPage() {
         </div>
 
         <div className="flex items-center gap-1.5 text-xs font-mono">
-          <span className="bg-emerald-50 border border-emerald-300/40 px-2 py-0.5 rounded-[3px] text-emerald-800 font-semibold">
+          <span className="bg-emerald-50 border border-emerald-300/40 px-2 py-0.5 rounded text-emerald-800 font-semibold">
             Speed Compliance: <strong>94%</strong>
           </span>
         </div>
       </div>
 
       {/* Safety Policy Directive Banner */}
-      <div className="bg-gray-950 text-white rounded-[5px] p-3.5 sm:p-4 border border-black/[0.1] space-y-2">
+      <div className="bg-gray-950 text-white rounded-lg p-3.5 sm:p-4 border border-black/[0.1] space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-amber-400 uppercase">
             <ShieldAlert className="w-3.5 h-3.5" />
             <span>Kopargaon Bus Driver Safety Mandates</span>
           </div>
-          <span className="text-[9.5px] font-mono bg-gray-800 text-gray-300 px-1.5 py-0.2 rounded-[2px]">
+          <span className="text-[9.5px] font-mono bg-gray-800 text-gray-300 px-1.5 py-0.2 rounded">
             Enforced
           </span>
         </div>
@@ -62,12 +62,12 @@ export default function SafetyPage() {
         {highRiskSegments.map((seg) => (
           <div
             key={seg.id}
-            className="bg-white border border-black/[0.07] rounded-[5px] p-3 sm:p-3.5 shadow-sm space-y-2.5"
+            className="bg-white border border-black/[0.07] rounded-lg p-3 sm:p-3.5 shadow-xs space-y-2.5"
           >
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="font-mono font-bold text-xs bg-red-100 text-red-950 px-1.5 py-0.2 rounded-[3px] border border-red-200/80">
+                  <span className="font-mono font-bold text-xs bg-red-100 text-red-950 px-1.5 py-0.2 rounded border border-red-200/80">
                     {seg.code}
                   </span>
                   <h2 className="text-xs sm:text-sm font-bold text-gray-950">{seg.name}</h2>
@@ -86,7 +86,7 @@ export default function SafetyPage() {
 
             {/* Risk Factors */}
             {seg.riskFactors && seg.riskFactors.length > 0 && (
-              <div className="p-2.5 bg-gray-50/80 rounded-[4px] border border-black/[0.05] space-y-1 text-xs text-gray-700">
+              <div className="p-2.5 bg-gray-50/80 rounded-md border border-black/[0.05] space-y-1 text-xs text-gray-700">
                 <div className="text-[10.5px] font-bold text-gray-800 uppercase font-mono">
                   Identified Hazard Factors:
                 </div>
@@ -94,7 +94,7 @@ export default function SafetyPage() {
                   {seg.riskFactors.map((f, idx) => (
                     <span
                       key={idx}
-                      className="text-[9.5px] font-mono bg-white border border-black/[0.07] px-1.5 py-0.2 rounded-[2px] text-gray-600"
+                      className="text-[9.5px] font-mono bg-white border border-black/[0.07] px-1.5 py-0.2 rounded text-gray-600"
                     >
                       ⚠️ {f}
                     </span>

@@ -488,12 +488,12 @@ export default function KopargaonMap({
           <div className="absolute top-0 left-0 right-0 z-[1001] bg-[#ffffff]/95 backdrop-blur-md border-b border-black/[0.07] px-2.5 sm:px-3.5 py-1.5 sm:py-2 flex items-center justify-between shadow-sm h-11 sm:h-12">
             {/* Left: Branding & Responsive Title */}
             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 pr-2">
-              <div className="w-5 h-5 rounded-[3px] bg-gray-950 text-white font-mono font-bold text-[10px] flex items-center justify-center shrink-0">
+              <div className="w-5 h-5 rounded bg-gray-950 text-white font-mono font-bold text-[10px] flex items-center justify-center shrink-0">
                 KM
               </div>
               <span className="text-xs font-mono font-bold text-gray-950 truncate">
-                <span className="hidden sm:inline">KOPARGAON SPATIAL GIS • FULLSCREEN FOCUS</span>
-                <span className="sm:hidden">KOPARGAON GIS</span>
+                <span className="hidden sm:inline">KOPARGAON 2D MAP • FULLSCREEN FOCUS</span>
+                <span className="sm:hidden">2D MAP</span>
               </span>
             </div>
 
@@ -504,7 +504,7 @@ export default function KopargaonMap({
               </div>
               <button
                 onClick={() => setIsFullscreen(false)}
-                className="px-2.5 py-1 sm:py-1.5 bg-gray-900 hover:bg-black active:bg-gray-800 text-white rounded-[4px] text-xs font-mono font-semibold flex items-center gap-1.5 touch-press shadow-sm shrink-0"
+                className="px-2.5 py-1 sm:py-1.5 bg-gray-900 hover:bg-black active:bg-gray-800 text-white rounded-md text-xs font-mono font-semibold flex items-center gap-1.5 touch-press shadow-xs shrink-0"
                 title="Exit Fullscreen (Esc)"
                 aria-label="Exit Fullscreen"
               >

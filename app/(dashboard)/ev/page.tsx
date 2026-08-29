@@ -10,7 +10,7 @@ export default function EVGridPage() {
   return (
     <div className="space-y-3 max-w-5xl mx-auto pb-4">
       {/* Header */}
-      <div className="bg-white p-3.5 sm:p-4 rounded-[5px] border border-black/[0.07] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+      <div className="bg-white p-3.5 sm:p-4 rounded-lg border border-black/[0.07] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-base sm:text-lg font-bold font-mono tracking-tight text-gray-950">
@@ -24,41 +24,61 @@ export default function EVGridPage() {
         </div>
 
         <div className="flex items-center gap-1.5 text-xs font-mono">
-          <span className="bg-purple-50 border border-purple-200/60 px-2 py-0.5 rounded-[3px] text-purple-800 font-semibold">
+          <span className="bg-purple-50 border border-purple-200/60 px-2 py-0.5 rounded text-purple-800 font-semibold">
             Grid Load: <strong>185 kW</strong>
           </span>
         </div>
       </div>
 
-      {/* 4 EV KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        <div className="bg-white p-2.5 rounded-[5px] border border-black/[0.07] shadow-sm">
-          <div className="text-[9.5px] font-mono text-gray-500 uppercase">Available Plugs</div>
-          <div className="text-base font-bold font-mono text-emerald-800 mt-0.5">4 Plugs Open</div>
-          <div className="text-[9.5px] text-gray-400 font-mono">of 6 total CCS2</div>
+      {/* 4 EV KPI Cards - flex-col on mobile, grid on desktop */}
+      <div className="flex flex-col sm:grid sm:grid-cols-4 gap-2">
+        <div className="bg-white p-2.5 sm:p-3 rounded-lg border border-black/[0.07] shadow-xs flex items-center justify-between sm:block">
+          <div>
+            <div className="text-[9.5px] font-mono text-gray-500 uppercase">Available Plugs</div>
+            <div className="text-[9.5px] text-gray-400 font-mono sm:hidden">of 6 total CCS2</div>
+          </div>
+          <div className="text-right sm:text-left">
+            <div className="text-sm sm:text-base font-bold font-mono text-emerald-800 mt-0.5">4 Plugs Open</div>
+            <div className="text-[9.5px] text-gray-400 font-mono hidden sm:block">of 6 total CCS2</div>
+          </div>
         </div>
 
-        <div className="bg-white p-2.5 rounded-[5px] border border-black/[0.07] shadow-sm">
-          <div className="text-[9.5px] font-mono text-gray-500 uppercase">Avg Queue Time</div>
-          <div className="text-base font-bold font-mono text-gray-950 mt-0.5">8 Minutes</div>
-          <div className="text-[9.5px] text-gray-400 font-mono">Fast turnover</div>
+        <div className="bg-white p-2.5 sm:p-3 rounded-lg border border-black/[0.07] shadow-xs flex items-center justify-between sm:block">
+          <div>
+            <div className="text-[9.5px] font-mono text-gray-500 uppercase">Avg Queue Time</div>
+            <div className="text-[9.5px] text-gray-400 font-mono sm:hidden">Fast turnover</div>
+          </div>
+          <div className="text-right sm:text-left">
+            <div className="text-sm sm:text-base font-bold font-mono text-gray-950 mt-0.5">8 Minutes</div>
+            <div className="text-[9.5px] text-gray-400 font-mono hidden sm:block">Fast turnover</div>
+          </div>
         </div>
 
-        <div className="bg-white p-2.5 rounded-[5px] border border-black/[0.07] shadow-sm">
-          <div className="text-[9.5px] font-mono text-gray-500 uppercase">Electric Fleet</div>
-          <div className="text-base font-bold font-mono text-purple-800 mt-0.5">3 Active Buses</div>
-          <div className="text-[9.5px] text-gray-400 font-mono">Avg 74% battery</div>
+        <div className="bg-white p-2.5 sm:p-3 rounded-lg border border-black/[0.07] shadow-xs flex items-center justify-between sm:block">
+          <div>
+            <div className="text-[9.5px] font-mono text-gray-500 uppercase">Electric Fleet</div>
+            <div className="text-[9.5px] text-gray-400 font-mono sm:hidden">Avg 74% battery</div>
+          </div>
+          <div className="text-right sm:text-left">
+            <div className="text-sm sm:text-base font-bold font-mono text-purple-800 mt-0.5">3 Active Buses</div>
+            <div className="text-[9.5px] text-gray-400 font-mono hidden sm:block">Avg 74% battery</div>
+          </div>
         </div>
 
-        <div className="bg-emerald-50/60 p-2.5 rounded-[5px] border border-emerald-200/60 shadow-sm">
-          <div className="text-[9.5px] font-mono text-emerald-800 uppercase">Off-Peak Tariff</div>
-          <div className="text-base font-bold font-mono text-emerald-900 mt-0.5">₹6.40 / kWh</div>
-          <div className="text-[9.5px] text-emerald-700 font-mono">Saves ₹840/day</div>
+        <div className="bg-emerald-50/60 p-2.5 sm:p-3 rounded-lg border border-emerald-200/60 shadow-xs flex items-center justify-between sm:block">
+          <div>
+            <div className="text-[9.5px] font-mono text-emerald-800 uppercase">Off-Peak Tariff</div>
+            <div className="text-[9.5px] text-emerald-700 font-mono sm:hidden">Saves ₹840/day</div>
+          </div>
+          <div className="text-right sm:text-left">
+            <div className="text-sm sm:text-base font-bold font-mono text-emerald-900 mt-0.5">₹6.40 / kWh</div>
+            <div className="text-[9.5px] text-emerald-700 font-mono hidden sm:block">Saves ₹840/day</div>
+          </div>
         </div>
       </div>
 
       {/* Smart Load Management Card */}
-      <div className="bg-gray-950 text-white rounded-[5px] p-3.5 sm:p-4 border border-black/[0.1] space-y-2">
+      <div className="bg-gray-950 text-white rounded-lg p-3.5 sm:p-4 border border-black/[0.1] space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-purple-400 uppercase">
             <Zap className="w-3.5 h-3.5" />
@@ -85,12 +105,12 @@ export default function EVGridPage() {
         {MOCK_EV_CHARGERS.map((ch) => (
           <div
             key={ch.id}
-            className="bg-white border border-black/[0.07] rounded-[5px] p-3 sm:p-3.5 shadow-sm space-y-2.5"
+            className="bg-white border border-black/[0.07] rounded-lg p-3 sm:p-3.5 shadow-xs space-y-2.5"
           >
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="font-mono font-bold text-xs bg-purple-50 text-purple-800 px-1.5 py-0.2 rounded-[3px] border border-purple-200/60">
+                  <span className="font-mono font-bold text-xs bg-purple-50 text-purple-800 px-1.5 py-0.2 rounded border border-purple-200/60">
                     {ch.id}
                   </span>
                   <h2 className="text-xs sm:text-sm font-bold text-gray-950">{ch.name}</h2>
@@ -106,7 +126,7 @@ export default function EVGridPage() {
             </div>
 
             {/* Metrics */}
-            <div className="grid grid-cols-3 gap-2 p-2 bg-gray-50/80 rounded-[4px] border border-black/[0.05] text-xs font-mono">
+            <div className="grid grid-cols-3 gap-2 p-2 bg-gray-50/80 rounded-md border border-black/[0.05] text-xs font-mono">
               <div>
                 <span className="text-[9.5px] text-gray-500 uppercase">Power Output</span>
                 <div className="font-bold text-purple-700 mt-0.5">{ch.powerOutputKw} kW</div>

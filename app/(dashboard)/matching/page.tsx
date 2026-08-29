@@ -60,15 +60,15 @@ export default function CapacityMatchingPage() {
   return (
     <div className="space-y-4 max-w-4xl mx-auto pb-6">
       {/* Header */}
-      <div className="bg-white p-3.5 sm:p-4 rounded-[22px] border border-black/[0.06] shadow-xs space-y-1">
+      <div className="bg-white p-3.5 sm:p-4 rounded-lg border border-black/[0.06] shadow-xs space-y-1">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <h1 className="text-base sm:text-lg font-bold font-mono tracking-tight text-gray-950">
               CAPACITY MATCHING ENGINE
             </h1>
-            <DataSourceBadge type="SIMULATED" />
+            <DataSourceBadge type="LIVE" />
           </div>
-          <span className="text-[10px] font-mono bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-2.5 py-0.5 rounded-full font-bold shadow-xs">
+          <span className="text-[10px] font-mono bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-2 py-0.5 rounded font-semibold shadow-xs">
             Constraint Safe
           </span>
         </div>
@@ -78,7 +78,7 @@ export default function CapacityMatchingPage() {
       </div>
 
       {/* 1. BEST AVAILABLE OPTION (Highlighted Recommendation Card) */}
-      <div className="app-card rounded-[24px] p-4 sm:p-5 shadow-xs space-y-4">
+      <div className="app-card rounded-lg p-3.5 sm:p-5 shadow-xs space-y-4">
         <div className="flex items-center justify-between border-b border-black/[0.04] pb-3">
           <div>
             <div className="text-[10px] font-mono uppercase text-emerald-700 font-bold tracking-wider">
@@ -95,10 +95,10 @@ export default function CapacityMatchingPage() {
         </div>
 
         {/* Bus Summary Row */}
-        <div className="p-3.5 bg-gray-50/90 rounded-2xl border border-black/[0.04] space-y-2.5">
+        <div className="p-3.5 bg-gray-50/90 rounded-md border border-black/[0.04] space-y-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-full bg-gray-900 text-white flex items-center justify-center font-mono font-bold text-xs shadow-xs">
+              <div className="w-8 h-8 rounded-md bg-gray-900 text-white flex items-center justify-center font-mono font-bold text-xs shadow-xs">
                 🚍
               </div>
               <div>
@@ -134,7 +134,7 @@ export default function CapacityMatchingPage() {
           <div className="text-xs font-bold font-mono text-gray-900 uppercase">
             Allocated Agricultural Crop Cargo:
           </div>
-          <div className="app-card-green p-3.5 rounded-2xl flex items-center justify-between text-xs font-mono shadow-xs">
+          <div className="app-card-green p-3 sm:p-3.5 rounded-md flex items-center justify-between text-xs font-mono shadow-xs">
             <div>
               <div className="font-bold text-emerald-950 text-[11.5px]">
                 120 kg Onion (Savalyavihar) + 35 kg Guava
@@ -151,7 +151,7 @@ export default function CapacityMatchingPage() {
         </div>
 
         {/* Explainable Rationale */}
-        <div className="bg-gray-50/80 p-3.5 rounded-2xl border border-black/[0.04] space-y-1 text-xs text-gray-700">
+        <div className="bg-gray-50/80 p-3 sm:p-3.5 rounded-md border border-black/[0.04] space-y-1 text-xs text-gray-700">
           <div className="font-bold text-gray-950 text-[10.5px] uppercase font-mono flex items-center gap-1.5">
             <Info className="w-3.5 h-3.5 text-blue-600" />
             <span>Why this option?</span>
@@ -166,7 +166,7 @@ export default function CapacityMatchingPage() {
 
         {/* Action Button */}
         {isAllocated ? (
-          <div className="p-3.5 bg-emerald-100/80 border border-emerald-300/60 rounded-2xl text-xs font-mono font-bold text-emerald-900 flex items-center justify-center gap-2 shadow-xs">
+          <div className="p-3 bg-emerald-100/80 border border-emerald-300/60 rounded-md text-xs font-mono font-bold text-emerald-900 flex items-center justify-center gap-2 shadow-xs">
             <CheckCircle2 className="w-4 h-4 text-emerald-700" />
             <span>ALLOCATION COMMITTED TO DISPATCH BOARD</span>
           </div>
@@ -174,7 +174,7 @@ export default function CapacityMatchingPage() {
           <button
             onClick={() => setShowConfirmModal(true)}
             disabled={selectedShipmentIds.length === 0}
-            className="w-full py-3.5 px-4 bg-gray-950 hover:bg-black disabled:opacity-50 text-white rounded-2xl text-xs font-mono font-bold tracking-wider flex items-center justify-center gap-2 touch-press shadow-md transition-all"
+            className="w-full py-3 px-4 bg-gray-950 hover:bg-black disabled:opacity-50 text-white rounded-md text-xs font-mono font-bold tracking-wider flex items-center justify-center gap-2 touch-press shadow-sm transition-all"
           >
             <ArrowLeftRight className="w-3.5 h-3.5 text-emerald-400" />
             <span>CONFIRM ALLOCATION ({formatWeightKg(matchedWeight)})</span>
@@ -183,7 +183,7 @@ export default function CapacityMatchingPage() {
       </div>
 
       {/* 2. Candidate Shipments Checkbox List */}
-      <div className="bg-white border border-black/[0.06] rounded-[24px] p-4 shadow-xs space-y-3">
+      <div className="bg-white border border-black/[0.06] rounded-lg p-3.5 sm:p-4 shadow-xs space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold font-mono text-gray-950 uppercase">
             Candidate Agricultural Shipments ({candidateShipments.length})
@@ -200,7 +200,7 @@ export default function CapacityMatchingPage() {
               <div
                 key={shipment.id}
                 onClick={() => handleToggleShipment(shipment.id)}
-                className={`p-3 rounded-2xl border text-xs cursor-pointer transition-all touch-press flex items-center justify-between ${
+                className={`p-3 rounded-md border text-xs cursor-pointer transition-all touch-press flex items-center justify-between ${
                   isSelected
                     ? "bg-emerald-50/60 border-emerald-300/80 shadow-xs"
                     : "bg-gray-50/70 border-black/[0.04] hover:bg-gray-100/70"
@@ -211,7 +211,7 @@ export default function CapacityMatchingPage() {
                     type="checkbox"
                     checked={isSelected}
                     onChange={() => {}}
-                    className="rounded-full border-gray-300 text-emerald-700 focus:ring-emerald-700 w-4 h-4 cursor-pointer"
+                    className="rounded border-gray-300 text-emerald-700 focus:ring-emerald-700 w-4 h-4 cursor-pointer"
                   />
                   <div>
                     <div className="flex items-center gap-1.5">

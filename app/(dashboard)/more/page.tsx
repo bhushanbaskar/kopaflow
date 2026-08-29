@@ -14,6 +14,8 @@ import {
   Map,
   Package,
   ArrowLeftRight,
+  MessageSquarePlus,
+  MessageSquareWarning,
 } from "lucide-react";
 import { useAppStore } from "../../../lib/store/useAppStore";
 import { DataSourceBadge } from "../../../components/shared/DataSourceBadge";
@@ -24,11 +26,11 @@ export default function MoreHubPage() {
 
   const sections = [
     {
-      title: "Spatial & Logistics",
+      title: "2D Map & Logistics",
       items: [
         {
-          label: "Spatial GIS Network Map",
-          description: "Full-screen GIS with road nodes & fleet tracking",
+          label: "2D Network Map",
+          description: "Full-screen 2D map with road nodes & fleet tracking",
           href: "/map",
           icon: Map,
           badge: "Full View",
@@ -106,6 +108,22 @@ export default function MoreHubPage() {
       title: "System & Incidents",
       items: [
         {
+          label: "Citizen Feedback & Reports",
+          description: "Public mobility reporting & complaint tracker",
+          href: "/feedback",
+          icon: MessageSquarePlus,
+          badge: "Public Portal",
+          badgeVariant: "informational" as const,
+        },
+        {
+          label: "Feedback Operations Console",
+          description: "Triage citizen complaints, team dispatch & incident elevation",
+          href: "/feedback-admin",
+          icon: MessageSquareWarning,
+          badge: "Ops Console",
+          badgeVariant: "warning" as const,
+        },
+        {
           label: "Road Incidents & Cascades",
           description: "Active disruptions & propagation flow",
           href: "/incidents",
@@ -124,9 +142,9 @@ export default function MoreHubPage() {
   ];
 
   return (
-    <div className="space-y-4 max-w-2xl mx-auto pb-6">
+    <div className="space-y-3.5 max-w-2xl mx-auto pb-6">
       {/* Header */}
-      <div className="bg-white p-4 rounded-[22px] border border-black/[0.06] shadow-xs space-y-2">
+      <div className="bg-white p-3.5 sm:p-4 rounded-lg border border-black/[0.06] shadow-xs space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <h1 className="text-base font-bold font-mono tracking-tight text-gray-950">
@@ -134,23 +152,23 @@ export default function MoreHubPage() {
             </h1>
             <DataSourceBadge type="LIVE" />
           </div>
-          <span className="text-[10px] font-mono bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-2.5 py-0.5 rounded-full font-bold shadow-xs">
+          <span className="text-[10px] font-mono bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-2 py-0.5 rounded font-semibold shadow-xs">
             All Systems OK
           </span>
         </div>
         <p className="text-xs text-gray-500 leading-relaxed">
-          Spatial GIS map, infrastructure telemetry, depot management, workforce rosters, and incident response.
+          2D network map, infrastructure telemetry, depot management, workforce rosters, and incident response.
         </p>
 
         {/* Current Operator Role Status */}
         <div className="pt-2 border-t border-black/[0.04] flex items-center justify-between text-xs">
           <span className="text-gray-500 font-medium">Active Operator Role:</span>
-          <span className="font-bold text-gray-950 font-mono text-[11px] bg-gray-100 px-2.5 py-0.5 rounded-full">{currentRole}</span>
+          <span className="font-bold text-gray-950 font-mono text-[11px] bg-gray-100 px-2 py-0.5 rounded">{currentRole}</span>
         </div>
       </div>
 
       {/* Demo Scenario Quick Selector */}
-      <div className="app-card-peach rounded-[22px] p-3.5 space-y-2 shadow-xs">
+      <div className="app-card-peach rounded-lg p-3.5 space-y-2 shadow-xs">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-amber-950">
             <Sparkles className="w-3.5 h-3.5 text-amber-600" />
@@ -163,10 +181,10 @@ export default function MoreHubPage() {
             {isDemoMode ? "Active" : "Enable"}
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-2 pt-0.5">
+        <div className="flex flex-col sm:grid sm:grid-cols-2 gap-2 pt-0.5">
           <button
             onClick={() => setActiveScenarioId("APMC_PEAK")}
-            className={`px-3 py-2 rounded-2xl text-xs font-mono font-medium border text-left transition-all touch-press ${
+            className={`px-3 py-2 rounded-md text-xs font-mono font-medium border text-left transition-all touch-press ${
               activeScenarioId === "APMC_PEAK"
                 ? "bg-amber-600 text-white border-amber-700 font-bold shadow-xs"
                 : "bg-white/90 text-gray-800 border-amber-200/80 hover:bg-white"
@@ -176,7 +194,7 @@ export default function MoreHubPage() {
           </button>
           <button
             onClick={() => setActiveScenarioId("ROAD_CLOSURE_KPG14")}
-            className={`px-3 py-2 rounded-2xl text-xs font-mono font-medium border text-left transition-all touch-press ${
+            className={`px-3 py-2 rounded-md text-xs font-mono font-medium border text-left transition-all touch-press ${
               activeScenarioId === "ROAD_CLOSURE_KPG14"
                 ? "bg-amber-600 text-white border-amber-700 font-bold shadow-xs"
                 : "bg-white/90 text-gray-800 border-amber-200/80 hover:bg-white"
@@ -190,20 +208,20 @@ export default function MoreHubPage() {
       {/* Grouped Native List Sections */}
       {sections.map((section) => (
         <div key={section.title} className="space-y-1.5">
-          <h2 className="text-[10.5px] font-bold font-mono text-gray-500 uppercase tracking-wider px-2">
+          <h2 className="text-[10.5px] font-bold font-mono text-gray-500 uppercase tracking-wider px-1">
             {section.title}
           </h2>
-          <div className="bg-white border border-black/[0.06] rounded-[24px] overflow-hidden shadow-xs divide-y divide-black/[0.04]">
+          <div className="bg-white border border-black/[0.06] rounded-lg overflow-hidden shadow-xs divide-y divide-black/[0.04]">
             {section.items.map((item) => {
               const Icon = item.icon;
               return (
                 <a
                   key={item.href}
                   href={item.href}
-                  className="p-3.5 flex items-center justify-between hover:bg-gray-50/80 touch-press transition-colors"
+                  className="p-3 sm:p-3.5 flex items-center justify-between hover:bg-gray-50/80 touch-press transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-800 shrink-0 shadow-xs">
+                    <div className="w-8 h-8 rounded-md bg-gray-100 flex items-center justify-center text-gray-800 shrink-0 shadow-xs">
                       <Icon className="w-4 h-4 stroke-[2]" />
                     </div>
                     <div>

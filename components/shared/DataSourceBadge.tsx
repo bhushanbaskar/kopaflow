@@ -9,6 +9,10 @@ interface DataSourceBadgeProps {
 }
 
 export function DataSourceBadge({ type, className, subtle = false }: DataSourceBadgeProps) {
+  if (type === "SIMULATED" || type === "DEMO") {
+    return null;
+  }
+
   const styles: Record<DataSourceType, string> = {
     LIVE: "bg-emerald-50 text-emerald-800 border-emerald-200/80 font-bold shadow-xs",
     SIMULATED: "bg-gray-100 text-gray-700 border-black/[0.05]",
@@ -22,7 +26,7 @@ export function DataSourceBadge({ type, className, subtle = false }: DataSourceB
     <span
       className={cn(
         "inline-flex items-center px-2 py-0.5 rounded-full text-[8.5px] uppercase font-pixel tracking-wider border select-none",
-        styles[type] || styles.SIMULATED,
+        styles[type] || styles.LIVE,
         subtle && "bg-transparent border-dashed",
         className
       )}

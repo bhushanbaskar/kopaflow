@@ -14,6 +14,14 @@ import {
   OptimizationRecommendation,
   OptimizationConstraintCheck,
   VillageCluster,
+  FeedbackReport,
+  FeedbackCategory,
+  FeedbackIssueType,
+  FeedbackStatus,
+  CitizenSeverity,
+  OperationalPriority,
+  OperationalTeam,
+  FeedbackAnalyticsSummary,
 } from "../domain/types";
 
 export interface IBusRepository {
@@ -64,3 +72,83 @@ export interface IOptimizationRepository {
   getConstraints(): Promise<OptimizationConstraintCheck[]>;
   applyRecommendation(recommendationId: string): Promise<OptimizationRecommendation>;
 }
+
+export interface FeedbackFilterOptions {
+  status?: FeedbackStatus | "ALL";
+  category?: FeedbackCategory | "ALL";
+  priority?: OperationalPriority | "ALL";
+  searchQuery?: string;
+  relatedEntityId?: string;
+}
+
+export interface CreateReportInput {
+  category: FeedbackCategory;
+  issueType: FeedbackIssueType;
+  issueTitle?: string;
+  description: string;
+  citizenSeverity: CitizenSeverity;
+  latitude: number;
+  longitude: number;
+  locationName: string;
+  relatedEntityType?: "BUS" | "ROUTE" | "ROAD_SEGMENT" | "EV_CHARGER" | "VILLAGE" | "DEPOT";
+  relatedEntityId?: string;
+  relatedEntityName?: string;
+  citizenName?: string;
+  citizenPhone?: string;
+  citizenEmail?: string;
+  isAnonymous?: boolean;
+  photoUrl?: string;
+  photoFileName?: string;
+  photoMimeType?: string;
+  photoSizeBytes?: number;
+  occurredAt?: string;
+}
+
+export interface IFeedbackRepository {
+  getAllReports(filters?: FeedbackFilterOptions): Promise<FeedbackReport[]>;
+  getReportById(id: string): Promise<FeedbackReport | null>;
+  getReportByReferenceCode(referenceCode: string): Promise<FeedbackReport | null>;
+  getUserReports(userId?: string): Promise<FeedbackReport[]>;
+  createReport(input: CreateReportInput): Promise<FeedbackReport>;
+  updateStatus(
+    reportId: string,
+    status: FeedbackStatus,
+    message?: string,
+    authorName?: string,
+    authorRole?: string,
+    isPublic?: boolean
+  ): Promise<FeedbackReport>;
+  assignTeam(
+    reportId: string,
+    team: OperationalTeam,
+    assignedTo?: string,
+    internalNote?: string
+  ): Promise<FeedbackReport>;
+  addInternalNote(
+    reportId: string,
+    note: string,
+    authorName?: string,
+    authorRole?: string
+  ): Promise<FeedbackReport>;
+  addPublicResponse(
+    reportId: string,
+    response: string,
+    authorName?: string,
+    authorRole?: string
+  ): Promise<FeedbackReport>;
+  promoteToIncident(
+    reportId: string,
+    incidentTitle?: string,
+    severity?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
+  ): Promise<{ report: FeedbackReport; incident: RoadIncident }>;
+  getAnalyticsSummary(): Promise<FeedbackAnalyticsSummary>;
+  getRecurringIssues(): Promise<{
+    entityId: string;
+    entityName: string;
+    category: FeedbackCategory;
+    count: number;
+    reportIds: string[];
+    description: string;
+  }[]>;
+}
+

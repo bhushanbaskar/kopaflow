@@ -13,7 +13,7 @@ export default function APMCPage() {
   return (
     <div className="space-y-3 max-w-5xl mx-auto pb-4">
       {/* Header */}
-      <div className="bg-white p-3.5 sm:p-4 rounded-[5px] border border-black/[0.07] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+      <div className="bg-white p-3.5 sm:p-4 rounded-lg border border-black/[0.07] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-base sm:text-lg font-bold font-mono tracking-tight text-gray-950">
@@ -27,47 +27,67 @@ export default function APMCPage() {
         </div>
 
         <div className="flex items-center gap-2 text-xs font-mono">
-          <span className="bg-amber-50 border border-amber-200/60 px-2 py-0.5 rounded-[3px] text-amber-800 font-semibold">
+          <span className="bg-amber-50 border border-amber-200/60 px-2 py-0.5 rounded text-amber-800 font-semibold">
             Next Auction: <strong>09:00 AM</strong>
           </span>
         </div>
       </div>
 
-      {/* 4 Inflow KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        <div className="bg-white p-2.5 rounded-[5px] border border-black/[0.07] shadow-sm">
-          <div className="text-[9.5px] font-mono text-gray-500 uppercase">Today's Inflow</div>
-          <div className="text-base font-bold font-mono text-gray-950 mt-0.5">184 Qtl</div>
-          <div className="text-[9.5px] text-gray-400 font-mono">Estimated 1,420 bags</div>
+      {/* 4 Inflow KPI Cards - flex-col on mobile, grid on desktop */}
+      <div className="flex flex-col sm:grid sm:grid-cols-4 gap-2">
+        <div className="bg-white p-2.5 sm:p-3 rounded-lg border border-black/[0.07] shadow-xs flex items-center justify-between sm:block">
+          <div>
+            <div className="text-[9.5px] font-mono text-gray-500 uppercase">Today's Inflow</div>
+            <div className="text-[9.5px] text-gray-400 font-mono sm:hidden">Estimated 1,420 bags</div>
+          </div>
+          <div className="text-right sm:text-left">
+            <div className="text-sm sm:text-base font-bold font-mono text-gray-950 mt-0.5">184 Qtl</div>
+            <div className="text-[9.5px] text-gray-400 font-mono hidden sm:block">Estimated 1,420 bags</div>
+          </div>
         </div>
 
-        <div className="bg-emerald-50/60 p-2.5 rounded-[5px] border border-emerald-200/60 shadow-sm">
-          <div className="text-[9.5px] font-mono text-emerald-800 uppercase">Bus Cargo Share</div>
-          <div className="text-base font-bold font-mono text-emerald-900 mt-0.5">42%</div>
-          <div className="text-[9.5px] text-emerald-700 font-mono">+12% vs last month</div>
+        <div className="bg-emerald-50/60 p-2.5 sm:p-3 rounded-lg border border-emerald-200/60 shadow-xs flex items-center justify-between sm:block">
+          <div>
+            <div className="text-[9.5px] font-mono text-emerald-800 uppercase">Bus Cargo Share</div>
+            <div className="text-[9.5px] text-emerald-700 font-mono sm:hidden">+12% vs last month</div>
+          </div>
+          <div className="text-right sm:text-left">
+            <div className="text-sm sm:text-base font-bold font-mono text-emerald-900 mt-0.5">42%</div>
+            <div className="text-[9.5px] text-emerald-700 font-mono hidden sm:block">+12% vs last month</div>
+          </div>
         </div>
 
-        <div className="bg-white p-2.5 rounded-[5px] border border-black/[0.07] shadow-sm">
-          <div className="text-[9.5px] font-mono text-gray-500 uppercase">Active Gate Queue</div>
-          <div className="text-base font-bold font-mono text-gray-950 mt-0.5">6 Trucks</div>
-          <div className="text-[9.5px] text-gray-400 font-mono">Avg 18m wait</div>
+        <div className="bg-white p-2.5 sm:p-3 rounded-lg border border-black/[0.07] shadow-xs flex items-center justify-between sm:block">
+          <div>
+            <div className="text-[9.5px] font-mono text-gray-500 uppercase">Active Gate Queue</div>
+            <div className="text-[9.5px] text-gray-400 font-mono sm:hidden">Avg 18m wait</div>
+          </div>
+          <div className="text-right sm:text-left">
+            <div className="text-sm sm:text-base font-bold font-mono text-gray-950 mt-0.5">6 Trucks</div>
+            <div className="text-[9.5px] text-gray-400 font-mono hidden sm:block">Avg 18m wait</div>
+          </div>
         </div>
 
-        <div className="bg-white p-2.5 rounded-[5px] border border-black/[0.07] shadow-sm">
-          <div className="text-[9.5px] font-mono text-gray-500 uppercase">Unloading Bays</div>
-          <div className="text-base font-bold font-mono text-blue-700 mt-0.5">8 of 12 Open</div>
-          <div className="text-[9.5px] text-gray-400 font-mono">Transit bay reserved</div>
+        <div className="bg-white p-2.5 sm:p-3 rounded-lg border border-black/[0.07] shadow-xs flex items-center justify-between sm:block">
+          <div>
+            <div className="text-[9.5px] font-mono text-gray-500 uppercase">Unloading Bays</div>
+            <div className="text-[9.5px] text-gray-400 font-mono sm:hidden">Transit bay reserved</div>
+          </div>
+          <div className="text-right sm:text-left">
+            <div className="text-sm sm:text-base font-bold font-mono text-blue-700 mt-0.5">8 of 12 Open</div>
+            <div className="text-[9.5px] text-gray-400 font-mono hidden sm:block">Transit bay reserved</div>
+          </div>
         </div>
       </div>
 
       {/* Transit Bus Fast-Track Bay Section */}
-      <div className="bg-emerald-950 text-white rounded-[5px] p-3.5 sm:p-4 border border-black/[0.1] space-y-2">
+      <div className="bg-emerald-950 text-white rounded-lg p-3.5 sm:p-4 border border-black/[0.1] space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-emerald-400 uppercase">
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>Dedicated Bus Cargo Unloading Protocol</span>
           </div>
-          <span className="text-[9.5px] font-mono bg-emerald-800 text-emerald-100 px-1.5 py-0.2 rounded-[2px]">
+          <span className="text-[9.5px] font-mono bg-emerald-800 text-emerald-100 px-1.5 py-0.2 rounded">
             Fast Track Gate 1
           </span>
         </div>
@@ -77,7 +97,7 @@ export default function APMCPage() {
       </div>
 
       {/* Today's Inflow Arrivals Board */}
-      <div className="bg-white border border-black/[0.07] rounded-[5px] p-3.5 shadow-sm space-y-2">
+      <div className="bg-white border border-black/[0.07] rounded-lg p-3.5 shadow-xs space-y-2">
         <div className="flex items-center justify-between border-b border-black/[0.04] pb-1.5">
           <span className="text-xs font-bold font-mono text-gray-950 uppercase">
             Today's Scheduled Produce Arrivals ({arrivals.length})
@@ -89,7 +109,7 @@ export default function APMCPage() {
           {arrivals.map((arr) => (
             <div
               key={arr.id}
-              className="p-2.5 rounded-[4px] bg-gray-50/80 border border-black/[0.05] flex items-center justify-between text-xs font-mono"
+              className="p-2.5 rounded-md bg-gray-50/80 border border-black/[0.05] flex items-center justify-between text-xs font-mono"
             >
               <div>
                 <div className="flex items-center gap-1.5">
@@ -97,7 +117,7 @@ export default function APMCPage() {
                   <span className="text-[10.5px] text-gray-500 font-sans">
                     ({arr.weightQuintals} Qtl)
                   </span>
-                  <span className="text-[9.5px] bg-gray-100 px-1.5 py-0.2 rounded-[2px] text-gray-700">
+                  <span className="text-[9.5px] bg-gray-100 px-1.5 py-0.2 rounded text-gray-700">
                     {arr.sourceVillage}
                   </span>
                 </div>

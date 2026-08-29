@@ -24,6 +24,7 @@ import {
   ChevronRight,
   MapPin,
   CheckCircle2,
+  MessageSquareWarning,
 } from "lucide-react";
 import { cn } from "../../lib/utils/cn";
 
@@ -36,7 +37,7 @@ export function Sidebar() {
       group: "OVERVIEW",
       items: [
         { label: "Command Center", href: "/dashboard", icon: LayoutDashboard },
-        { label: "Spatial GIS Map", href: "/map", icon: Map },
+        { label: "2D Map", href: "/map", icon: Map },
       ],
     },
     {
@@ -66,6 +67,7 @@ export function Sidebar() {
     {
       group: "SYSTEM",
       items: [
+        { label: "Feedback & Reports", href: "/feedback-admin", icon: MessageSquareWarning },
         { label: "Incidents", href: "/incidents", icon: AlertTriangle },
         { label: "Settings", href: "/settings", icon: Settings },
       ],
