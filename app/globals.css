@@ -1,0 +1,135 @@
+@import "leaflet/dist/leaflet.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f9fafb;
+  --foreground: #111827;
+  --panel: #ffffff;
+  --panel-subtle: #f3f4f6;
+  --border: #e5e7eb;
+  --border-subtle: #f3f4f6;
+  --muted: #6b7280;
+  --muted-foreground: #4b5563;
+  --primary: #111827;
+  --primary-foreground: #ffffff;
+  --accent-green: #059669;
+  --accent-green-light: #ecfdf5;
+  --accent-green-border: #a7f3d0;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  touch-action: manipulation;
+}
+
+/* Mobile Safe Areas */
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+.pt-safe {
+  padding-top: max(0.5rem, env(safe-area-inset-top));
+}
+
+.mb-safe {
+  margin-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* Native-like Touch Feedback */
+.touch-press {
+  transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1), opacity 120ms ease;
+}
+
+.touch-press:active {
+  transform: scale(0.98);
+  opacity: 0.92;
+}
+
+/* Operational Table Density (Desktop Progressive Enhancement) */
+.operational-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.operational-table th {
+  background-color: #f9fafb;
+  color: #4b5563;
+  font-size: 0.725rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.operational-table td {
+  padding: 0.65rem 0.75rem;
+  font-size: 0.8125rem;
+  border-bottom: 1px solid #f3f4f6;
+  color: #1f2937;
+}
+
+.operational-table tr:hover td {
+  background-color: #f9fafb;
+}
+
+/* Custom Horizontal Scrollbars for Chips/Pills */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Leaflet Map Custom Styling */
+.leaflet-container {
+  font-family: inherit;
+  background-color: #e5e7eb !important;
+}
+
+.custom-bus-marker,
+.custom-station-marker,
+.custom-incident-marker,
+.custom-apmc-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 10px;
+  cursor: pointer;
+  transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.custom-bus-marker:hover,
+.custom-incident-marker:hover {
+  transform: scale(1.1);
+  z-index: 1000 !important;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
