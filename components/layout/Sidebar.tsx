@@ -22,6 +22,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  ShieldCheck,
   MapPin,
   CheckCircle2,
   MessageSquareWarning,
@@ -52,7 +53,8 @@ export function Sidebar() {
     {
       group: "LOGISTICS",
       items: [
-        { label: "Agri Logistics", href: "/logistics", icon: Package },
+        { label: "CargoFlow", href: "/cargoflow", icon: Package },
+        { label: "Agri Logistics", href: "/logistics", icon: Store },
         { label: "Capacity Matching", href: "/matching", icon: ArrowLeftRight },
       ],
     },
@@ -67,6 +69,7 @@ export function Sidebar() {
     {
       group: "SYSTEM",
       items: [
+        { label: "Resilience Lab", href: "/admin/resilience", icon: ShieldCheck },
         { label: "Feedback & Reports", href: "/feedback-admin", icon: MessageSquareWarning },
         { label: "Incidents", href: "/incidents", icon: AlertTriangle },
         { label: "Settings", href: "/settings", icon: Settings },

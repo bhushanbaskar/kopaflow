@@ -46,6 +46,7 @@ export function MobileBottomNav() {
       icon: Layers,
       isActive:
         pathname.startsWith("/more") ||
+        pathname.startsWith("/cargoflow") ||
         pathname.startsWith("/logistics") ||
         pathname.startsWith("/traffic") ||
         pathname.startsWith("/safety") ||
@@ -94,18 +95,18 @@ export function MobileBottomNav() {
           );
         })}
 
-        {/* Center Prominent Action Button (+ / Match) */}
+        {/* Center Prominent Action Button (+ / Cargo) */}
         <div className="flex flex-col items-center justify-center px-1">
           <a
-            href="/matching"
+            href="/cargoflow/send"
             className="w-11 h-11 -mt-5 rounded-full bg-gradient-to-tr from-orange-500 via-amber-500 to-amber-400 text-white flex items-center justify-center shadow-[0_4px_16px_rgba(249,115,22,0.45)] border-[3.5px] border-[#14151a] touch-press hover:scale-105 active:scale-95 transition-transform"
-            aria-label="Find cargo match"
-            title="Capacity Matching Engine"
+            aria-label="Send parcel or produce"
+            title="CargoFlow Public Transit Booking"
           >
             <Plus className="w-5 h-5 stroke-[2.5]" />
           </a>
           <span className="text-[9px] font-semibold tracking-tight text-amber-400 mt-0.5 font-mono">
-            MATCH
+            CARGO
           </span>
         </div>
 

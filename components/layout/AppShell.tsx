@@ -6,6 +6,7 @@ import { TopBar } from "./TopBar";
 import { MobileHeader } from "./MobileHeader";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { BottomSheet } from "../shared/BottomSheet";
+import { SafeModeBanner } from "../resilience/SafeModeBanner";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
@@ -24,6 +25,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="hidden lg:block">
           <TopBar />
         </div>
+
+        {/* Resilience Safe Mode & Offline Alert Banner */}
+        <SafeModeBanner />
 
         {/* Scrollable Content Area */}
         <main className="flex-1 overflow-y-auto p-3.5 sm:p-4 lg:p-5 pb-24 lg:pb-5 relative bg-[#f9fafb]">

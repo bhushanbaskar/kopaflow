@@ -16,6 +16,10 @@ import {
   ArrowLeftRight,
   MessageSquarePlus,
   MessageSquareWarning,
+  Boxes,
+  Truck,
+  Layers,
+  ShieldCheck,
 } from "lucide-react";
 import { useAppStore } from "../../../lib/store/useAppStore";
 import { DataSourceBadge } from "../../../components/shared/DataSourceBadge";
@@ -25,6 +29,43 @@ export default function MoreHubPage() {
   const { currentRole, isDemoMode, toggleDemoMode, activeScenarioId, setActiveScenarioId } = useAppStore();
 
   const sections = [
+    {
+      title: "CargoFlow Public Transit Cargo",
+      items: [
+        {
+          label: "Send a Parcel / Goods",
+          description: "Reserve spare luggage space on scheduled transit for all 75 villages",
+          href: "/cargoflow/send",
+          icon: Package,
+          badge: "Book Now",
+          badgeVariant: "operational" as const,
+        },
+        {
+          label: "My Cargo Shipments",
+          description: "Active transit tracking, collection milestones & references",
+          href: "/cargoflow/shipments",
+          icon: Boxes,
+          badge: "Active",
+          badgeVariant: "informational" as const,
+        },
+        {
+          label: "Taluka Corridor Explorer",
+          description: "75 villages along corridors & verified bus stop checks",
+          href: "/cargoflow/routes",
+          icon: Layers,
+          badge: "75 Villages",
+          badgeVariant: "neutral" as const,
+        },
+        {
+          label: "Cargo Operations Console",
+          description: "Conductor luggage bay manifests & demand aggregation",
+          href: "/cargoflow/operations",
+          icon: Truck,
+          badge: "Conductor",
+          badgeVariant: "operational" as const,
+        },
+      ],
+    },
     {
       title: "2D Map & Logistics",
       items: [
@@ -107,6 +148,14 @@ export default function MoreHubPage() {
     {
       title: "System & Incidents",
       items: [
+        {
+          label: "Resilience Lab & Recovery",
+          description: "Offline persistence, event recovery stream & failure simulator",
+          href: "/admin/resilience",
+          icon: ShieldCheck,
+          badge: "Resilience Core",
+          badgeVariant: "operational" as const,
+        },
         {
           label: "Citizen Feedback & Reports",
           description: "Public mobility reporting & complaint tracker",

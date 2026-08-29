@@ -63,25 +63,25 @@ export default function DashboardPage() {
 
       {/* 2. Top Quick Action Banner Cards (Linear Clean Style) */}
       <div className="flex flex-col sm:grid sm:grid-cols-2 gap-2.5">
-        {/* Quick Card 1: Dispatch / Matching */}
+        {/* Quick Card 1: CargoFlow Public Booking */}
         <a
-          href="/matching"
+          href="/cargoflow"
           className="app-card-peach p-3.5 sm:p-4 rounded-lg shadow-xs flex items-center justify-between touch-press hover:scale-[1.01] transition-transform"
         >
           <div>
             <div className="text-[11px] font-bold text-amber-950 uppercase font-mono tracking-tight">
-              Optimize
+              Public Transit Cargo
             </div>
             <div className="text-xs sm:text-sm font-bold text-amber-950 mt-0.5">
-              Capacity Match
+              CargoFlow Bookings
             </div>
             <div className="text-[10px] text-amber-800 mt-1 flex items-center gap-1 font-medium">
-              <span>Allocate parcel</span>
+              <span>Send parcel or farm produce</span>
               <ArrowRight className="w-2.5 h-2.5" />
             </div>
           </div>
           <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-orange-500 text-white flex items-center justify-center text-xl shadow-xs shrink-0">
-            🚚
+            📦
           </div>
         </a>
 
@@ -185,12 +185,13 @@ export default function DashboardPage() {
           statusVariant="neutral"
         />
         <MetricCard
-          label="Agri Cargo"
-          value="127"
-          subtext="6 village hubs"
+          label="CargoFlow Luggage"
+          value="520 kg"
+          subtext="Available space"
           sourceType="LIVE"
           statusVariant="operational"
-          delta={{ value: "+35kg match", isPositiveGood: true }}
+          delta={{ value: "+18 trips saved", isPositiveGood: true }}
+          onClick={() => (window.location.href = "/cargoflow")}
         />
         <MetricCard
           label="Congestion"

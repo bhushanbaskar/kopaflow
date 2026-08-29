@@ -14,11 +14,39 @@ import {
 } from "./types";
 import { MOCK_FEEDBACK_REPORTS } from "../../mock/mockFeedbackData";
 import { MOCK_INCIDENTS } from "../../mock/kopargaonData";
+import { db } from "../resilience/db";
+import { syncEngine } from "../resilience/syncEngine";
 
 class MockFeedbackRepository implements IFeedbackRepository {
   private reports: FeedbackReport[] = [...MOCK_FEEDBACK_REPORTS];
 
+  constructor() {
+    this.hydrateFromIndexedDB();
+  }
+
+  private async hydrateFromIndexedDB() {
+    try {
+      const stored = await db.complaints.toArray();
+      if (stored && stored.length > 0) {
+        this.reports = stored;
+      } else {
+        await db.complaints.bulkPut(this.reports);
+      }
+    } catch (e) {
+      // Fallback
+    }
+  }
+
   async getAllReports(filters?: FeedbackFilterOptions): Promise<FeedbackReport[]> {
+    try {
+      const stored = await db.complaints.toArray();
+      if (stored && stored.length > 0) {
+        this.reports = stored;
+      }
+    } catch (e) {
+      // Ignore
+    }
+
     let result = [...this.reports];
 
     if (filters) {
@@ -55,12 +83,24 @@ class MockFeedbackRepository implements IFeedbackRepository {
   }
 
   async getReportById(id: string): Promise<FeedbackReport | null> {
+    try {
+      const fromDb = await db.complaints.get(id);
+      if (fromDb) return fromDb;
+    } catch (e) {
+      // Ignore
+    }
     const report = this.reports.find((r) => r.id === id);
     return report ? { ...report } : null;
   }
 
   async getReportByReferenceCode(referenceCode: string): Promise<FeedbackReport | null> {
     const normalized = referenceCode.trim().toUpperCase();
+    try {
+      const fromDb = await db.complaints.where("referenceCode").equals(normalized).first();
+      if (fromDb) return fromDb;
+    } catch (e) {
+      // Ignore
+    }
     const report = this.reports.find(
       (r) => r.referenceCode.toUpperCase() === normalized
     );
@@ -71,7 +111,6 @@ class MockFeedbackRepository implements IFeedbackRepository {
     if (userId) {
       return this.reports.filter((r) => r.userId === userId);
     }
-    // Return all non-empty reports sorted by date for local demo session
     return [...this.reports].sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
@@ -83,7 +122,6 @@ class MockFeedbackRepository implements IFeedbackRepository {
     const newId = `fb-${Date.now()}`;
     const nowIso = new Date().toISOString();
 
-    // Rule-based operational priority calculator
     let operationalPriority: OperationalPriority = "NORMAL";
     if (input.citizenSeverity === "URGENT") {
       if (input.category === "ROAD_SAFETY" || input.category === "ROAD_TRAFFIC") {
@@ -95,7 +133,6 @@ class MockFeedbackRepository implements IFeedbackRepository {
       operationalPriority = "LOW";
     }
 
-    // Check for recurring reports on the same entity / corridor
     const existingSimilar = this.reports.filter(
       (r) =>
         (input.relatedEntityId && r.relatedEntityId === input.relatedEntityId) ||
@@ -105,7 +142,6 @@ class MockFeedbackRepository implements IFeedbackRepository {
     const isRecurring = existingSimilar.length >= 2;
     const recurringCount = isRecurring ? existingSimilar.length + 1 : undefined;
 
-    // If recurring issue detected, bump priority
     if (isRecurring && operationalPriority === "NORMAL") {
       operationalPriority = "HIGH";
     }
@@ -182,6 +218,21 @@ class MockFeedbackRepository implements IFeedbackRepository {
     };
 
     this.reports.unshift(newReport);
+    try {
+      await db.complaints.put(newReport);
+    } catch (e) {
+      // Ignore
+    }
+
+    // Resilience Core journal
+    await syncEngine.submitOperation({
+      entity_type: "COMPLAINT",
+      entity_id: newId,
+      operation_type: "COMPLAINT_CREATED",
+      payload: newReport,
+      idempotency_key: `IDEMP-COMPLAINT-${newId}`,
+    });
+
     return { ...newReport };
   }
 
@@ -193,14 +244,12 @@ class MockFeedbackRepository implements IFeedbackRepository {
     authorRole: string = "Mobility Administrator",
     isPublic: boolean = true
   ): Promise<FeedbackReport> {
-    const reportIndex = this.reports.findIndex((r) => r.id === reportId);
-    if (reportIndex === -1) {
+    const report = await this.getReportById(reportId);
+    if (!report) {
       throw new Error(`Report not found: ${reportId}`);
     }
 
     const nowIso = new Date().toISOString();
-    const report = this.reports[reportIndex];
-
     report.status = status;
     report.updatedAt = nowIso;
     if (status === "RESOLVED") {
@@ -220,7 +269,23 @@ class MockFeedbackRepository implements IFeedbackRepository {
       });
     }
 
-    this.reports[reportIndex] = report;
+    const reportIndex = this.reports.findIndex((r) => r.id === reportId);
+    if (reportIndex !== -1) {
+      this.reports[reportIndex] = report;
+    }
+    try {
+      await db.complaints.put(report);
+    } catch (e) {
+      // Ignore
+    }
+
+    await syncEngine.submitOperation({
+      entity_type: "COMPLAINT",
+      entity_id: reportId,
+      operation_type: "COMPLAINT_STATUS_CHANGED",
+      payload: report,
+    });
+
     return { ...report };
   }
 
@@ -230,14 +295,12 @@ class MockFeedbackRepository implements IFeedbackRepository {
     assignedTo?: string,
     internalNote?: string
   ): Promise<FeedbackReport> {
-    const reportIndex = this.reports.findIndex((r) => r.id === reportId);
-    if (reportIndex === -1) {
+    const report = await this.getReportById(reportId);
+    if (!report) {
       throw new Error(`Report not found: ${reportId}`);
     }
 
     const nowIso = new Date().toISOString();
-    const report = this.reports[reportIndex];
-
     const teamLabels: Record<OperationalTeam, string> = {
       DEPOT_TEAM: "Central Bus Depot Team",
       TRAFFIC_TEAM: "Traffic & Highway Patrol",
@@ -261,7 +324,6 @@ class MockFeedbackRepository implements IFeedbackRepository {
     }
     report.updatedAt = nowIso;
 
-    // Public update for citizen
     report.updates.push({
       id: `upd-${Date.now()}-pub`,
       feedbackId: reportId,
@@ -273,7 +335,6 @@ class MockFeedbackRepository implements IFeedbackRepository {
       createdAt: nowIso,
     });
 
-    // Staff internal note if provided
     if (internalNote && internalNote.trim()) {
       report.updates.push({
         id: `upd-${Date.now()}-int`,
@@ -287,7 +348,23 @@ class MockFeedbackRepository implements IFeedbackRepository {
       });
     }
 
-    this.reports[reportIndex] = report;
+    const reportIndex = this.reports.findIndex((r) => r.id === reportId);
+    if (reportIndex !== -1) {
+      this.reports[reportIndex] = report;
+    }
+    try {
+      await db.complaints.put(report);
+    } catch (e) {
+      // Ignore
+    }
+
+    await syncEngine.submitOperation({
+      entity_type: "COMPLAINT",
+      entity_id: reportId,
+      operation_type: "COMPLAINT_ASSIGNED",
+      payload: report,
+    });
+
     return { ...report };
   }
 
@@ -297,27 +374,41 @@ class MockFeedbackRepository implements IFeedbackRepository {
     authorName: string = "Staff Operator",
     authorRole: string = "Mobility Operator"
   ): Promise<FeedbackReport> {
-    const reportIndex = this.reports.findIndex((r) => r.id === reportId);
-    if (reportIndex === -1) {
+    const report = await this.getReportById(reportId);
+    if (!report) {
       throw new Error(`Report not found: ${reportId}`);
     }
 
     const nowIso = new Date().toISOString();
-    const report = this.reports[reportIndex];
-
     report.updates.push({
       id: `upd-${Date.now()}`,
       feedbackId: reportId,
       status: report.status,
       message: note.trim(),
-      isPublic: false, // Strictly internal staff note
+      isPublic: false,
       authorName,
       authorRole,
       createdAt: nowIso,
     });
 
     report.updatedAt = nowIso;
-    this.reports[reportIndex] = report;
+    const reportIndex = this.reports.findIndex((r) => r.id === reportId);
+    if (reportIndex !== -1) {
+      this.reports[reportIndex] = report;
+    }
+    try {
+      await db.complaints.put(report);
+    } catch (e) {
+      // Ignore
+    }
+
+    await syncEngine.submitOperation({
+      entity_type: "COMPLAINT",
+      entity_id: reportId,
+      operation_type: "COMPLAINT_NOTE_ADDED",
+      payload: report,
+    });
+
     return { ...report };
   }
 
@@ -327,27 +418,41 @@ class MockFeedbackRepository implements IFeedbackRepository {
     authorName: string = "Mobility Operations Desk",
     authorRole: string = "Mobility Administrator"
   ): Promise<FeedbackReport> {
-    const reportIndex = this.reports.findIndex((r) => r.id === reportId);
-    if (reportIndex === -1) {
+    const report = await this.getReportById(reportId);
+    if (!report) {
       throw new Error(`Report not found: ${reportId}`);
     }
 
     const nowIso = new Date().toISOString();
-    const report = this.reports[reportIndex];
-
     report.updates.push({
       id: `upd-${Date.now()}`,
       feedbackId: reportId,
       status: report.status,
       message: response.trim(),
-      isPublic: true, // Visible to citizen
+      isPublic: true,
       authorName,
       authorRole,
       createdAt: nowIso,
     });
 
     report.updatedAt = nowIso;
-    this.reports[reportIndex] = report;
+    const reportIndex = this.reports.findIndex((r) => r.id === reportId);
+    if (reportIndex !== -1) {
+      this.reports[reportIndex] = report;
+    }
+    try {
+      await db.complaints.put(report);
+    } catch (e) {
+      // Ignore
+    }
+
+    await syncEngine.submitOperation({
+      entity_type: "COMPLAINT",
+      entity_id: reportId,
+      operation_type: "COMPLAINT_NOTE_ADDED",
+      payload: report,
+    });
+
     return { ...report };
   }
 
@@ -356,15 +461,13 @@ class MockFeedbackRepository implements IFeedbackRepository {
     incidentTitle?: string,
     severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" = "HIGH"
   ): Promise<{ report: FeedbackReport; incident: RoadIncident }> {
-    const reportIndex = this.reports.findIndex((r) => r.id === reportId);
-    if (reportIndex === -1) {
+    const report = await this.getReportById(reportId);
+    if (!report) {
       throw new Error(`Report not found: ${reportId}`);
     }
 
-    const report = this.reports[reportIndex];
     const incidentCode = `INC-0${MOCK_INCIDENTS.length + 1}`;
     const nowIso = new Date().toISOString();
-
     const title = incidentTitle || `Citizen Verified: ${report.issueTitle}`;
 
     const newIncident: RoadIncident = {
@@ -390,10 +493,8 @@ class MockFeedbackRepository implements IFeedbackRepository {
       delayPropagationMinutes: 20,
     };
 
-    // Push into active incidents list
     MOCK_INCIDENTS.unshift(newIncident);
 
-    // Update report
     report.promotedIncidentId = newIncident.code;
     report.operationalPriority = "CRITICAL";
     report.status = "IN_PROGRESS";
@@ -411,7 +512,24 @@ class MockFeedbackRepository implements IFeedbackRepository {
       createdAt: nowIso,
     });
 
-    this.reports[reportIndex] = report;
+    const reportIndex = this.reports.findIndex((r) => r.id === reportId);
+    if (reportIndex !== -1) {
+      this.reports[reportIndex] = report;
+    }
+    try {
+      await db.complaints.put(report);
+      await db.roadIncidents.put(newIncident);
+    } catch (e) {
+      // Ignore
+    }
+
+    await syncEngine.submitOperation({
+      entity_type: "ROAD_INCIDENT",
+      entity_id: newIncident.id,
+      operation_type: "ROAD_INCIDENT_CREATED",
+      payload: newIncident,
+    });
+
     return { report: { ...report }, incident: newIncident };
   }
 

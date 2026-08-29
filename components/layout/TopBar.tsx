@@ -7,11 +7,13 @@ import {
   Sparkles,
   UserCheck,
   Map,
+  ShieldCheck,
 } from "lucide-react";
 import { useAppStore } from "../../lib/store/useAppStore";
 import { UserRole } from "../../lib/domain/types";
 import { formatTimestamp } from "../../lib/utils/formatters";
 import { cn } from "../../lib/utils/cn";
+import { PublicStatusIndicator } from "../resilience/PublicStatusIndicator";
 
 export function TopBar() {
   const pathname = usePathname();
@@ -46,6 +48,12 @@ export function TopBar() {
   // Route title mapper
   const getSectionTitle = () => {
     if (pathname.includes("dashboard")) return "Command Center";
+    if (pathname.includes("admin/resilience") || pathname.includes("resilience")) return "Resilience Lab & Recovery Center";
+    if (pathname.includes("cargoflow/send")) return "Public Cargo Booking";
+    if (pathname.includes("cargoflow/shipments")) return "My Cargo Shipments";
+    if (pathname.includes("cargoflow/routes")) return "Taluka Corridor Explorer";
+    if (pathname.includes("cargoflow/operations")) return "Cargo Operations Console";
+    if (pathname.includes("cargoflow")) return "CargoFlow Public Transit Cargo";
     if (pathname.includes("map")) return "2D Map";
     if (pathname.includes("routes")) return "Live Routes & Corridors";
     if (pathname.includes("buses")) return "Bus Fleet Operations";
@@ -75,18 +83,27 @@ export function TopBar() {
         </span>
       </div>
 
-      {/* Center: Live Operational Status */}
+      {/* Center: Live Resilience Status & Clock */}
       <div className="hidden lg:flex items-center gap-2 text-xs">
-        <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-950/60 border border-emerald-500/30 rounded text-emerald-300 font-mono text-[10.5px] shadow-xs">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="font-bold text-emerald-300">LIVE</span>
-          <span className="text-emerald-700">|</span>
-          <span className="text-emerald-200">Updated {liveClockTime}</span>
+        <PublicStatusIndicator />
+        <div className="flex items-center gap-1.5 px-3 py-1 bg-slate-800/80 border border-white/10 rounded text-slate-300 font-mono text-[10.5px] shadow-xs">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          <span>{liveClockTime}</span>
         </div>
       </div>
 
       {/* Right: Actions & Role */}
       <div className="flex items-center gap-2">
+        {/* Resilience Lab Shortcut */}
+        <a
+          href="/admin/resilience"
+          className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono text-emerald-300 bg-emerald-950/60 hover:bg-emerald-900/60 border border-emerald-500/30 transition-all touch-press shadow-xs"
+          title="Open Resilience Lab"
+        >
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+          <span>Resilience</span>
+        </a>
+
         {/* Fullscreen Map Direct Shortcut */}
         <a
           href="/map"

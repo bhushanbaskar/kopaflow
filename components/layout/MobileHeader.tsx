@@ -2,10 +2,11 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
-import { Bell, Sparkles, UserCheck, Map } from "lucide-react";
+import { Bell, Sparkles, UserCheck, Map, ShieldCheck } from "lucide-react";
 import { useAppStore } from "../../lib/store/useAppStore";
 import { UserRole } from "../../lib/domain/types";
 import { cn } from "../../lib/utils/cn";
+import { PublicStatusIndicator } from "../resilience/PublicStatusIndicator";
 
 export function MobileHeader() {
   const pathname = usePathname();
@@ -24,6 +25,12 @@ export function MobileHeader() {
   // Route title mapper for mobile context
   const getContextTitle = () => {
     if (pathname === "/dashboard" || pathname === "/") return "Kopargaon Network";
+    if (pathname.startsWith("/admin/resilience") || pathname.startsWith("/resilience")) return "Resilience Core";
+    if (pathname.startsWith("/cargoflow/send")) return "Send Cargo";
+    if (pathname.startsWith("/cargoflow/shipments")) return "My Shipments";
+    if (pathname.startsWith("/cargoflow/routes")) return "Corridors";
+    if (pathname.startsWith("/cargoflow/operations")) return "Cargo Ops";
+    if (pathname.startsWith("/cargoflow")) return "CargoFlow";
     if (pathname.startsWith("/map")) return "2D Map";
     if (pathname.startsWith("/routes")) return "Transit Routes";
     if (pathname.startsWith("/buses")) return "Bus Fleet";
@@ -62,8 +69,10 @@ export function MobileHeader() {
         </a>
       </div>
 
-      {/* Right: Map link, Role, Demo Indicator & Alerts */}
+      {/* Center/Right: Status pill & controls */}
       <div className="flex items-center gap-1.5">
+        <PublicStatusIndicator />
+
         {/* Quick Map Link */}
         <a
           href="/map"

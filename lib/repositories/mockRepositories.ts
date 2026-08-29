@@ -39,6 +39,8 @@ import {
   MOCK_SCENARIOS,
 } from "../../mock/kopargaonData";
 import { runHeuristicOptimization } from "../optimization/engine";
+import { db } from "../resilience/db";
+import { syncEngine } from "../resilience/syncEngine";
 
 // In-Memory State Clones
 let busesState: BusVehicle[] = [...MOCK_BUS_FLEET];
@@ -49,19 +51,46 @@ let latestOptimizationRun: OptimizationRun | null = null;
 
 export class MockBusRepository implements IBusRepository {
   async getAllBuses(): Promise<BusVehicle[]> {
+    try {
+      const fromDb = await db.buses.toArray();
+      if (fromDb && fromDb.length > 0) {
+        busesState = fromDb;
+        return fromDb;
+      }
+    } catch (e) {
+      // Ignore
+    }
     return [...busesState];
   }
 
   async getBusById(id: string): Promise<BusVehicle | null> {
+    try {
+      const fromDb = await db.buses.get(id);
+      if (fromDb) return fromDb;
+    } catch (e) {
+      // Ignore
+    }
     const bus = busesState.find((b) => b.id === id);
     return bus ? { ...bus } : null;
   }
 
   async getAllRoutes(): Promise<BusRoute[]> {
+    try {
+      const fromDb = await db.routes.toArray();
+      if (fromDb && fromDb.length > 0) return fromDb;
+    } catch (e) {
+      // Ignore
+    }
     return [...MOCK_BUS_ROUTES];
   }
 
   async getRouteById(id: string): Promise<BusRoute | null> {
+    try {
+      const fromDb = await db.routes.get(id);
+      if (fromDb) return fromDb;
+    } catch (e) {
+      // Ignore
+    }
     const route = MOCK_BUS_ROUTES.find((r) => r.id === id);
     return route ? { ...route } : null;
   }
@@ -79,6 +108,15 @@ export class MockBusRepository implements IBusRepository {
       currentParcelWeightKg: newWeight,
       availableParcelCapacityKg: available,
     };
+
+    // Resilience Core journal
+    await syncEngine.submitOperation({
+      entity_type: "BUS",
+      entity_id: busId,
+      operation_type: "BUS_CAPACITY_UPDATED",
+      payload: { parcelWeightKg, newWeight, available },
+    });
+
     return { ...busesState[index] };
   }
 }
@@ -118,6 +156,13 @@ export class MockLogisticsRepository implements ILogisticsRepository {
     const busRepo = new MockBusRepository();
     await busRepo.updateBusCapacity(busId, shipment.totalWeightKg);
 
+    await syncEngine.submitOperation({
+      entity_type: "CARGO",
+      entity_id: shipmentId,
+      operation_type: "CARGO_RESERVATION_CONFIRMED",
+      payload: { shipmentId, busId, weightKg: shipment.totalWeightKg },
+    });
+
     return { ...shipmentsState[index] };
   }
 
@@ -129,6 +174,14 @@ export class MockLogisticsRepository implements ILogisticsRepository {
       code: newId,
     };
     shipmentsState = [newShipment, ...shipmentsState];
+
+    await syncEngine.submitOperation({
+      entity_type: "CARGO",
+      entity_id: newId,
+      operation_type: "CARGO_SHIPMENT_CREATED",
+      payload: newShipment,
+    });
+
     return newShipment;
   }
 }
@@ -144,10 +197,22 @@ export class MockTrafficRepository implements ITrafficRepository {
   }
 
   async getAllIncidents(): Promise<RoadIncident[]> {
+    try {
+      const fromDb = await db.roadIncidents.toArray();
+      if (fromDb && fromDb.length > 0) return fromDb;
+    } catch (e) {
+      // Ignore
+    }
     return [...MOCK_INCIDENTS];
   }
 
   async getIncidentById(id: string): Promise<RoadIncident | null> {
+    try {
+      const fromDb = await db.roadIncidents.get(id);
+      if (fromDb) return fromDb;
+    } catch (e) {
+      // Ignore
+    }
     const inc = MOCK_INCIDENTS.find((i) => i.id === id);
     return inc ? { ...inc } : null;
   }
@@ -155,10 +220,25 @@ export class MockTrafficRepository implements ITrafficRepository {
 
 export class MockEVRepository implements IEVRepository {
   async getAllChargers(): Promise<EVCharger[]> {
+    try {
+      const fromDb = await db.evChargers.toArray();
+      if (fromDb && fromDb.length > 0) {
+        chargersState = fromDb;
+        return fromDb;
+      }
+    } catch (e) {
+      // Ignore
+    }
     return [...chargersState];
   }
 
   async getChargerById(id: string): Promise<EVCharger | null> {
+    try {
+      const fromDb = await db.evChargers.get(id);
+      if (fromDb) return fromDb;
+    } catch (e) {
+      // Ignore
+    }
     const c = chargersState.find((ch) => ch.id === id);
     return c ? { ...c } : null;
   }
@@ -171,6 +251,14 @@ export class MockEVRepository implements IEVRepository {
       ...chargersState[index],
       queuedBuses: [...chargersState[index].queuedBuses, busId],
     };
+
+    await syncEngine.submitOperation({
+      entity_type: "EV_CHARGER",
+      entity_id: chargerId,
+      operation_type: "EV_BUS_QUEUED",
+      payload: { chargerId, busId },
+    });
+
     return { ...chargersState[index] };
   }
 }
@@ -186,6 +274,15 @@ export class MockDepotRepository implements IDepotRepository {
   }
 
   async getDispatchSchedule(): Promise<DepotDispatchItem[]> {
+    try {
+      const fromDb = await db.depotDispatches.toArray();
+      if (fromDb && fromDb.length > 0) {
+        dispatchState = fromDb;
+        return fromDb;
+      }
+    } catch (e) {
+      // Ignore
+    }
     return [...dispatchState];
   }
 
@@ -200,6 +297,14 @@ export class MockDepotRepository implements IDepotRepository {
       ...dispatchState[index],
       status,
     };
+
+    await syncEngine.submitOperation({
+      entity_type: "DEPOT",
+      entity_id: dispatchId,
+      operation_type: "DEPOT_DISPATCH_UPDATED",
+      payload: { dispatchId, status },
+    });
+
     return { ...dispatchState[index] };
   }
 }
@@ -230,6 +335,14 @@ export class MockOptimizationRepository implements IOptimizationRepository {
     if (recIndex === -1) throw new Error("Recommendation not found");
 
     latestOptimizationRun.recommendations[recIndex].status = "APPLIED";
+
+    await syncEngine.submitOperation({
+      entity_type: "OPTIMIZATION",
+      entity_id: recommendationId,
+      operation_type: "OPTIMIZATION_RECOMMENDATION_APPLIED",
+      payload: { recommendationId },
+    });
+
     return { ...latestOptimizationRun.recommendations[recIndex] };
   }
 
