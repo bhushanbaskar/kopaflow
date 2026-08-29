@@ -38,6 +38,7 @@ import {
   MOCK_CONSTRAINTS,
   MOCK_SCENARIOS,
 } from "../../mock/kopargaonData";
+import { runHeuristicOptimization } from "../optimization/engine";
 
 // In-Memory State Clones
 let busesState: BusVehicle[] = [...MOCK_BUS_FLEET];
@@ -233,93 +234,18 @@ export class MockOptimizationRepository implements IOptimizationRepository {
   }
 
   async runOptimization(objectives: OptimizationObjectives): Promise<OptimizationRun> {
-    const recs: OptimizationRecommendation[] = [
-      {
-        id: "REC-01",
-        type: "CAPACITY_MATCH",
-        title: "Match 120 kg Onion (Savalyavihar) to Demo Bus 108",
-        targetEntityId: "BUS-108",
-        targetEntityName: "Demo Bus 108 (Route 108)",
-        actionText: "Confirm luggage bay parcel allocation",
-        confidenceScore: 0.94,
-        explainableReasons: [
-          "BUS-108 has 180 kg available luggage cargo space",
-          "Route already scheduled to pass Savalyavihar pickup hub at 07:42",
-          "Projected APMC arrival at 08:27 (33 min before 09:00 market auction deadline)",
-          "Replaces 1 dedicated agricultural mini-truck on KPG-14 corridor",
-          "Passenger seating capacity strictly preserved (68% passenger occupancy)",
-        ],
-        impactMetrics: {
-          capacityGainKg: 120,
-          costSavedInr: 180,
-          emissionsReductionKg: 8.5,
-          congestionDelta: -0.04,
-        },
-        status: "RECOMMENDED",
-      },
-      {
-        id: "REC-02",
-        type: "CAPACITY_MATCH",
-        title: "Match 35 kg Guava (Savalyavihar) to Demo Bus 108",
-        targetEntityId: "BUS-108",
-        targetEntityName: "Demo Bus 108 (Route 108)",
-        actionText: "Consolidate into existing Savalyavihar bay load",
-        confidenceScore: 0.96,
-        explainableReasons: [
-          "Leaves 25 kg reserve luggage buffer on BUS-108 (155 kg total load / 300 kg cap)",
-          "Zero marginal detour time added to commuter schedule",
-          "Ensures same-morning freshness auction at APMC Gate 1",
-        ],
-        impactMetrics: {
-          capacityGainKg: 35,
-          costSavedInr: 60,
-          emissionsReductionKg: 2.8,
-        },
-        status: "RECOMMENDED",
-      },
-      {
-        id: "REC-03",
-        type: "ROUTE_DETOUR",
-        title: "Divert Freight from KPG-14 Bottleneck to KPG-05 Link",
-        targetEntityId: "RS-02",
-        targetEntityName: "Corridor KPG-14",
-        actionText: "Route Pohegaon freight via Eastern Bypass",
-        confidenceScore: 0.89,
-        explainableReasons: [
-          "KPG-14 current congestion index is 0.78 with active tractor breakdown",
-          "KPG-05 offers 42 km/h free-flow travel speed with 0.28 congestion index",
-          "Prevents an estimated 14 minutes in delay propagation",
-        ],
-        impactMetrics: {
-          timeSavedMinutes: 14,
-          congestionDelta: -0.12,
-        },
-        status: "RECOMMENDED",
-      },
-      {
-        id: "REC-04",
-        type: "EV_DISPATCH",
-        title: "Dispatch Returning Electric Buses to Depot Fast Station B",
-        targetEntityId: "EV-02",
-        targetEntityName: "Depot Fast Station B (150 kW)",
-        actionText: "Balance depot charging bay queue",
-        confidenceScore: 0.92,
-        explainableReasons: [
-          "Station A currently has 18 min average queue with 3 active sessions",
-          "Station B has 3 available connectors with 4 min wait time",
-          "Cuts EV fleet turnaround time by 14 minutes",
-        ],
-        impactMetrics: {
-          timeSavedMinutes: 14,
-        },
-        status: "RECOMMENDED",
-      },
-    ];
+    const result = await runHeuristicOptimization({
+      shipments: shipmentsState,
+      buses: busesState,
+      routes: MOCK_BUS_ROUTES,
+      roadSegments: MOCK_ROAD_SEGMENTS,
+      objectives,
+    });
 
     latestOptimizationRun = {
       id: `OPT-${Date.now()}`,
       executedAt: new Date().toLocaleTimeString("en-GB"),
-      durationMs: 420,
+      durationMs: 380,
       currentStage: 7,
       totalStages: 7,
       stageName: "Recommendations Generated",
@@ -333,8 +259,8 @@ export class MockOptimizationRepository implements IOptimizationRepository {
         "7. Explainable Optimization Recommendations Formulated",
       ],
       objectives,
-      recommendations: recs,
-      constraints: [...MOCK_CONSTRAINTS],
+      recommendations: result.recommendations,
+      constraints: result.constraints.length > 0 ? result.constraints : [...MOCK_CONSTRAINTS],
       status: "COMPLETED",
     };
 

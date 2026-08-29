@@ -34,6 +34,7 @@ export interface RoadSegment {
   startPoint: GeoLocation;
   endPoint: GeoLocation;
   coordinates: [number, number][]; // polyline coordinates
+  geometry?: { type: "LineString"; coordinates: [number, number][] }; // GeoJSON LineString
   lengthKm: number;
   baselineSpeedKmh: number;
   currentSpeedKmh: number;
@@ -71,6 +72,9 @@ export interface BusRoute {
   color: string;
   activeBusesCount: number;
   status: "ON_TIME" | "DELAYED" | "DIVERTED" | "HALTED";
+  geometry?: { type: "LineString"; coordinates: [number, number][] }; // GeoJSON LineString
+  roadDistanceKm?: number;
+  roadDurationMin?: number;
 }
 
 export interface BusVehicle {
@@ -283,6 +287,10 @@ export interface OptimizationRecommendation {
     emissionsReductionKg?: number;
   };
   status: "RECOMMENDED" | "APPLIED" | "DISMISSED";
+  selectedRouteGeometry?: { type: "LineString"; coordinates: [number, number][] };
+  routeLatLngs?: [number, number][];
+  roadDistanceKm?: number;
+  estimatedTravelTimeMin?: number;
 }
 
 export interface OptimizationRun {

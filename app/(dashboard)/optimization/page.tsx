@@ -322,9 +322,11 @@ export default function OptimizationEnginePage() {
                 )}
               </div>
 
-              {/* Action Button */}
-              <div className="flex items-center justify-between pt-1 border-t border-gray-100">
-                <div className="text-[11px] font-mono text-gray-500">
+              {/* Action Button & Road Routing Metric */}
+              <div className="flex items-center justify-between pt-1 border-t border-gray-100 flex-wrap gap-2">
+                <div className="text-[11px] font-mono text-gray-500 space-x-3">
+                  {rec.roadDistanceKm && <span>🛣️ Road: <strong>{rec.roadDistanceKm} km</strong></span>}
+                  {rec.estimatedTravelTimeMin && <span>⏱️ <strong>{rec.estimatedTravelTimeMin}m</strong></span>}
                   {rec.impactMetrics.costSavedInr && <span>Savings: <strong>{formatInr(rec.impactMetrics.costSavedInr)}</strong></span>}
                   {rec.impactMetrics.timeSavedMinutes && <span>Time: <strong>{rec.impactMetrics.timeSavedMinutes}m faster</strong></span>}
                 </div>

@@ -88,14 +88,15 @@ export default function LandingLoginPage() {
           </div>
 
           {/* Quick Primary Demo Entry */}
-          <button
+          <Link
+            href="/dashboard"
             onClick={() => handleEnterDemo("Mobility Administrator")}
-            className="w-full py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-bold font-mono tracking-wider flex items-center justify-center gap-2 transition-colors shadow-sm"
+            className="w-full py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-bold font-mono tracking-wider flex items-center justify-center gap-2 transition-colors shadow-sm cursor-pointer"
           >
             <Sparkles className="w-4 h-4 text-amber-400" />
             <span>ENTER DEMO MODE (COMMAND CENTER)</span>
             <ArrowRight className="w-4 h-4 ml-1" />
-          </button>
+          </Link>
 
           <div className="relative flex items-center justify-center">
             <div className="border-t border-slate-200 w-full" />
@@ -106,38 +107,41 @@ export default function LandingLoginPage() {
 
           {/* Role Direct Shortcuts */}
           <div className="space-y-2 text-xs">
-            <button
+            <Link
+              href="/dashboard"
               onClick={() => handleEnterDemo("Mobility Administrator")}
-              className="w-full text-left p-2.5 rounded border border-slate-200 hover:bg-slate-50 flex items-center justify-between transition-colors"
+              className="w-full text-left p-2.5 rounded border border-slate-200 hover:bg-slate-50 flex items-center justify-between transition-colors block cursor-pointer"
             >
               <div>
                 <div className="font-semibold text-slate-900">Mobility Administrator</div>
                 <div className="text-[10px] text-slate-500">Command center, routes & network simulation</div>
               </div>
               <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
-            </button>
+            </Link>
 
-            <button
+            <Link
+              href="/matching"
               onClick={() => handleEnterDemo("Logistics/APMC Coordinator")}
-              className="w-full text-left p-2.5 rounded border border-slate-200 hover:bg-slate-50 flex items-center justify-between transition-colors"
+              className="w-full text-left p-2.5 rounded border border-slate-200 hover:bg-slate-50 flex items-center justify-between transition-colors block cursor-pointer"
             >
               <div>
                 <div className="font-semibold text-slate-900">Logistics & APMC Coordinator</div>
                 <div className="text-[10px] text-slate-500">Capacity matching, village crop shipments & market gate</div>
               </div>
               <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
-            </button>
+            </Link>
 
-            <button
+            <Link
+              href="/depot"
               onClick={() => handleEnterDemo("Bus Depot Manager")}
-              className="w-full text-left p-2.5 rounded border border-slate-200 hover:bg-slate-50 flex items-center justify-between transition-colors"
+              className="w-full text-left p-2.5 rounded border border-slate-200 hover:bg-slate-50 flex items-center justify-between transition-colors block cursor-pointer"
             >
               <div>
                 <div className="font-semibold text-slate-900">Bus Depot Manager</div>
                 <div className="text-[10px] text-slate-500">Fleet dispatch board, bays, EV charging & driver rosters</div>
               </div>
               <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
-            </button>
+            </Link>
           </div>
 
           <div className="pt-2 text-[11px] text-slate-400 text-center font-mono">

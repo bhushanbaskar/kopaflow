@@ -8,8 +8,8 @@ import {
 } from "../mock/kopargaonData";
 
 describe("Heuristic Optimization Engine", () => {
-  it("should match pending agricultural shipments to buses with available luggage capacity", () => {
-    const result = runHeuristicOptimization({
+  it("should match pending agricultural shipments to buses with available luggage capacity", async () => {
+    const result = await runHeuristicOptimization({
       shipments: MOCK_AGRI_SHIPMENTS,
       buses: MOCK_BUS_FLEET,
       routes: MOCK_BUS_ROUTES,
@@ -29,8 +29,8 @@ describe("Heuristic Optimization Engine", () => {
     expect(result.summary.truckTripsSaved).toBeGreaterThan(0);
   });
 
-  it("should enforce hard constraints including luggage weight limits and passenger safety buffers", () => {
-    const result = runHeuristicOptimization({
+  it("should enforce hard constraints including luggage weight limits and passenger safety buffers", async () => {
+    const result = await runHeuristicOptimization({
       shipments: MOCK_AGRI_SHIPMENTS,
       buses: MOCK_BUS_FLEET,
       routes: MOCK_BUS_ROUTES,
@@ -58,8 +58,8 @@ describe("Heuristic Optimization Engine", () => {
     expect(passengerConstraint?.status).toBe("SATISFIED");
   });
 
-  it("should generate explainable reasoning for each recommendation", () => {
-    const result = runHeuristicOptimization({
+  it("should generate explainable reasoning for each recommendation", async () => {
+    const result = await runHeuristicOptimization({
       shipments: MOCK_AGRI_SHIPMENTS,
       buses: MOCK_BUS_FLEET,
       routes: MOCK_BUS_ROUTES,

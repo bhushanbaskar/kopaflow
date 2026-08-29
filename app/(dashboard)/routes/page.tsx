@@ -65,7 +65,8 @@ export default function LiveRoutesPage() {
 
               <div className="text-right font-mono text-xs">
                 <div className="font-bold text-gray-950">{formatDistanceKm(route.totalDistanceKm)}</div>
-                <div className="text-[10px] text-gray-400">{formatDurationMinutes(route.plannedDurationMin)}</div>
+                <div className="text-[10px] text-emerald-700 font-semibold">{formatDurationMinutes(route.plannedDurationMin)} (Road ETA)</div>
+                <div className="text-[9px] text-gray-400">Mapbox Routing: Active</div>
               </div>
             </div>
 
