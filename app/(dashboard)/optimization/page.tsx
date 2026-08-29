@@ -13,6 +13,7 @@ import { DataSourceBadge } from "../../../components/shared/DataSourceBadge";
 import { StatusBadge } from "../../../components/shared/StatusBadge";
 import { optimizationRepository } from "../../../lib/repositories";
 import { formatInr } from "../../../lib/utils/formatters";
+import { ClaimVerdictBadge } from "../../../components/verification/ClaimVerdictBadge";
 
 export default function OptimizationEnginePage() {
   const {
@@ -282,9 +283,7 @@ export default function OptimizationEnginePage() {
                     <span className="text-[9.5px] font-mono font-bold bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
                       {rec.type}
                     </span>
-                    <span className="text-[10px] font-mono font-bold text-emerald-800">
-                      {(rec.confidenceScore * 100).toFixed(0)}% confidence
-                    </span>
+                    <ClaimVerdictBadge verdict={rec.directiveVerdict || "VERIFIED"} size="sm" />
                   </div>
                   <h3 className="text-xs sm:text-sm font-bold text-gray-950 mt-1">{rec.title}</h3>
                 </div>

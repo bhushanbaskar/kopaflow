@@ -27,4 +27,5 @@ export const depotRepository: IDepotRepository = new MockDepotRepository();
 export const simulationRepository: ISimulationRepository = new MockSimulationRepository();
 export const optimizationRepository: IOptimizationRepository = new MockOptimizationRepository();
 export { feedbackRepository };
+export { claimRepository } from "./claimRepository";
 export type { IFeedbackRepository };

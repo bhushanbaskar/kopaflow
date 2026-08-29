@@ -4,6 +4,7 @@ import React from "react";
 import { ShieldAlert, AlertTriangle, CheckCircle2, MapPin } from "lucide-react";
 import { DataSourceBadge } from "../../../components/shared/DataSourceBadge";
 import { StatusBadge } from "../../../components/shared/StatusBadge";
+import { ClaimVerdictBadge } from "../../../components/verification/ClaimVerdictBadge";
 import { MOCK_ROAD_SEGMENTS, MOCK_INCIDENTS } from "../../../mock/kopargaonData";
 
 export default function SafetyPage() {
@@ -77,9 +78,8 @@ export default function SafetyPage() {
                 </div>
               </div>
 
-              <StatusBadge
-                label={`${seg.riskScore} / 100 Risk`}
-                variant={seg.riskScore && seg.riskScore > 60 ? "critical" : "warning"}
+              <ClaimVerdictBadge
+                verdict={seg.riskScore && seg.riskScore > 60 ? "VERIFIED" : "SUPPORTED"}
                 size="sm"
               />
             </div>

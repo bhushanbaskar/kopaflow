@@ -1,4 +1,6 @@
 // Domain Data Types for KOPAR-MOVE (Kopargaon Mobility Operating System)
+export * from "./verdict";
+import { ClaimVerdict } from "./verdict";
 
 export type UserRole =
   | "Mobility Administrator"
@@ -278,6 +280,8 @@ export interface OptimizationRecommendation {
   targetEntityName: string;
   actionText: string;
   confidenceScore: number;
+  directiveVerdict?: ClaimVerdict;
+  verificationExplanation?: string;
   explainableReasons: string[];
   impactMetrics: {
     capacityGainKg?: number;

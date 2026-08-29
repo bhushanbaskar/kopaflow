@@ -26,6 +26,7 @@ import {
   MapPin,
   CheckCircle2,
   MessageSquareWarning,
+  Scale,
 } from "lucide-react";
 import { cn } from "../../lib/utils/cn";
 
@@ -69,6 +70,7 @@ export function Sidebar() {
     {
       group: "SYSTEM",
       items: [
+        { label: "Claim Verification", href: "/claims", icon: Scale },
         { label: "Resilience Lab", href: "/admin/resilience", icon: ShieldCheck },
         { label: "Feedback & Reports", href: "/feedback-admin", icon: MessageSquareWarning },
         { label: "Incidents", href: "/incidents", icon: AlertTriangle },

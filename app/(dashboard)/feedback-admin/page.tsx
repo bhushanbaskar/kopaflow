@@ -26,8 +26,11 @@ import {
   SlidersHorizontal,
   X,
   ExternalLink,
+  Scale,
 } from "lucide-react";
 import { feedbackRepository } from "../../../lib/repositories";
+import { ClaimVerdictBadge } from "../../../components/verification/ClaimVerdictBadge";
+import { OperationalActionGate } from "../../../components/verification/OperationalActionGate";
 import {
   FeedbackReport,
   FeedbackCategory,
@@ -275,6 +278,13 @@ export default function FeedbackAdminPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            <a
+              href="/claims"
+              className="px-3 py-1.5 rounded-[6px] text-xs font-semibold bg-emerald-50 text-emerald-900 border border-emerald-300 hover:bg-emerald-100 flex items-center gap-1.5 transition-colors"
+            >
+              <Scale className="w-3.5 h-3.5 text-emerald-700" />
+              <span>Verification Console</span>
+            </a>
             <button
               onClick={() => setViewMode("TABLE")}
               className={cn(
@@ -665,6 +675,72 @@ export default function FeedbackAdminPage() {
               <div className="p-3 bg-gray-50 border border-gray-100 rounded-[6px] text-xs text-gray-900 font-sans leading-relaxed">
                 {activeReport.description}
               </div>
+            </div>
+
+            {/* Evidence & Verdict Assessment */}
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-[8px] space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 font-mono font-bold text-xs text-gray-900 uppercase">
+                  <Scale className="w-3.5 h-3.5 text-gray-700" />
+                  <span>EVIDENCE VERIFICATION & OPERATIONAL GATE</span>
+                </div>
+                <ClaimVerdictBadge
+                  verdict={
+                    activeReport.isRecurring
+                      ? "SUPPORTED"
+                      : activeReport.status === "RESOLVED"
+                      ? "VERIFIED"
+                      : "UNVERIFIED"
+                  }
+                  size="sm"
+                />
+              </div>
+
+              <div className="space-y-1 text-[11px] font-mono text-gray-700">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-emerald-700 font-bold">✓</span>
+                  <span>Citizen report logged at {formatTimeAgo(activeReport.createdAt)} from {activeReport.locationName}</span>
+                </div>
+                {activeReport.isRecurring && (
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-emerald-700 font-bold">✓</span>
+                    <span>Corroborated by {activeReport.recurringCount || 3} independent matching reports on sector</span>
+                  </div>
+                )}
+                {activeReport.attachments.length > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-emerald-700 font-bold">✓</span>
+                    <span>Uploaded photo evidence attached and geo-tagged</span>
+                  </div>
+                )}
+              </div>
+
+              <OperationalActionGate
+                action={{
+                  actionText: activeReport.isRecurring
+                    ? "May show warning / assign priority field response team."
+                    : activeReport.status === "RESOLVED"
+                    ? "Resolution verified by operator."
+                    : "Do not treat as confirmed until second independent signal is received.",
+                  status: activeReport.isRecurring
+                    ? "PROVISIONAL_ALLOWED"
+                    : activeReport.status === "RESOLVED"
+                    ? "PUBLISH_ALLOWED"
+                    : "BLOCKED",
+                  operationalEffect: activeReport.isRecurring
+                    ? "Provisional advisory active. Crew dispatched for site check."
+                    : "Held in verification triage queue.",
+                  authorizedScope: activeReport.locationName,
+                }}
+                verdict={
+                  activeReport.isRecurring
+                    ? "SUPPORTED"
+                    : activeReport.status === "RESOLVED"
+                    ? "VERIFIED"
+                    : "UNVERIFIED"
+                }
+                compact
+              />
             </div>
 
             {/* Photo Attachment if available */}

@@ -196,7 +196,7 @@ describe("KOPA-MOVE Resilience Core Test Suite", () => {
 
   it("8. should execute deterministic event replay onto domain state", async () => {
     const testState = {
-      buses: new Map([["BUS-104", { id: "BUS-104", currentParcelWeightKg: 10, maxParcelCapacityKg: 100 }]]),
+      buses: new Map([["BUS-104", { id: "BUS-104", currentParcelWeightKg: 10, maxParcelCapacityKg: 100, availableParcelCapacityKg: 90 }]]),
       shipments: new Map(),
       complaints: new Map(),
     };
@@ -217,8 +217,9 @@ describe("KOPA-MOVE Resilience Core Test Suite", () => {
 
     await replayEventOnState(event, testState);
     const updatedBus = testState.buses.get("BUS-104");
-    expect(updatedBus.currentParcelWeightKg).toBe(50);
-    expect(updatedBus.availableParcelCapacityKg).toBe(50);
+    expect(updatedBus).toBeDefined();
+    expect(updatedBus?.currentParcelWeightKg).toBe(50);
+    expect(updatedBus?.availableParcelCapacityKg).toBe(50);
   });
 
   it("9. should verify idempotent replay produces identical output state", async () => {

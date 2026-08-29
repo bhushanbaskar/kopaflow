@@ -20,6 +20,7 @@ import {
   Truck,
   Layers,
   ShieldCheck,
+  Scale,
 } from "lucide-react";
 import { useAppStore } from "../../../lib/store/useAppStore";
 import { DataSourceBadge } from "../../../components/shared/DataSourceBadge";
@@ -148,6 +149,14 @@ export default function MoreHubPage() {
     {
       title: "System & Incidents",
       items: [
+        {
+          label: "Claim Verification & Verdicts",
+          description: "Evidence-based operational action gates for claims & disruptions",
+          href: "/claims",
+          icon: Scale,
+          badge: "Verdicts",
+          badgeVariant: "operational" as const,
+        },
         {
           label: "Resilience Lab & Recovery",
           description: "Offline persistence, event recovery stream & failure simulator",
