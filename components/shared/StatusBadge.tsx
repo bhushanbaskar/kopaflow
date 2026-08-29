@@ -22,11 +22,11 @@ export function StatusBadge({
   className,
 }: StatusBadgeProps) {
   const variantStyles: Record<StatusVariant, string> = {
-    operational: "bg-emerald-50 text-emerald-800 border-emerald-300",
-    warning: "bg-amber-50 text-amber-800 border-amber-300",
-    critical: "bg-red-50 text-red-800 border-red-300",
-    informational: "bg-blue-50 text-blue-800 border-blue-300",
-    neutral: "bg-slate-100 text-slate-700 border-slate-300",
+    operational: "bg-emerald-50 text-emerald-800 border-emerald-200/80 shadow-xs",
+    warning: "bg-amber-50 text-amber-900 border-amber-200/80 shadow-xs",
+    critical: "bg-red-50 text-red-900 border-red-200/80 shadow-xs",
+    informational: "bg-blue-50 text-blue-900 border-blue-200/80 shadow-xs",
+    neutral: "bg-gray-100 text-gray-700 border-black/[0.05]",
   };
 
   const dotColors: Record<StatusVariant, string> = {
@@ -34,14 +34,14 @@ export function StatusBadge({
     warning: "bg-amber-600",
     critical: "bg-red-600",
     informational: "bg-blue-600",
-    neutral: "bg-slate-500",
+    neutral: "bg-gray-500",
   };
 
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 font-medium rounded border",
-        size === "sm" ? "px-1.5 py-0.5 text-[11px]" : "px-2 py-0.5 text-xs",
+        "inline-flex items-center gap-1 font-semibold rounded-full border font-mono select-none",
+        size === "sm" ? "px-2 py-0.5 text-[9.5px]" : "px-2.5 py-0.5 text-[10.5px]",
         variantStyles[variant],
         className
       )}

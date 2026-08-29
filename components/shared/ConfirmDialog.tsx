@@ -1,5 +1,7 @@
-import React from "react";
-import { AlertTriangle, Check } from "lucide-react";
+"use client";
+
+import React, { useEffect } from "react";
+import { AlertTriangle, CheckCircle2, X } from "lucide-react";
 import { cn } from "../../lib/utils/cn";
 
 interface ConfirmDialogProps {
@@ -10,8 +12,8 @@ interface ConfirmDialogProps {
   description: string;
   confirmText?: string;
   cancelText?: string;
-  variant?: "operational" | "critical" | "warning";
-  details?: { label: string; value: string }[];
+  variant?: "danger" | "warning" | "operational";
+  details?: Array<{ label: string; value: string }>;
 }
 
 export function ConfirmDialog({
@@ -25,57 +27,92 @@ export function ConfirmDialog({
   variant = "operational",
   details,
 }: ConfirmDialogProps) {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    if (isOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
-  const btnVariants = {
-    operational: "bg-emerald-700 hover:bg-emerald-800 text-white",
-    critical: "bg-red-700 hover:bg-red-800 text-white",
-    warning: "bg-amber-700 hover:bg-amber-800 text-white",
+  const handleConfirm = () => {
+    onConfirm();
+    onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-[1px]">
-      <div className="bg-white rounded border border-slate-300 shadow-xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-        <div className="p-4 border-b border-slate-200 flex items-start gap-3">
-          <div className="p-2 rounded bg-slate-100 border border-slate-200 shrink-0 text-slate-700">
-            <AlertTriangle className="w-5 h-5" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/40 backdrop-blur-[2px] transition-opacity"
+        onClick={onClose}
+      />
+
+      {/* Modal Dialog */}
+      <div className="relative bg-white rounded-[6px] border border-black/[0.08] shadow-xl max-w-md w-full p-4.5 space-y-3.5 z-10 animate-in fade-in zoom-in-95 duration-100">
+        {/* Header */}
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-2">
+            {variant === "danger" ? (
+              <div className="p-1 rounded-[3px] bg-red-100 text-red-700">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
+            ) : (
+              <div className="p-1 rounded-[3px] bg-emerald-100 text-emerald-800">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
+            )}
+            <h3 className="text-sm font-bold text-gray-950 font-mono tracking-tight">
+              {title}
+            </h3>
           </div>
-          <div>
-            <h3 className="text-sm font-bold text-slate-900">{title}</h3>
-            <p className="text-xs text-slate-600 mt-1 leading-relaxed">{description}</p>
-          </div>
+          <button
+            onClick={onClose}
+            className="p-1 rounded-[3px] text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
 
+        {/* Description */}
+        <p className="text-xs text-gray-600 leading-relaxed">{description}</p>
+
+        {/* Operational Key Details */}
         {details && details.length > 0 && (
-          <div className="p-4 bg-slate-50 border-b border-slate-200 text-xs space-y-1.5 font-mono">
-            {details.map((item, idx) => (
-              <div key={idx} className="flex justify-between items-center text-slate-700">
-                <span className="text-slate-500 font-sans">{item.label}:</span>
-                <span className="font-semibold text-slate-900">{item.value}</span>
+          <div className="bg-gray-50/80 border border-black/[0.05] rounded-[4px] p-2.5 space-y-1.5 text-xs font-mono">
+            {details.map((d, idx) => (
+              <div key={idx} className="flex justify-between items-center text-[11px]">
+                <span className="text-gray-500">{d.label}:</span>
+                <span className="font-semibold text-gray-900">{d.value}</span>
               </div>
             ))}
           </div>
         )}
 
-        <div className="p-3 bg-slate-100 flex items-center justify-end gap-2">
+        {/* Action Buttons */}
+        <div className="flex items-center justify-end gap-2 pt-1 border-t border-black/[0.04]">
           <button
             onClick={onClose}
-            className="px-3 py-1.5 rounded text-xs font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors"
+            className="px-3 py-1.5 rounded-[4px] text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors touch-press"
           >
             {cancelText}
           </button>
           <button
-            onClick={() => {
-              onConfirm();
-              onClose();
-            }}
+            onClick={handleConfirm}
             className={cn(
-              "px-3.5 py-1.5 rounded text-xs font-medium inline-flex items-center gap-1.5 transition-colors shadow-sm",
-              btnVariants[variant]
+              "px-3.5 py-1.5 rounded-[4px] text-xs font-bold font-mono text-white transition-colors touch-press shadow-sm",
+              variant === "danger"
+                ? "bg-red-700 hover:bg-red-800"
+                : variant === "warning"
+                ? "bg-amber-600 hover:bg-amber-700"
+                : "bg-gray-950 hover:bg-gray-900"
             )}
           >
-            <Check className="w-3.5 h-3.5" />
-            <span>{confirmText}</span>
+            {confirmText}
           </button>
         </div>
       </div>

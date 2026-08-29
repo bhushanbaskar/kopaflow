@@ -5,17 +5,15 @@ import {
   Activity,
   ShieldAlert,
   Zap,
-  Store,
   Building2,
   Users,
-  BarChart3,
   AlertTriangle,
   Settings,
   ChevronRight,
   Sparkles,
-  MapPin,
-  CheckCircle2,
-  Info,
+  Map,
+  Package,
+  ArrowLeftRight,
 } from "lucide-react";
 import { useAppStore } from "../../../lib/store/useAppStore";
 import { DataSourceBadge } from "../../../components/shared/DataSourceBadge";
@@ -25,6 +23,35 @@ export default function MoreHubPage() {
   const { currentRole, isDemoMode, toggleDemoMode, activeScenarioId, setActiveScenarioId } = useAppStore();
 
   const sections = [
+    {
+      title: "Spatial & Logistics",
+      items: [
+        {
+          label: "Spatial GIS Network Map",
+          description: "Full-screen GIS with road nodes & fleet tracking",
+          href: "/map",
+          icon: Map,
+          badge: "Full View",
+          badgeVariant: "informational" as const,
+        },
+        {
+          label: "Agri Logistics Manifest",
+          description: "Farmer produce requests across 6 village clusters",
+          href: "/logistics",
+          icon: Package,
+          badge: "Active",
+          badgeVariant: "operational" as const,
+        },
+        {
+          label: "Capacity Matching Engine",
+          description: "Match farmer produce onto passenger bus luggage bays",
+          href: "/matching",
+          icon: ArrowLeftRight,
+          badge: "Ready",
+          badgeVariant: "operational" as const,
+        },
+      ],
+    },
     {
       title: "Infrastructure",
       items: [
@@ -52,14 +79,6 @@ export default function MoreHubPage() {
           badge: "4 Plugs Avail",
           badgeVariant: "operational" as const,
         },
-        {
-          label: "APMC Market Flow",
-          description: "Wholesale arrivals & gate queues",
-          href: "/apmc",
-          icon: Store,
-          badge: "Auction 09:00",
-          badgeVariant: "neutral" as const,
-        },
       ],
     },
     {
@@ -80,14 +99,6 @@ export default function MoreHubPage() {
           icon: Users,
           badge: "1 Warning",
           badgeVariant: "warning" as const,
-        },
-        {
-          label: "Operational Analytics",
-          description: "Trip reductions, cost savings & CO2",
-          href: "/analytics",
-          icon: BarChart3,
-          badge: "Historical",
-          badgeVariant: "neutral" as const,
         },
       ],
     },
@@ -115,7 +126,7 @@ export default function MoreHubPage() {
   return (
     <div className="space-y-4 max-w-2xl mx-auto pb-6">
       {/* Header */}
-      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-2">
+      <div className="bg-white p-4 rounded-[22px] border border-black/[0.06] shadow-xs space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <h1 className="text-base font-bold font-mono tracking-tight text-gray-950">
@@ -123,23 +134,23 @@ export default function MoreHubPage() {
             </h1>
             <DataSourceBadge type="LIVE" />
           </div>
-          <span className="text-[10px] font-mono bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded font-semibold">
+          <span className="text-[10px] font-mono bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-2.5 py-0.5 rounded-full font-bold shadow-xs">
             All Systems OK
           </span>
         </div>
         <p className="text-xs text-gray-500 leading-relaxed">
-          Secondary infrastructure controls, depot management, workforce rosters, and incident response.
+          Spatial GIS map, infrastructure telemetry, depot management, workforce rosters, and incident response.
         </p>
 
         {/* Current Operator Role Status */}
-        <div className="pt-2 border-t border-gray-100 flex items-center justify-between text-xs">
-          <span className="text-gray-500">Active Operator Role:</span>
-          <span className="font-semibold text-gray-900 font-mono">{currentRole}</span>
+        <div className="pt-2 border-t border-black/[0.04] flex items-center justify-between text-xs">
+          <span className="text-gray-500 font-medium">Active Operator Role:</span>
+          <span className="font-bold text-gray-950 font-mono text-[11px] bg-gray-100 px-2.5 py-0.5 rounded-full">{currentRole}</span>
         </div>
       </div>
 
       {/* Demo Scenario Quick Selector */}
-      <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-3.5 space-y-2">
+      <div className="app-card-peach rounded-[22px] p-3.5 space-y-2 shadow-xs">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-amber-950">
             <Sparkles className="w-3.5 h-3.5 text-amber-600" />
@@ -147,31 +158,28 @@ export default function MoreHubPage() {
           </div>
           <button
             onClick={toggleDemoMode}
-            className="text-[11px] font-mono font-bold text-amber-900 underline"
+            className="text-[10.5px] font-mono font-bold text-amber-900 underline"
           >
             {isDemoMode ? "Active" : "Enable"}
           </button>
         </div>
-        <p className="text-xs text-amber-900 leading-relaxed">
-          Switch test conditions to stress-test transit and agricultural capacity:
-        </p>
-        <div className="grid grid-cols-2 gap-1.5 pt-1">
+        <div className="grid grid-cols-2 gap-2 pt-0.5">
           <button
             onClick={() => setActiveScenarioId("APMC_PEAK")}
-            className={`px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium border text-left transition-colors ${
+            className={`px-3 py-2 rounded-2xl text-xs font-mono font-medium border text-left transition-all touch-press ${
               activeScenarioId === "APMC_PEAK"
-                ? "bg-amber-600 text-white border-amber-700 font-bold"
-                : "bg-white text-gray-800 border-amber-200 hover:bg-amber-100/60"
+                ? "bg-amber-600 text-white border-amber-700 font-bold shadow-xs"
+                : "bg-white/90 text-gray-800 border-amber-200/80 hover:bg-white"
             }`}
           >
             🌾 APMC Onion Peak
           </button>
           <button
             onClick={() => setActiveScenarioId("ROAD_CLOSURE_KPG14")}
-            className={`px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium border text-left transition-colors ${
+            className={`px-3 py-2 rounded-2xl text-xs font-mono font-medium border text-left transition-all touch-press ${
               activeScenarioId === "ROAD_CLOSURE_KPG14"
-                ? "bg-amber-600 text-white border-amber-700 font-bold"
-                : "bg-white text-gray-800 border-amber-200 hover:bg-amber-100/60"
+                ? "bg-amber-600 text-white border-amber-700 font-bold shadow-xs"
+                : "bg-white/90 text-gray-800 border-amber-200/80 hover:bg-white"
             }`}
           >
             🚧 KPG-14 Road Closure
@@ -182,33 +190,33 @@ export default function MoreHubPage() {
       {/* Grouped Native List Sections */}
       {sections.map((section) => (
         <div key={section.title} className="space-y-1.5">
-          <h2 className="text-[11px] font-bold font-mono text-gray-500 uppercase tracking-wider px-1">
+          <h2 className="text-[10.5px] font-bold font-mono text-gray-500 uppercase tracking-wider px-2">
             {section.title}
           </h2>
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm divide-y divide-gray-100">
+          <div className="bg-white border border-black/[0.06] rounded-[24px] overflow-hidden shadow-xs divide-y divide-black/[0.04]">
             {section.items.map((item) => {
               const Icon = item.icon;
               return (
                 <a
                   key={item.href}
                   href={item.href}
-                  className="p-3.5 flex items-center justify-between hover:bg-gray-50 touch-press transition-colors"
+                  className="p-3.5 flex items-center justify-between hover:bg-gray-50/80 touch-press transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-700 shrink-0">
-                      <Icon className="w-4 h-4" />
+                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-800 shrink-0 shadow-xs">
+                      <Icon className="w-4 h-4 stroke-[2]" />
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-gray-950 flex items-center gap-2">
+                      <div className="text-xs font-bold text-gray-950 flex items-center gap-1.5">
                         <span>{item.label}</span>
                         {item.badge && (
                           <StatusBadge label={item.badge} variant={item.badgeVariant || "neutral"} size="sm" />
                         )}
                       </div>
-                      <div className="text-[11px] text-gray-500 mt-0.5">{item.description}</div>
+                      <div className="text-[10.5px] text-gray-500 mt-0.5 font-medium">{item.description}</div>
                     </div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-gray-400 shrink-0 ml-2" />
+                  <ChevronRight className="w-3.5 h-3.5 text-gray-400 shrink-0 ml-2" />
                 </a>
               );
             })}

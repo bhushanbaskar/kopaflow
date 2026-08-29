@@ -3,19 +3,19 @@
 @tailwind utilities;
 
 :root {
-  --background: #f9fafb;
-  --foreground: #111827;
+  --background: #f4f6f9; /* Clean, modern mobile canvas */
+  --foreground: #111827; /* Deep readable charcoal */
   --panel: #ffffff;
-  --panel-subtle: #f3f4f6;
-  --border: #e5e7eb;
-  --border-subtle: #f3f4f6;
-  --muted: #6b7280;
-  --muted-foreground: #4b5563;
-  --primary: #111827;
+  --panel-subtle: #f8fafc;
+  --border: rgba(0, 0, 0, 0.06);
+  --border-subtle: rgba(0, 0, 0, 0.03);
+  --muted: #64748b;
+  --muted-foreground: #475569;
+  --primary: #0f172a;
   --primary-foreground: #ffffff;
-  --accent-green: #059669;
-  --accent-green-light: #ecfdf5;
-  --accent-green-border: #a7f3d0;
+  --accent-orange: #ff6b35;
+  --accent-blue: #3b82f6;
+  --accent-green: #10b981;
 }
 
 * {
@@ -27,11 +27,49 @@ html,
 body {
   background-color: var(--background);
   color: var(--foreground);
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
   touch-action: manipulation;
+}
+
+.font-pixel {
+  font-family: var(--font-geist-pixel), var(--font-geist-mono), monospace;
+  letter-spacing: 0.05em;
+}
+
+/* Modern App Card & Surface Tokens */
+.app-card {
+  background-color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 18px;
+  box-shadow: 0 2px 10px -2px rgba(0, 0, 0, 0.04), 0 1px 3px -1px rgba(0, 0, 0, 0.02);
+}
+
+.app-card-peach {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border: 1px solid rgba(254, 215, 170, 0.5);
+  border-radius: 18px;
+}
+
+.app-card-blue {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1px solid rgba(191, 219, 254, 0.5);
+  border-radius: 18px;
+}
+
+.app-card-green {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 1px solid rgba(167, 243, 208, 0.5);
+  border-radius: 18px;
+}
+
+.app-card-purple {
+  background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+  border: 1px solid rgba(233, 213, 255, 0.5);
+  border-radius: 18px;
 }
 
 /* Mobile Safe Areas */
@@ -53,38 +91,8 @@ body {
 }
 
 .touch-press:active {
-  transform: scale(0.98);
-  opacity: 0.92;
-}
-
-/* Operational Table Density (Desktop Progressive Enhancement) */
-.operational-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-.operational-table th {
-  background-color: #f9fafb;
-  color: #4b5563;
-  font-size: 0.725rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0.6rem 0.75rem;
-  border-bottom: 1px solid #e5e7eb;
-  text-align: left;
-}
-
-.operational-table td {
-  padding: 0.65rem 0.75rem;
-  font-size: 0.8125rem;
-  border-bottom: 1px solid #f3f4f6;
-  color: #1f2937;
-}
-
-.operational-table tr:hover td {
-  background-color: #f9fafb;
+  transform: scale(0.97);
+  opacity: 0.9;
 }
 
 /* Custom Horizontal Scrollbars for Chips/Pills */
@@ -96,30 +104,95 @@ body {
   scrollbar-width: none;
 }
 
-/* Leaflet Map Custom Styling */
+/* Leaflet Map Custom Styling - Uber / Google Maps vector aesthetic */
 .leaflet-container {
   font-family: inherit;
-  background-color: #e5e7eb !important;
+  background-color: #f1f5f9 !important;
 }
 
-.custom-bus-marker,
-.custom-station-marker,
-.custom-incident-marker,
-.custom-apmc-marker {
+.leaflet-tile-pane {
+  filter: saturate(0.88) contrast(1.03) brightness(1.02);
+}
+
+.leaflet-popup-content-wrapper {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-radius: 16px !important;
+  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.15) !important;
+  padding: 4px 6px !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+.leaflet-popup-tip {
+  background: #ffffff !important;
+}
+
+.leaflet-control-zoom {
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+
+.leaflet-control-zoom a {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border: none !important;
+  width: 32px !important;
+  height: 32px !important;
+  line-height: 32px !important;
+  font-size: 14px !important;
+  font-weight: bold !important;
+  transition: background 120ms ease;
+}
+
+.leaflet-control-zoom a:hover {
+  background-color: #f8fafc !important;
+}
+
+/* Uber-Style Navigation Pucks & Pins */
+.uber-puck-marker {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
-  font-weight: bold;
-  font-size: 10px;
   cursor: pointer;
   transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.custom-bus-marker:hover,
-.custom-incident-marker:hover {
-  transform: scale(1.1);
+.uber-puck-marker:hover {
+  transform: scale(1.15);
   z-index: 1000 !important;
+}
+
+.uber-pin-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.uber-pin-marker:hover {
+  transform: scale(1.12);
+  z-index: 1000 !important;
+}
+
+/* Fullscreen Map Styles */
+.map-fullscreen-active {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-width: 100vw !important;
+  max-height: 100dvh !important;
+  border-radius: 0 !important;
+  border: none !important;
+}
+
+.map-fullscreen-active .leaflet-top {
+  top: 56px !important;
 }
 
 /* Reduced Motion Support */

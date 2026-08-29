@@ -1,142 +1,129 @@
 "use client";
 
 import React from "react";
-import { Zap, Clock, BatteryCharging, CheckCircle2, ArrowRight } from "lucide-react";
+import { Zap, BatteryCharging, ArrowRight, ShieldCheck } from "lucide-react";
 import { DataSourceBadge } from "../../../components/shared/DataSourceBadge";
 import { StatusBadge } from "../../../components/shared/StatusBadge";
-import { MetricCard } from "../../../components/shared/MetricCard";
 import { MOCK_EV_CHARGERS } from "../../../mock/kopargaonData";
-import { formatPowerKw, formatDurationMinutes } from "../../../lib/utils/formatters";
 
 export default function EVGridPage() {
   return (
-    <div className="space-y-4 max-w-5xl mx-auto pb-6">
+    <div className="space-y-3 max-w-5xl mx-auto pb-4">
       {/* Header */}
-      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-white p-3.5 sm:p-4 rounded-[5px] border border-black/[0.07] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-base sm:text-lg font-bold font-mono tracking-tight text-gray-950">
-              EV CHARGING & GRID MANAGEMENT
+              EV CHARGING INFRASTRUCTURE
             </h1>
             <DataSourceBadge type="LIVE" />
           </div>
           <p className="text-xs text-gray-500 mt-0.5">
-            Depot fast-charging hub load curves, connector queues, and smart turnaround balancing.
+            Depot fast chargers, turnaround queue times, and automated smart power balancing.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-mono">
-          <span className="bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 text-emerald-800">
-            Available Plugs: <strong>4 / 8</strong>
+        <div className="flex items-center gap-1.5 text-xs font-mono">
+          <span className="bg-purple-50 border border-purple-200/60 px-2 py-0.5 rounded-[3px] text-purple-800 font-semibold">
+            Grid Load: <strong>185 kW</strong>
           </span>
         </div>
       </div>
 
-      {/* KPI Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-        <MetricCard
-          label="Total Grid Capacity"
-          value="330"
-          unit="kW"
-          subtext="Substation cap: 400 kW"
-          sourceType="LIVE"
-          statusVariant="operational"
-        />
-        <MetricCard
-          label="Current Active Load"
-          value="175"
-          unit="kW"
-          subtext="53% grid capacity"
-          sourceType="LIVE"
-          statusVariant="neutral"
-        />
-        <MetricCard
-          label="Available Plugs"
-          value="4"
-          unit="/ 8"
-          subtext="CCS2 & Type-2"
-          sourceType="LIVE"
-          statusVariant="operational"
-        />
-        <MetricCard
-          label="Avg Queue Time"
-          value="8.5"
-          unit="min"
-          subtext="Balanced via solver"
-          sourceType="LIVE"
-          statusVariant="operational"
-        />
+      {/* 4 EV KPI Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div className="bg-white p-2.5 rounded-[5px] border border-black/[0.07] shadow-sm">
+          <div className="text-[9.5px] font-mono text-gray-500 uppercase">Available Plugs</div>
+          <div className="text-base font-bold font-mono text-emerald-800 mt-0.5">4 Plugs Open</div>
+          <div className="text-[9.5px] text-gray-400 font-mono">of 6 total CCS2</div>
+        </div>
+
+        <div className="bg-white p-2.5 rounded-[5px] border border-black/[0.07] shadow-sm">
+          <div className="text-[9.5px] font-mono text-gray-500 uppercase">Avg Queue Time</div>
+          <div className="text-base font-bold font-mono text-gray-950 mt-0.5">8 Minutes</div>
+          <div className="text-[9.5px] text-gray-400 font-mono">Fast turnover</div>
+        </div>
+
+        <div className="bg-white p-2.5 rounded-[5px] border border-black/[0.07] shadow-sm">
+          <div className="text-[9.5px] font-mono text-gray-500 uppercase">Electric Fleet</div>
+          <div className="text-base font-bold font-mono text-purple-800 mt-0.5">3 Active Buses</div>
+          <div className="text-[9.5px] text-gray-400 font-mono">Avg 74% battery</div>
+        </div>
+
+        <div className="bg-emerald-50/60 p-2.5 rounded-[5px] border border-emerald-200/60 shadow-sm">
+          <div className="text-[9.5px] font-mono text-emerald-800 uppercase">Off-Peak Tariff</div>
+          <div className="text-base font-bold font-mono text-emerald-900 mt-0.5">₹6.40 / kWh</div>
+          <div className="text-[9.5px] text-emerald-700 font-mono">Saves ₹840/day</div>
+        </div>
       </div>
 
-      {/* Recommended Charger Highlight Card */}
-      <div className="bg-purple-50/70 border border-purple-200 rounded-xl p-4 space-y-2">
+      {/* Smart Load Management Card */}
+      <div className="bg-gray-950 text-white rounded-[5px] p-3.5 sm:p-4 border border-black/[0.1] space-y-2">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-purple-950 uppercase">
-            <BatteryCharging className="w-4 h-4 text-purple-700" />
-            <span>Optimal EV Dispatch Recommendation</span>
+          <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-purple-400 uppercase">
+            <Zap className="w-3.5 h-3.5" />
+            <span>Automated EV Queue Balancing Directive</span>
           </div>
-          <span className="text-[10px] font-mono bg-purple-200/70 text-purple-900 px-1.5 py-0.5 rounded font-bold">
-            Fastest
+          <span className="text-[9.5px] font-mono bg-gray-800 text-gray-300 px-1.5 py-0.2 rounded-[2px]">
+            Active
           </span>
         </div>
-        <p className="text-xs text-purple-950 leading-relaxed">
-          Route returning Electric Buses from Pohegaon to <strong>Depot Fast Station B (150 kW)</strong>. 3 available connectors with only 4 min expected wait time vs 18 min at Station A.
+        <p className="text-xs text-gray-300 leading-relaxed">
+          Buses returning to Kopargaon Central Stand are automatically routed to <strong>Depot Fast Station B (150 kW)</strong> to prevent 18 min queues at Station A.
         </p>
       </div>
 
-      {/* EV Stations Mobile Cards */}
-      <div className="space-y-3">
+      {/* Charger Stations List */}
+      <div className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <span className="text-xs font-bold font-mono text-gray-950 uppercase">
-            Charging Stations ({MOCK_EV_CHARGERS.length})
+            Charging Locations ({MOCK_EV_CHARGERS.length})
           </span>
-          <span className="text-[10px] font-mono text-gray-400">OCPP 2.0.1</span>
+          <span className="text-[10px] font-mono text-gray-400">CCS-2 Protocol</span>
         </div>
 
-        {MOCK_EV_CHARGERS.map((station) => (
+        {MOCK_EV_CHARGERS.map((ch) => (
           <div
-            key={station.id}
-            className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm space-y-3"
+            key={ch.id}
+            className="bg-white border border-black/[0.07] rounded-[5px] p-3 sm:p-3.5 shadow-sm space-y-2.5"
           >
             <div className="flex items-start justify-between gap-2">
               <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-mono font-bold bg-gray-100 text-gray-800 px-2 py-0.5 rounded">
-                    {station.id}
+                <div className="flex items-center gap-1.5">
+                  <span className="font-mono font-bold text-xs bg-purple-50 text-purple-800 px-1.5 py-0.2 rounded-[3px] border border-purple-200/60">
+                    {ch.id}
                   </span>
-                  <span className="text-xs font-bold text-gray-950">{station.name}</span>
+                  <h2 className="text-xs sm:text-sm font-bold text-gray-950">{ch.name}</h2>
                 </div>
-                <div className="text-[11px] text-gray-500 font-mono mt-0.5">
-                  {station.locationName} • {station.connectorTypes.join(", ")}
-                </div>
+                <div className="text-[10.5px] text-gray-500 font-mono mt-0.5">{ch.locationName}</div>
               </div>
 
               <StatusBadge
-                label={station.status}
-                variant={station.status === "OPERATIONAL" ? "operational" : "warning"}
+                label={ch.status}
+                variant={ch.status === "OPERATIONAL" ? "operational" : "warning"}
                 size="sm"
               />
             </div>
 
-            {/* 3-Column Metrics */}
-            <div className="grid grid-cols-3 gap-2 p-2.5 bg-gray-50 rounded-lg border border-gray-100 text-xs font-mono">
+            {/* Metrics */}
+            <div className="grid grid-cols-3 gap-2 p-2 bg-gray-50/80 rounded-[4px] border border-black/[0.05] text-xs font-mono">
               <div>
-                <span className="text-[10px] text-gray-500 uppercase">Power Rating</span>
-                <div className="font-bold text-gray-950 mt-0.5">{formatPowerKw(station.powerOutputKw)}</div>
-                <div className="text-[9px] text-gray-400 font-sans">{station.currentUtilizationPercentage}% load</div>
+                <span className="text-[9.5px] text-gray-500 uppercase">Power Output</span>
+                <div className="font-bold text-purple-700 mt-0.5">{ch.powerOutputKw} kW</div>
+                <div className="text-[9px] text-gray-400 font-sans">{ch.connectorTypes.join(", ")}</div>
               </div>
 
               <div>
-                <span className="text-[10px] text-gray-500 uppercase">Plugs Avail</span>
+                <span className="text-[9.5px] text-gray-500 uppercase">Plugs Avail</span>
                 <div className="font-bold text-emerald-700 mt-0.5">
-                  {station.availableConnectors} / {station.totalConnectors}
+                  {ch.availableConnectors} / {ch.totalConnectors}
                 </div>
-                <div className="text-[9px] text-emerald-600 font-sans">Ready now</div>
+                <div className="text-[9px] text-gray-400 font-sans">Ready now</div>
               </div>
 
               <div>
-                <span className="text-[10px] text-gray-500 uppercase">Avg Wait</span>
-                <div className="font-bold text-blue-700 mt-0.5">{station.avgWaitTimeMinutes} min</div>
+                <span className="text-[9.5px] text-gray-500 uppercase">Avg Wait</span>
+                <div className="font-bold text-gray-950 mt-0.5">{ch.avgWaitTimeMinutes} min</div>
                 <div className="text-[9px] text-gray-400 font-sans">Queue delay</div>
               </div>
             </div>

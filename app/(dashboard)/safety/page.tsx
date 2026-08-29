@@ -1,124 +1,119 @@
 "use client";
 
 import React from "react";
-import { ShieldAlert, AlertTriangle, ShieldCheck, CheckCircle2, ChevronRight } from "lucide-react";
+import { ShieldAlert, AlertTriangle, CheckCircle2, MapPin } from "lucide-react";
 import { DataSourceBadge } from "../../../components/shared/DataSourceBadge";
 import { StatusBadge } from "../../../components/shared/StatusBadge";
-import { MetricCard } from "../../../components/shared/MetricCard";
-import { MOCK_ROAD_SEGMENTS } from "../../../mock/kopargaonData";
+import { MOCK_ROAD_SEGMENTS, MOCK_INCIDENTS } from "../../../mock/kopargaonData";
 
-export default function SafetyIntelligencePage() {
+export default function SafetyPage() {
   const highRiskSegments = MOCK_ROAD_SEGMENTS.filter(
-    (s) => s.riskScore > 50 || s.congestionLevel === "HIGH"
+    (s) => s.riskScore && s.riskScore > 30
   );
 
   return (
-    <div className="space-y-4 max-w-5xl mx-auto pb-6">
+    <div className="space-y-3 max-w-5xl mx-auto pb-4">
       {/* Header */}
-      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-white p-3.5 sm:p-4 rounded-[5px] border border-black/[0.07] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-base sm:text-lg font-bold font-mono tracking-tight text-gray-950">
-              ROAD SAFETY INTELLIGENCE
+              ROAD SAFETY & BLACKSPOTS
             </h1>
-            <DataSourceBadge type="HISTORICAL" />
+            <DataSourceBadge type="LIVE" />
           </div>
           <p className="text-xs text-gray-500 mt-0.5">
-            Continuous blackspot risk scoring, speed variance analysis, and proactive routing advisories.
+            Hazard hotspots, risk scoring, automated speed advisories, and school zone safety rules.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-mono">
-          <span className="bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 text-emerald-800">
-            Network Safety Score: <strong>88 / 100</strong>
+        <div className="flex items-center gap-1.5 text-xs font-mono">
+          <span className="bg-emerald-50 border border-emerald-300/40 px-2 py-0.5 rounded-[3px] text-emerald-800 font-semibold">
+            Speed Compliance: <strong>94%</strong>
           </span>
         </div>
       </div>
 
-      {/* KPI Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-        <MetricCard
-          label="Network Safety Index"
-          value="88"
-          unit="/100"
-          subtext="Good condition"
-          sourceType="HISTORICAL"
-          statusVariant="operational"
-        />
-        <MetricCard
-          label="Speed Compliance"
-          value="91%"
-          subtext="Within 50 km/h limit"
-          sourceType="LIVE"
-          statusVariant="operational"
-        />
-        <MetricCard
-          label="Active Blackspots"
-          value="1"
-          subtext="Godavari Bridge East"
-          sourceType="HISTORICAL"
-          statusVariant="warning"
-        />
-        <MetricCard
-          label="Advisories Issued"
-          value="3"
-          subtext="Freight bypasses active"
-          sourceType="SIMULATED"
-          statusVariant="neutral"
-        />
+      {/* Safety Policy Directive Banner */}
+      <div className="bg-gray-950 text-white rounded-[5px] p-3.5 sm:p-4 border border-black/[0.1] space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-amber-400 uppercase">
+            <ShieldAlert className="w-3.5 h-3.5" />
+            <span>Kopargaon Bus Driver Safety Mandates</span>
+          </div>
+          <span className="text-[9.5px] font-mono bg-gray-800 text-gray-300 px-1.5 py-0.2 rounded-[2px]">
+            Enforced
+          </span>
+        </div>
+        <p className="text-xs text-gray-300 leading-relaxed">
+          Drivers exceeding 40 km/h in designated rural village zones trigger instant telematics warnings to the depot control board. 3 unacknowledged warnings trigger a mandatory dispatch audit.
+        </p>
       </div>
 
-      {/* High-Risk Road Segments Mobile List */}
-      <div className="space-y-3">
+      {/* Blackspots List */}
+      <div className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <span className="text-xs font-bold font-mono text-gray-950 uppercase">
-            Corridor Risk Assessments ({MOCK_ROAD_SEGMENTS.length})
+            Identified Hazard Corridors ({highRiskSegments.length})
           </span>
-          <span className="text-[10px] font-mono text-gray-400">Risk Matrix</span>
+          <span className="text-[10px] font-mono text-gray-400">Risk Assessment</span>
         </div>
 
-        {MOCK_ROAD_SEGMENTS.map((seg) => (
+        {highRiskSegments.map((seg) => (
           <div
             key={seg.id}
-            className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm space-y-3"
+            className="bg-white border border-black/[0.07] rounded-[5px] p-3 sm:p-3.5 shadow-sm space-y-2.5"
           >
             <div className="flex items-start justify-between gap-2">
               <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-mono font-bold text-gray-950 bg-gray-100 px-2 py-0.5 rounded">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-mono font-bold text-xs bg-red-100 text-red-950 px-1.5 py-0.2 rounded-[3px] border border-red-200/80">
                     {seg.code}
                   </span>
-                  <span className="text-xs font-bold text-gray-900">{seg.name}</span>
+                  <h2 className="text-xs sm:text-sm font-bold text-gray-950">{seg.name}</h2>
                 </div>
-                <div className="text-[11px] text-gray-500 font-mono mt-0.5">
-                  Length: {seg.lengthKm} km • Baseline: {seg.baselineSpeedKmh} km/h
+                <div className="text-[10.5px] text-gray-500 font-mono mt-0.5">
+                  Length: {seg.lengthKm} km • Baseline speed: {seg.baselineSpeedKmh} km/h • Current: {seg.currentSpeedKmh} km/h
                 </div>
               </div>
 
-              <div className="text-right font-mono">
-                <div className="text-xs font-bold text-gray-950">Risk {seg.riskScore}/100</div>
-                <div className="text-[10px] text-gray-400">{seg.congestionLevel} load</div>
-              </div>
+              <StatusBadge
+                label={`${seg.riskScore} / 100 Risk`}
+                variant={seg.riskScore && seg.riskScore > 60 ? "critical" : "warning"}
+                size="sm"
+              />
             </div>
 
-            {/* Risk Factor Badges */}
+            {/* Risk Factors */}
             {seg.riskFactors && seg.riskFactors.length > 0 && (
-              <div className="space-y-1.5 pt-1">
-                <div className="text-[10px] font-mono text-gray-400 uppercase font-bold">
-                  Identified Risk Factors:
+              <div className="p-2.5 bg-gray-50/80 rounded-[4px] border border-black/[0.05] space-y-1 text-xs text-gray-700">
+                <div className="text-[10.5px] font-bold text-gray-800 uppercase font-mono">
+                  Identified Hazard Factors:
                 </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {seg.riskFactors.map((rf, idx) => (
+                <div className="flex flex-wrap gap-1">
+                  {seg.riskFactors.map((f, idx) => (
                     <span
                       key={idx}
-                      className="text-[11px] font-mono bg-red-50 text-red-900 border border-red-200 px-2 py-0.5 rounded"
+                      className="text-[9.5px] font-mono bg-white border border-black/[0.07] px-1.5 py-0.2 rounded-[2px] text-gray-600"
                     >
-                      ⚠️ {rf}
+                      ⚠️ {f}
                     </span>
                   ))}
                 </div>
               </div>
             )}
+
+            {/* Mitigation Measure */}
+            <div className="flex items-center justify-between text-[11px] text-emerald-800 font-medium pt-0.5">
+              <span className="flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>
+                  {seg.recommendedAlternateId
+                    ? `Recommended Detour: Route via ${seg.recommendedAlternateId}`
+                    : "Enforce strict 30 km/h speed threshold"}
+                </span>
+              </span>
+            </div>
           </div>
         ))}
       </div>

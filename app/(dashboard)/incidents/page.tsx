@@ -1,155 +1,89 @@
 "use client";
 
-import React, { useState } from "react";
-import {
-  AlertTriangle,
-  Clock,
-  ArrowRight,
-  ShieldAlert,
-  Bus,
-  Package,
-  Activity,
-  CheckCircle2,
-  GitCommit,
-} from "lucide-react";
+import React from "react";
+import { AlertTriangle, ArrowRight, ShieldAlert, CheckCircle2 } from "lucide-react";
+import { useAppStore } from "../../../lib/store/useAppStore";
 import { DataSourceBadge } from "../../../components/shared/DataSourceBadge";
 import { StatusBadge } from "../../../components/shared/StatusBadge";
-import { MetricCard } from "../../../components/shared/MetricCard";
 import { MOCK_INCIDENTS } from "../../../mock/kopargaonData";
 
 export default function IncidentsPage() {
-  const [selectedIncident, setSelectedIncident] = useState(MOCK_INCIDENTS[0]);
-
-  const cascadeSteps = [
-    {
-      step: "1. Primary Event",
-      title: "Tractor breakdown on Corridor KPG-14 (Shirdi Link)",
-      impact: "1 lane blocked at km marker 4.2; vehicle speed drops from 50 km/h to 18 km/h.",
-      icon: AlertTriangle,
-      color: "text-red-700 bg-red-100",
-    },
-    {
-      step: "2. Transit Impact",
-      title: "Bus Fleet Delay Propagation",
-      impact: "Demo Bus 108 & Bus 104 absorb +14 min delay heading towards Kopargaon Bus Stand.",
-      icon: Bus,
-      color: "text-amber-700 bg-amber-100",
-    },
-    {
-      step: "3. Agri Cargo Cascade",
-      title: "APMC Market Auction Risk",
-      impact: "120 kg Onion (AG-001) projected arrival slips from 08:27 to 08:41 (tight to 09:00 cutoff).",
-      icon: Package,
-      color: "text-orange-700 bg-orange-100",
-    },
-    {
-      step: "4. Downstream Grid",
-      title: "EV Fast-Charger Queue Spike",
-      impact: "Depot Charger Station A queue extends as delayed buses arrive together in a burst.",
-      icon: Activity,
-      color: "text-purple-700 bg-purple-100",
-    },
-    {
-      step: "5. Optimization Directive",
-      title: "Dynamic Network Rerouting",
-      impact: "Divert follow-up agri traffic via KPG-05 Eastern Link; shift EV queue to Station B.",
-      icon: CheckCircle2,
-      color: "text-emerald-700 bg-emerald-100",
-    },
-  ];
+  const { openDrawer } = useAppStore();
 
   return (
-    <div className="space-y-4 max-w-5xl mx-auto pb-6">
+    <div className="space-y-3 max-w-5xl mx-auto pb-4">
       {/* Header */}
-      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-white p-3.5 sm:p-4 rounded-[5px] border border-black/[0.07] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-base sm:text-lg font-bold font-mono tracking-tight text-gray-950">
-              INCIDENT RESPONSE & IMPACT CASCADE
+              INCIDENT CASCADE MANAGEMENT
             </h1>
             <DataSourceBadge type="LIVE" />
           </div>
           <p className="text-xs text-gray-500 mt-0.5">
-            Cross-system propagation modeling connecting road breakdowns to bus schedules, crop arrivals, and EV turnaround.
+            Active disruptions, delay propagation across connecting routes, and automated detour directives.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-mono">
-          <span className="bg-red-50 px-2.5 py-1 rounded-lg border border-red-200 text-red-800">
-            Active Disruptions: <strong>{MOCK_INCIDENTS.length}</strong>
+        <div className="flex items-center gap-1.5 text-xs font-mono">
+          <span className="bg-red-50 border border-red-200/60 px-2 py-0.5 rounded-[3px] text-red-800 font-semibold">
+            Active: <strong>{MOCK_INCIDENTS.length} Disruptions</strong>
           </span>
         </div>
       </div>
 
-      {/* KPI Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-        <MetricCard
-          label="Active Incidents"
-          value="2"
-          subtext="1 major, 1 minor"
-          sourceType="LIVE"
-          statusVariant="critical"
-        />
-        <MetricCard
-          label="Corridors Affected"
-          value="2"
-          subtext="KPG-14 & KPG-08"
-          sourceType="LIVE"
-          statusVariant="warning"
-        />
-        <MetricCard
-          label="Delayed Buses"
-          value="2"
-          subtext="+14m max delay"
-          sourceType="LIVE"
-          statusVariant="warning"
-        />
-        <MetricCard
-          label="At-Risk Shipments"
-          value="2"
-          subtext="APMC 09:00 cutoff"
-          sourceType="LIVE"
-          statusVariant="warning"
-        />
-      </div>
-
-      {/* Cross-System Cascade Flow */}
-      <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-5 shadow-sm space-y-4">
-        <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-          <div className="flex items-center gap-2">
-            <GitCommit className="w-4 h-4 text-gray-700" />
-            <span className="text-xs font-bold font-mono text-gray-950 uppercase">
-              Incident Propagation Cascade: {selectedIncident.code}
-            </span>
-          </div>
-          <span className="text-[10px] font-mono bg-red-100 text-red-900 px-2 py-0.5 rounded font-bold">
-            HIGH IMPACT
-          </span>
-        </div>
-
-        <div className="space-y-3">
-          {cascadeSteps.map((step, idx) => {
-            const Icon = step.icon;
-            return (
-              <div
-                key={idx}
-                className="p-3 bg-gray-50 rounded-xl border border-gray-100 space-y-1 text-xs"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 font-mono font-bold text-gray-950">
-                    <span className={`p-1 rounded ${step.color}`}>
-                      <Icon className="w-3.5 h-3.5" />
-                    </span>
-                    <span>{step.step}: {step.title}</span>
-                  </div>
+      {/* Incident List */}
+      <div className="space-y-2.5">
+        {MOCK_INCIDENTS.map((inc) => (
+          <div
+            key={inc.id}
+            onClick={() => openDrawer("INCIDENT", inc.id)}
+            className="bg-white border border-black/[0.07] rounded-[5px] p-3.5 shadow-sm hover:border-black/[0.14] cursor-pointer touch-press transition-colors space-y-2.5"
+          >
+            {/* Top Row: Code, Title & Severity */}
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-mono font-bold text-xs bg-red-100 text-red-950 px-1.5 py-0.2 rounded-[3px] border border-red-200/80">
+                    {inc.code}
+                  </span>
+                  <span className="text-[10px] font-mono text-gray-500">{inc.reportedTime}</span>
                 </div>
-                <p className="text-gray-600 text-[11px] leading-relaxed pl-6">
-                  {step.impact}
-                </p>
+                <h2 className="text-xs sm:text-sm font-bold text-gray-950 mt-1">{inc.title}</h2>
+                <div className="text-[10.5px] text-gray-500 font-mono mt-0.5">{inc.locationDescription}</div>
               </div>
-            );
-          })}
-        </div>
+
+              <StatusBadge
+                label={inc.severity}
+                variant={inc.severity === "HIGH" ? "critical" : "warning"}
+                size="sm"
+              />
+            </div>
+
+            {/* Impact Box */}
+            <div className="p-2.5 bg-red-50/50 border border-red-200/60 rounded-[4px] text-xs text-red-950 leading-relaxed">
+              {inc.impactSummary}
+            </div>
+
+            {/* Optimization Recommendation */}
+            <div className="p-2.5 bg-emerald-50/60 border border-emerald-200/60 rounded-[4px] space-y-1">
+              <div className="text-[9.5px] font-bold font-mono uppercase text-emerald-900">
+                Detour Directive
+              </div>
+              <p className="text-emerald-950 font-medium text-xs">{inc.detourRecommendation}</p>
+            </div>
+
+            {/* Bottom Row */}
+            <div className="flex items-center justify-between text-[11px] text-gray-500 pt-0.5">
+              <span>Affected: {inc.affectedRouteIds.length} routes, {inc.affectedShipmentIds.length} shipments</span>
+              <div className="flex items-center gap-0.5 text-blue-700 font-medium font-mono text-[10.5px]">
+                <span>Open Incident Cascade</span>
+                <ArrowRight className="w-3 h-3" />
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

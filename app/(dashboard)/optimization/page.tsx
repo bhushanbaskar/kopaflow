@@ -5,21 +5,14 @@ import {
   Cpu,
   SlidersHorizontal,
   CheckCircle2,
-  AlertTriangle,
   Play,
-  ArrowRight,
-  ShieldCheck,
-  TrendingDown,
-  Info,
-  Clock,
-  Sparkles,
   ChevronDown,
 } from "lucide-react";
 import { useAppStore } from "../../../lib/store/useAppStore";
 import { DataSourceBadge } from "../../../components/shared/DataSourceBadge";
 import { StatusBadge } from "../../../components/shared/StatusBadge";
 import { optimizationRepository } from "../../../lib/repositories";
-import { formatWeightKg, formatInr } from "../../../lib/utils/formatters";
+import { formatInr } from "../../../lib/utils/formatters";
 
 export default function OptimizationEnginePage() {
   const {
@@ -48,7 +41,7 @@ export default function OptimizationEnginePage() {
     setCurrentStageIndex(0);
 
     for (let i = 1; i <= 6; i++) {
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 150));
       setCurrentStageIndex(i);
     }
 
@@ -130,7 +123,7 @@ export default function OptimizationEnginePage() {
   return (
     <div className="space-y-4 max-w-4xl mx-auto pb-6">
       {/* Header */}
-      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-white p-3.5 sm:p-4 rounded-[22px] border border-black/[0.06] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-base sm:text-lg font-bold font-mono tracking-tight text-gray-950">
@@ -146,27 +139,27 @@ export default function OptimizationEnginePage() {
         <button
           onClick={handleRunOptimization}
           disabled={isRunning}
-          className="w-full sm:w-auto py-3 px-5 bg-gray-950 hover:bg-gray-900 disabled:opacity-50 text-white rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-2 touch-press shadow-md"
+          className="w-full sm:w-auto py-2.5 px-4 bg-gray-950 hover:bg-black disabled:opacity-50 text-white rounded-full text-xs font-mono font-bold flex items-center justify-center gap-1.5 touch-press shadow-md transition-all"
         >
-          <Play className="w-4 h-4 fill-emerald-400 text-emerald-400" />
+          <Play className="w-3.5 h-3.5 fill-emerald-400 text-emerald-400" />
           <span>{isRunning ? "SOLVING..." : "RUN OPTIMIZATION"}</span>
         </button>
       </div>
 
       {/* Objectives Weighting (Mobile Sliders) */}
-      <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm space-y-3">
-        <div className="flex items-center justify-between border-b border-gray-100 pb-2.5">
+      <div className="bg-white border border-black/[0.06] rounded-[24px] p-4 shadow-xs space-y-3">
+        <div className="flex items-center justify-between border-b border-black/[0.04] pb-2.5">
           <span className="text-xs font-bold font-mono text-gray-950 uppercase flex items-center gap-1.5">
-            <SlidersHorizontal className="w-4 h-4 text-blue-600" />
+            <SlidersHorizontal className="w-3.5 h-3.5 text-blue-600" />
             Optimization Criteria Weights
           </span>
-          <span className="text-[10px] font-mono text-gray-400">Heuristic Balance</span>
+          <span className="text-[10px] font-mono text-gray-400 font-semibold">Heuristic Balance</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-          <div className="space-y-1 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-            <div className="flex justify-between font-mono">
-              <span className="text-gray-600">Bus Capacity</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs">
+          <div className="space-y-1.5 app-card-green p-3 rounded-2xl shadow-xs">
+            <div className="flex justify-between font-mono text-[11px]">
+              <span className="text-emerald-950 font-semibold">Bus Capacity</span>
               <span className="font-bold text-emerald-800">{optimizationObjectives.capacityUtilizationWeight}%</span>
             </div>
             <input
@@ -175,14 +168,14 @@ export default function OptimizationEnginePage() {
               max="100"
               value={optimizationObjectives.capacityUtilizationWeight}
               onChange={(e) => setOptimizationObjectives({ capacityUtilizationWeight: Number(e.target.value) })}
-              className="w-full accent-emerald-700 h-1.5"
+              className="w-full accent-emerald-700 h-1.5 cursor-pointer"
             />
           </div>
 
-          <div className="space-y-1 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-            <div className="flex justify-between font-mono">
-              <span className="text-gray-600">Operating Cost</span>
-              <span className="font-bold text-gray-900">{optimizationObjectives.operatingCostWeight}%</span>
+          <div className="space-y-1.5 bg-gray-50/90 p-3 rounded-2xl border border-black/[0.04] shadow-xs">
+            <div className="flex justify-between font-mono text-[11px]">
+              <span className="text-gray-700 font-semibold">Operating Cost</span>
+              <span className="font-bold text-gray-950">{optimizationObjectives.operatingCostWeight}%</span>
             </div>
             <input
               type="range"
@@ -190,14 +183,14 @@ export default function OptimizationEnginePage() {
               max="100"
               value={optimizationObjectives.operatingCostWeight}
               onChange={(e) => setOptimizationObjectives({ operatingCostWeight: Number(e.target.value) })}
-              className="w-full accent-gray-900 h-1.5"
+              className="w-full accent-gray-950 h-1.5 cursor-pointer"
             />
           </div>
 
-          <div className="space-y-1 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-            <div className="flex justify-between font-mono">
-              <span className="text-gray-600">Travel Time</span>
-              <span className="font-bold text-gray-900">{optimizationObjectives.travelTimeWeight}%</span>
+          <div className="space-y-1.5 app-card-blue p-3 rounded-2xl shadow-xs">
+            <div className="flex justify-between font-mono text-[11px]">
+              <span className="text-blue-950 font-semibold">Travel Time</span>
+              <span className="font-bold text-blue-950">{optimizationObjectives.travelTimeWeight}%</span>
             </div>
             <input
               type="range"
@@ -205,14 +198,14 @@ export default function OptimizationEnginePage() {
               max="100"
               value={optimizationObjectives.travelTimeWeight}
               onChange={(e) => setOptimizationObjectives({ travelTimeWeight: Number(e.target.value) })}
-              className="w-full accent-gray-900 h-1.5"
+              className="w-full accent-blue-700 h-1.5 cursor-pointer"
             />
           </div>
 
-          <div className="space-y-1 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-            <div className="flex justify-between font-mono">
-              <span className="text-gray-600">Congestion Relief</span>
-              <span className="font-bold text-amber-800">{optimizationObjectives.congestionReductionWeight}%</span>
+          <div className="space-y-1.5 app-card-peach p-3 rounded-2xl shadow-xs">
+            <div className="flex justify-between font-mono text-[11px]">
+              <span className="text-amber-950 font-semibold">Congestion Relief</span>
+              <span className="font-bold text-amber-900">{optimizationObjectives.congestionReductionWeight}%</span>
             </div>
             <input
               type="range"
@@ -220,34 +213,34 @@ export default function OptimizationEnginePage() {
               max="100"
               value={optimizationObjectives.congestionReductionWeight}
               onChange={(e) => setOptimizationObjectives({ congestionReductionWeight: Number(e.target.value) })}
-              className="w-full accent-amber-600 h-1.5"
+              className="w-full accent-amber-600 h-1.5 cursor-pointer"
             />
           </div>
         </div>
       </div>
 
       {/* Solver Execution Pipeline */}
-      <div className="bg-gray-950 text-white rounded-xl p-4 border border-gray-800 space-y-2.5">
+      <div className="bg-[#14151a] text-white rounded-[24px] p-4 border border-white/10 space-y-2.5 shadow-md">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-emerald-400">
-            <Cpu className="w-4 h-4" />
+            <Cpu className="w-3.5 h-3.5" />
             <span>SOLVER PIPELINE</span>
           </div>
-          <span className="text-[11px] font-mono text-gray-400">
+          <span className="text-[10.5px] font-mono text-gray-400">
             {isRunning ? `Running stage ${currentStageIndex} of 6...` : "Complete • 380 ms"}
           </span>
         </div>
 
-        <div className="space-y-1 text-xs font-mono">
+        <div className="space-y-1.5 text-xs font-mono">
           {stages.map((stage, idx) => {
             const isDone = currentStageIndex > idx;
             const isCurrent = currentStageIndex === idx + 1 && isRunning;
             return (
               <div
                 key={idx}
-                className={`p-2 rounded-lg flex items-center gap-2 transition-colors ${
+                className={`p-2 rounded-xl flex items-center gap-2 transition-all ${
                   isCurrent
-                    ? "bg-gray-800 text-amber-300 border border-amber-400/40"
+                    ? "bg-white/10 text-amber-300 border border-amber-400/30 shadow-xs"
                     : isDone
                     ? "text-gray-300"
                     : "text-gray-600"
@@ -258,7 +251,7 @@ export default function OptimizationEnginePage() {
                 ) : (
                   <div className="w-3.5 h-3.5 rounded-full border border-gray-700 shrink-0" />
                 )}
-                <span className="truncate text-[11px]">{stage}</span>
+                <span className="truncate text-[10.5px]">{stage}</span>
               </div>
             );
           })}
@@ -266,7 +259,7 @@ export default function OptimizationEnginePage() {
       </div>
 
       {/* Actionable Recommendations List */}
-      <div className="space-y-2.5">
+      <div className="space-y-3">
         <div className="flex items-center justify-between px-1">
           <span className="text-xs font-bold font-mono text-gray-950 uppercase">
             Actionable Optimization Directives ({recommendations.length})
@@ -281,15 +274,15 @@ export default function OptimizationEnginePage() {
           return (
             <div
               key={rec.id}
-              className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm space-y-3 transition-colors"
+              className="app-card rounded-[22px] p-4 shadow-xs space-y-3 transition-all"
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono font-bold bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[9.5px] font-mono font-bold bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">
                       {rec.type}
                     </span>
-                    <span className="text-[10px] font-mono font-semibold text-emerald-800">
+                    <span className="text-[10px] font-mono font-bold text-emerald-800">
                       {(rec.confidenceScore * 100).toFixed(0)}% confidence
                     </span>
                   </div>
@@ -304,29 +297,27 @@ export default function OptimizationEnginePage() {
               </div>
 
               {/* Accordion toggle for explainable reasons */}
-              <div className="border-t border-gray-100 pt-2">
+              <div className="border-t border-black/[0.04] pt-2">
                 <button
                   onClick={() => setExpandedRecId(isExpanded ? null : rec.id)}
-                  className="w-full flex items-center justify-between text-[11px] font-mono font-semibold text-gray-600 hover:text-gray-900 py-1"
+                  className="w-full flex items-center justify-between text-[10.5px] font-mono font-semibold text-gray-600 hover:text-gray-900 py-0.5"
                 >
                   <span>Why this directive?</span>
                   <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
                 </button>
 
                 {isExpanded && (
-                  <ul className="mt-2 space-y-1 text-xs text-gray-600 list-disc list-inside bg-gray-50 p-2.5 rounded-lg border border-gray-100 leading-relaxed">
+                  <ul className="mt-2 space-y-1 text-xs text-gray-600 list-disc list-inside bg-gray-50/90 p-3 rounded-2xl border border-black/[0.04] leading-relaxed">
                     {rec.explainableReasons.map((reason, idx) => (
-                      <li key={idx} className="text-[11px]">{reason}</li>
+                      <li key={idx} className="text-[10.5px]">{reason}</li>
                     ))}
                   </ul>
                 )}
               </div>
 
-              {/* Action Button & Road Routing Metric */}
-              <div className="flex items-center justify-between pt-1 border-t border-gray-100 flex-wrap gap-2">
-                <div className="text-[11px] font-mono text-gray-500 space-x-3">
-                  {rec.roadDistanceKm && <span>🛣️ Road: <strong>{rec.roadDistanceKm} km</strong></span>}
-                  {rec.estimatedTravelTimeMin && <span>⏱️ <strong>{rec.estimatedTravelTimeMin}m</strong></span>}
+              {/* Action Button */}
+              <div className="flex items-center justify-between pt-1.5 border-t border-black/[0.04]">
+                <div className="text-[10.5px] font-mono text-gray-500">
                   {rec.impactMetrics.costSavedInr && <span>Savings: <strong>{formatInr(rec.impactMetrics.costSavedInr)}</strong></span>}
                   {rec.impactMetrics.timeSavedMinutes && <span>Time: <strong>{rec.impactMetrics.timeSavedMinutes}m faster</strong></span>}
                 </div>
@@ -334,10 +325,10 @@ export default function OptimizationEnginePage() {
                 <button
                   onClick={() => handleApplyRec(rec.id)}
                   disabled={isApplied}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold transition-colors touch-press ${
+                  className={`px-4 py-1.5 rounded-full text-xs font-mono font-bold transition-all touch-press shadow-xs ${
                     isApplied
-                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                      : "bg-gray-950 hover:bg-gray-900 text-white"
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-black/[0.04]"
+                      : "bg-gray-950 hover:bg-black text-white"
                   }`}
                 >
                   {isApplied ? "Committed" : rec.actionText}

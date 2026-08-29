@@ -10,6 +10,7 @@ import {
   Building2,
   Cpu,
   Route,
+  Map,
 } from "lucide-react";
 import { useAppStore } from "../lib/store/useAppStore";
 import { UserRole } from "../lib/domain/types";
@@ -25,64 +26,64 @@ export default function LandingLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] flex flex-col justify-between p-6 md:p-12 text-slate-900 font-sans">
+    <div className="min-h-screen bg-[#fbfbfa] flex flex-col justify-between p-5 md:p-10 text-gray-900 font-sans">
       {/* Top Brand Header */}
-      <header className="flex items-center justify-between max-w-6xl w-full mx-auto pb-6 border-b border-slate-200">
+      <header className="flex items-center justify-between max-w-6xl w-full mx-auto pb-4 border-b border-black/[0.07]">
         <div>
-          <div className="text-xl font-bold font-mono tracking-wider text-slate-900">
+          <div className="text-lg font-bold font-mono tracking-wider text-gray-950">
             KOPAR-MOVE
           </div>
-          <div className="text-xs text-slate-500 font-mono">
+          <div className="text-[11px] text-gray-500 font-mono">
             Kopargaon Mobility Operating System
           </div>
         </div>
-        <div className="flex items-center gap-2 text-xs font-mono bg-slate-100 border border-slate-300 px-3 py-1 rounded">
-          <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-          <span>Kopargaon Ops Network • Active</span>
+        <div className="flex items-center gap-1.5 text-[11px] font-mono bg-white border border-black/[0.07] px-2.5 py-1 rounded-[4px] shadow-sm">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+          <span>Kopargaon Network • Active</span>
         </div>
       </header>
 
       {/* Main Operational Hero / Access Console */}
-      <main className="max-w-6xl w-full mx-auto my-auto py-12 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+      <main className="max-w-6xl w-full mx-auto my-auto py-8 md:py-12 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         {/* Left Manifesto */}
-        <div className="lg:col-span-7 space-y-6">
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-slate-200/80 border border-slate-300 rounded text-xs font-mono text-slate-800">
-            <Cpu className="w-3.5 h-3.5" />
+        <div className="lg:col-span-7 space-y-5">
+          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-gray-100 border border-black/[0.06] rounded-[3px] text-[11px] font-mono text-gray-800">
+            <Cpu className="w-3.5 h-3.5 text-gray-700" />
             <span>Operational Transportation Intelligence</span>
           </div>
 
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-slate-950 font-sans leading-tight">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-gray-950 font-sans leading-tight">
             Do more with the transportation assets Kopargaon already has.
           </h1>
 
-          <p className="text-sm md:text-base text-slate-600 leading-relaxed max-w-xl">
+          <p className="text-xs sm:text-sm text-gray-600 leading-relaxed max-w-xl">
             Kopar-Move provides a single mobility and logistics data optimization layer
             coordinating public buses, agricultural produce dispatch, traffic corridors,
             road safety blackspots, EV charging stations, and central bus depot operations.
           </p>
 
           {/* Key Infrastructure Pillars */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
-            <div className="p-3 bg-white border border-slate-200 rounded">
-              <div className="font-mono text-xs font-bold text-slate-900">38 BUSES</div>
-              <div className="text-[11px] text-slate-500 mt-0.5">Luggage bay cargo utilization</div>
+          <div className="grid grid-cols-3 gap-2.5 pt-1">
+            <div className="p-2.5 bg-white border border-black/[0.07] rounded-[5px] shadow-sm">
+              <div className="font-mono text-xs font-bold text-gray-950">38 BUSES</div>
+              <div className="text-[10.5px] text-gray-500 mt-0.5">Luggage cargo space</div>
             </div>
-            <div className="p-3 bg-white border border-slate-200 rounded">
-              <div className="font-mono text-xs font-bold text-slate-900">6 CLUSTERS</div>
-              <div className="text-[11px] text-slate-500 mt-0.5">Direct APMC market dispatch</div>
+            <div className="p-2.5 bg-white border border-black/[0.07] rounded-[5px] shadow-sm">
+              <div className="font-mono text-xs font-bold text-gray-950">6 CLUSTERS</div>
+              <div className="text-[10.5px] text-gray-500 mt-0.5">Direct APMC dispatch</div>
             </div>
-            <div className="p-3 bg-white border border-slate-200 rounded">
-              <div className="font-mono text-xs font-bold text-slate-900">1 OPTIMIZER</div>
-              <div className="text-[11px] text-slate-500 mt-0.5">Multi-objective constraint engine</div>
+            <div className="p-2.5 bg-white border border-black/[0.07] rounded-[5px] shadow-sm">
+              <div className="font-mono text-xs font-bold text-gray-950">1 OPTIMIZER</div>
+              <div className="text-[10.5px] text-gray-500 mt-0.5">Multi-criteria engine</div>
             </div>
           </div>
         </div>
 
         {/* Right Access Box */}
-        <div className="lg:col-span-5 bg-white border border-slate-300 rounded shadow-sm p-6 sm:p-8 space-y-6">
+        <div className="lg:col-span-5 bg-white border border-black/[0.08] rounded-[5px] shadow-sm p-5 sm:p-6 space-y-4">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">Access Operations Console</h2>
-            <p className="text-xs text-slate-500 mt-1">
+            <h2 className="text-sm sm:text-base font-bold text-gray-950">Access Operations Console</h2>
+            <p className="text-[11px] text-gray-500 mt-0.5">
               Select an operational role or launch direct interactive demo mode.
             </p>
           </div>
@@ -91,71 +92,71 @@ export default function LandingLoginPage() {
           <Link
             href="/dashboard"
             onClick={() => handleEnterDemo("Mobility Administrator")}
-            className="w-full py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-bold font-mono tracking-wider flex items-center justify-center gap-2 transition-colors shadow-sm cursor-pointer"
+            className="w-full py-2.5 px-3.5 bg-gray-950 hover:bg-gray-900 text-white rounded-[4px] text-xs font-bold font-mono tracking-wider flex items-center justify-center gap-1.5 touch-press shadow-sm cursor-pointer"
           >
-            <Sparkles className="w-4 h-4 text-amber-400" />
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
             <span>ENTER DEMO MODE (COMMAND CENTER)</span>
-            <ArrowRight className="w-4 h-4 ml-1" />
+            <ArrowRight className="w-3.5 h-3.5 ml-1" />
           </Link>
 
           <div className="relative flex items-center justify-center">
-            <div className="border-t border-slate-200 w-full" />
-            <span className="bg-white px-2 text-[10px] uppercase font-mono text-slate-400 absolute">
+            <div className="border-t border-black/[0.06] w-full" />
+            <span className="bg-white px-2 text-[9.5px] uppercase font-mono text-gray-400 absolute">
               or enter by role
             </span>
           </div>
 
           {/* Role Direct Shortcuts */}
-          <div className="space-y-2 text-xs">
+          <div className="space-y-1.5 text-xs">
             <Link
               href="/dashboard"
               onClick={() => handleEnterDemo("Mobility Administrator")}
-              className="w-full text-left p-2.5 rounded border border-slate-200 hover:bg-slate-50 flex items-center justify-between transition-colors block cursor-pointer"
+              className="w-full text-left p-2 rounded-[4px] border border-black/[0.06] hover:bg-gray-50 flex items-center justify-between touch-press transition-colors block cursor-pointer"
             >
               <div>
-                <div className="font-semibold text-slate-900">Mobility Administrator</div>
-                <div className="text-[10px] text-slate-500">Command center, routes & network simulation</div>
+                <div className="font-semibold text-gray-900 text-[11.5px]">Mobility Administrator</div>
+                <div className="text-[10px] text-gray-500">Command center, routes & network simulation</div>
               </div>
-              <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+              <ArrowRight className="w-3 h-3 text-gray-400" />
             </Link>
 
             <Link
               href="/matching"
               onClick={() => handleEnterDemo("Logistics/APMC Coordinator")}
-              className="w-full text-left p-2.5 rounded border border-slate-200 hover:bg-slate-50 flex items-center justify-between transition-colors block cursor-pointer"
+              className="w-full text-left p-2 rounded-[4px] border border-black/[0.06] hover:bg-gray-50 flex items-center justify-between touch-press transition-colors block cursor-pointer"
             >
               <div>
-                <div className="font-semibold text-slate-900">Logistics & APMC Coordinator</div>
-                <div className="text-[10px] text-slate-500">Capacity matching, village crop shipments & market gate</div>
+                <div className="font-semibold text-gray-900 text-[11.5px]">Logistics & APMC Coordinator</div>
+                <div className="text-[10px] text-gray-500">Capacity matching, crop shipments & market gate</div>
               </div>
-              <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+              <ArrowRight className="w-3 h-3 text-gray-400" />
             </Link>
 
             <Link
               href="/depot"
               onClick={() => handleEnterDemo("Bus Depot Manager")}
-              className="w-full text-left p-2.5 rounded border border-slate-200 hover:bg-slate-50 flex items-center justify-between transition-colors block cursor-pointer"
+              className="w-full text-left p-2 rounded-[4px] border border-black/[0.06] hover:bg-gray-50 flex items-center justify-between touch-press transition-colors block cursor-pointer"
             >
               <div>
-                <div className="font-semibold text-slate-900">Bus Depot Manager</div>
-                <div className="text-[10px] text-slate-500">Fleet dispatch board, bays, EV charging & driver rosters</div>
+                <div className="font-semibold text-gray-900 text-[11.5px]">Bus Depot Manager</div>
+                <div className="text-[10px] text-gray-500">Fleet dispatch board, bays, EV charging & crew</div>
               </div>
-              <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+              <ArrowRight className="w-3 h-3 text-gray-400" />
             </Link>
           </div>
 
-          <div className="pt-2 text-[11px] text-slate-400 text-center font-mono">
+          <div className="pt-1 text-[10px] text-gray-400 text-center font-mono">
             Kopargaon Municipal & MSRTC Operational Platform
           </div>
         </div>
       </main>
 
       {/* Bottom Legal / System Status */}
-      <footer className="max-w-6xl w-full mx-auto pt-6 border-t border-slate-200 flex flex-wrap items-center justify-between text-xs text-slate-500 font-mono">
+      <footer className="max-w-6xl w-full mx-auto pt-4 border-t border-black/[0.07] flex flex-wrap items-center justify-between text-[11px] text-gray-500 font-mono">
         <div>KOPAR-MOVE v1.0.0 • Production Build</div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <span>Kopargaon, Ahmednagar District, MH</span>
-          <span>OpenStreetMap GIS Engine</span>
+          <span>OpenStreetMap & OSRM Engine</span>
         </div>
       </footer>
     </div>

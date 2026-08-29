@@ -1,129 +1,147 @@
 "use client";
 
-import React from "react";
-import { Settings, UserCheck, Database, MapPin, Sparkles, CheckCircle2, ShieldCheck } from "lucide-react";
+import React, { useState } from "react";
+import {
+  Settings,
+  Database,
+  Map,
+  ShieldCheck,
+  CheckCircle2,
+  RefreshCw,
+} from "lucide-react";
 import { useAppStore } from "../../../lib/store/useAppStore";
-import { UserRole } from "../../../lib/domain/types";
 import { DataSourceBadge } from "../../../components/shared/DataSourceBadge";
+import { UserRole } from "../../../lib/domain/types";
 
 export default function SettingsPage() {
-  const {
-    currentRole,
-    setRole,
-    isDemoMode,
-    toggleDemoMode,
-    mapLayers,
-    toggleMapLayer,
-  } = useAppStore();
+  const { currentRole, setRole, isDemoMode, toggleDemoMode } = useAppStore();
+  const [supabaseConnected, setSupabaseConnected] = useState(false);
+  const [cacheCleared, setCacheCleared] = useState(false);
 
-  const roles: { role: UserRole; desc: string }[] = [
-    {
-      role: "Mobility Administrator",
-      desc: "Full command center access to transit, agriculture, traffic, EV, and optimization controls.",
-    },
-    {
-      role: "Bus Depot Manager",
-      desc: "Bus bay assignments, vehicle maintenance schedules, and crew duty monitoring.",
-    },
-    {
-      role: "Logistics/APMC Coordinator",
-      desc: "Farmer harvest requests, luggage parcel allocations, and market gate flow.",
-    },
-    {
-      role: "Traffic & Safety Operator",
-      desc: "Corridor bottleneck telemetry, speed compliance, and detour directives.",
-    },
-    {
-      role: "EV Infrastructure Operator",
-      desc: "Charging station queue balancing, kilowatt load curves, and connector health.",
-    },
-    {
-      role: "Driver/Field Staff",
-      desc: "On-vehicle cargo loading verification, route stops, and next arrival ETA.",
-    },
-    {
-      role: "Citizen/Farmer",
-      desc: "Shipment request booking, bus parcel tracking, and APMC arrival confirmation.",
-    },
+  const roles: UserRole[] = [
+    "Mobility Administrator",
+    "Bus Depot Manager",
+    "Logistics/APMC Coordinator",
+    "Traffic & Safety Operator",
+    "EV Infrastructure Operator",
+    "Driver/Field Staff",
+    "Citizen/Farmer",
   ];
 
+  const handleClearCache = () => {
+    setCacheCleared(true);
+    setTimeout(() => setCacheCleared(false), 2000);
+  };
+
   return (
-    <div className="space-y-4 max-w-4xl mx-auto pb-6">
+    <div className="space-y-3.5 max-w-3xl mx-auto pb-6">
       {/* Header */}
-      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
+      <div className="bg-white p-3.5 sm:p-4 rounded-[5px] border border-black/[0.07] shadow-sm space-y-1">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <h1 className="text-base sm:text-lg font-bold font-mono tracking-tight text-gray-950">
-              SYSTEM SETTINGS & ROLES
+              SYSTEM CONFIGURATION
             </h1>
-            <DataSourceBadge type="LIVE" />
+            <DataSourceBadge type="MANUAL" />
           </div>
-          <p className="text-xs text-gray-500 mt-0.5">
-            Switch operator roles, manage decoupled Supabase repositories, and configure GIS map layers.
+          <span className="text-[10px] font-mono bg-emerald-50 text-emerald-800 border border-emerald-300/40 px-2 py-0.5 rounded-[3px] font-semibold">
+            v1.0.0 Production
+          </span>
+        </div>
+        <p className="text-xs text-gray-500">
+          Operator permissions, telemetry sync intervals, database connector and GIS tile configurations.
+        </p>
+      </div>
+
+      {/* 1. Active Role Configuration */}
+      <div className="bg-white border border-black/[0.07] rounded-[5px] p-3.5 shadow-sm space-y-3">
+        <div className="flex items-center justify-between border-b border-black/[0.04] pb-2">
+          <span className="text-xs font-bold font-mono text-gray-950 uppercase">
+            Active Operator Role & Permissions
+          </span>
+          <span className="text-[10px] font-mono text-gray-400">Role-Based Access</span>
+        </div>
+
+        <div className="space-y-2 text-xs">
+          <label className="block text-gray-700 font-medium">Switch Active Role:</label>
+          <select
+            value={currentRole}
+            onChange={(e) => setRole(e.target.value as UserRole)}
+            className="w-full p-2 bg-gray-50 border border-black/[0.07] rounded-[4px] font-medium text-gray-900 focus:outline-none focus:bg-white"
+          >
+            {roles.map((r) => (
+              <option key={r} value={r}>
+                {r}
+              </option>
+            ))}
+          </select>
+          <p className="text-[10.5px] text-gray-500">
+            Controls role-specific dashboard views, approval authorities, and dispatch priority rules.
           </p>
         </div>
       </div>
 
-      {/* Role Selection */}
-      <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm space-y-3">
-        <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+      {/* 2. Telemetry & GIS Engine */}
+      <div className="bg-white border border-black/[0.07] rounded-[5px] p-3.5 shadow-sm space-y-3">
+        <div className="flex items-center justify-between border-b border-black/[0.04] pb-2">
           <span className="text-xs font-bold font-mono text-gray-950 uppercase flex items-center gap-1.5">
-            <UserCheck className="w-4 h-4 text-blue-600" />
-            Switch Active Role View
+            <Map className="w-3.5 h-3.5 text-blue-600" />
+            GIS & Road Routing Engine
           </span>
-          <span className="text-[10px] font-mono text-emerald-700 font-semibold">
-            Active: {currentRole}
-          </span>
+          <span className="text-[10px] font-mono text-emerald-800">Connected</span>
         </div>
 
-        <div className="space-y-2">
-          {roles.map(({ role, desc }) => {
-            const isSelected = currentRole === role;
-            return (
-              <div
-                key={role}
-                onClick={() => setRole(role)}
-                className={`p-3 rounded-xl border text-xs cursor-pointer transition-colors touch-press flex items-start justify-between gap-3 ${
-                  isSelected
-                    ? "bg-emerald-50/70 border-emerald-400 text-gray-950"
-                    : "bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-700"
-                }`}
-              >
-                <div>
-                  <div className="font-mono font-bold flex items-center gap-2">
-                    <span>{role}</span>
-                    {isSelected && (
-                      <span className="text-[9px] bg-emerald-700 text-white px-1.5 py-0.2 rounded font-sans font-bold">
-                        ACTIVE
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-[11px] text-gray-500 mt-0.5 leading-relaxed">{desc}</p>
-                </div>
+        <div className="space-y-2 text-xs font-mono">
+          <div className="flex justify-between items-center p-2 bg-gray-50/80 rounded-[4px] border border-black/[0.05]">
+            <span className="text-gray-600">Base Coordinates:</span>
+            <span className="font-bold text-gray-900">19.8910° N, 74.4789° E</span>
+          </div>
 
-                {isSelected && (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
-                )}
-              </div>
-            );
-          })}
+          <div className="flex justify-between items-center p-2 bg-gray-50/80 rounded-[4px] border border-black/[0.05]">
+            <span className="text-gray-600">Turn-by-Turn Road Network:</span>
+            <span className="font-bold text-gray-900">OSRM Road Geometry</span>
+          </div>
+
+          <div className="flex justify-between items-center p-2 bg-gray-50/80 rounded-[4px] border border-black/[0.05]">
+            <span className="text-gray-600">Map Tile Server:</span>
+            <span className="font-bold text-gray-900">OpenStreetMap Standard</span>
+          </div>
         </div>
       </div>
 
-      {/* Supabase Decoupled Architecture Status */}
-      <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm space-y-2.5">
-        <div className="flex items-center justify-between">
+      {/* 3. Database & Backend Storage */}
+      <div className="bg-white border border-black/[0.07] rounded-[5px] p-3.5 shadow-sm space-y-3">
+        <div className="flex items-center justify-between border-b border-black/[0.04] pb-2">
           <span className="text-xs font-bold font-mono text-gray-950 uppercase flex items-center gap-1.5">
-            <Database className="w-4 h-4 text-purple-600" />
-            Data Layer Status (Supabase Decoupled)
+            <Database className="w-3.5 h-3.5 text-purple-600" />
+            Supabase PostgreSQL Integration
           </span>
-          <span className="text-[10px] font-mono bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded font-bold">
-            Isolated In-Memory Mock
+          <span className="text-[10px] font-mono bg-purple-50 text-purple-800 border border-purple-200/60 px-1.5 py-0.2 rounded-[2px]">
+            Optional Live DB
           </span>
         </div>
+
         <p className="text-xs text-gray-600 leading-relaxed">
-          Repositories in <code>lib/repositories</code> provide complete zero-credential execution. To connect to a live Supabase project, supply <code>NEXT_PUBLIC_SUPABASE_URL</code> and <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> in <code>.env.local</code>.
+          Kopar-Move runs deterministically with its built-in Kopargaon repository datasets, and can optionally sync to an external Supabase instance.
         </p>
+
+        <div className="flex items-center justify-between pt-1">
+          <button
+            onClick={handleClearCache}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-xs font-mono text-gray-700 bg-gray-50 hover:bg-gray-100 border border-black/[0.07] touch-press transition-colors"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>{cacheCleared ? "Cache Cleared!" : "Clear Local State Cache"}</span>
+          </button>
+
+          <button
+            onClick={() => setSupabaseConnected(!supabaseConnected)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-xs font-mono text-white bg-gray-950 hover:bg-gray-900 touch-press transition-colors"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span>{supabaseConnected ? "Disconnect DB" : "Test DB Sync"}</span>
+          </button>
+        </div>
       </div>
     </div>
   );

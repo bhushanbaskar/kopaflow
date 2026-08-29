@@ -3,12 +3,12 @@
 import React from "react";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
-  Route,
-  Package,
-  SlidersHorizontal,
-  Menu,
-  Zap,
+  Home,
+  Bus,
+  Plus,
+  Navigation,
+  Layers,
+  Sparkles,
   Cpu,
 } from "lucide-react";
 import { cn } from "../../lib/utils/cn";
@@ -16,105 +16,127 @@ import { cn } from "../../lib/utils/cn";
 export function MobileBottomNav() {
   const pathname = usePathname();
 
-  const tabs = [
+  const navItems = [
     {
       id: "home",
       label: "Home",
       href: "/dashboard",
-      icon: LayoutDashboard,
+      icon: Home,
       isActive: pathname === "/dashboard" || pathname === "/",
     },
     {
-      id: "routes",
-      label: "Routes",
-      href: "/routes",
-      icon: Route,
-      isActive: pathname.startsWith("/routes") || pathname.startsWith("/buses"),
+      id: "buses",
+      label: "Fleet",
+      href: "/buses",
+      icon: Bus,
+      isActive: pathname.startsWith("/buses") || pathname.startsWith("/routes"),
     },
+    // Center Action Button is rendered separately
     {
-      id: "logistics",
-      label: "Logistics",
-      href: "/logistics",
-      icon: Package,
-      isActive: pathname.startsWith("/logistics") || pathname.startsWith("/matching") || pathname.startsWith("/apmc"),
-    },
-    {
-      id: "simulation",
-      label: "Simulation",
-      href: "/simulation",
-      icon: SlidersHorizontal,
-      isActive: pathname.startsWith("/simulation") || pathname.startsWith("/optimization"),
+      id: "map",
+      label: "Tracking",
+      href: "/map",
+      icon: Navigation,
+      isActive: pathname.startsWith("/map"),
     },
     {
       id: "more",
       label: "More",
       href: "/more",
-      icon: Menu,
+      icon: Layers,
       isActive:
         pathname.startsWith("/more") ||
+        pathname.startsWith("/logistics") ||
         pathname.startsWith("/traffic") ||
         pathname.startsWith("/safety") ||
         pathname.startsWith("/ev") ||
         pathname.startsWith("/depot") ||
         pathname.startsWith("/workforce") ||
         pathname.startsWith("/incidents") ||
-        pathname.startsWith("/analytics") ||
         pathname.startsWith("/settings"),
     },
   ];
 
-  // Determine contextual floating action
-  const showFloatingAction = !pathname.startsWith("/optimization") && !pathname.startsWith("/matching");
-
   return (
-    <>
-      {/* Floating Primary Action Button on Mobile */}
-      {showFloatingAction && (
-        <div className="lg:hidden fixed bottom-[72px] right-4 z-40 animate-in fade-in zoom-in-95 duration-200">
-          <a
-            href="/optimization"
-            className="flex items-center gap-1.5 px-3.5 py-2.5 bg-gray-950 text-white rounded-full shadow-lg border border-gray-800 text-xs font-mono font-bold touch-press tracking-wide"
-            aria-label="Run network optimization"
-          >
-            <Cpu className="w-4 h-4 text-emerald-400" />
-            <span>Optimize</span>
-          </a>
-        </div>
-      )}
-
-      {/* Fixed Bottom Navigation Bar */}
+    <div className="lg:hidden fixed bottom-3 left-3 right-3 z-40 max-w-sm mx-auto pointer-events-none">
       <nav
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/98 backdrop-blur-md border-t border-gray-200 px-2 py-1.5 pb-safe flex items-center justify-around select-none shadow-[0_-4px_12px_rgba(0,0,0,0.03)]"
+        className="pointer-events-auto bg-[#14151a]/95 backdrop-blur-xl border border-white/10 text-white rounded-[26px] shadow-[0_12px_32px_rgba(0,0,0,0.38)] px-2 py-1.5 flex items-center justify-between select-none"
         aria-label="Mobile navigation"
       >
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
+        {/* Left tabs (Home, Fleet) */}
+        {navItems.slice(0, 2).map((item) => {
+          const Icon = item.icon;
           return (
             <a
-              key={tab.id}
-              href={tab.href}
+              key={item.id}
+              href={item.href}
               className={cn(
-                "flex flex-col items-center justify-center min-w-[56px] min-h-[44px] px-1 py-1 rounded-md touch-press transition-colors",
-                tab.isActive
-                  ? "text-emerald-700 font-semibold"
-                  : "text-gray-500 hover:text-gray-900"
+                "flex flex-col items-center justify-center flex-1 min-h-[42px] px-1 py-0.5 rounded-[18px] touch-press transition-all",
+                item.isActive
+                  ? "text-white"
+                  : "text-gray-400 hover:text-gray-200"
               )}
             >
               <div
                 className={cn(
                   "p-1 rounded-full transition-transform",
-                  tab.isActive && "bg-emerald-50 text-emerald-700"
+                  item.isActive && "bg-white/15 text-white"
                 )}
               >
-                <Icon className="w-5 h-5 shrink-0 stroke-[2]" />
+                <Icon className="w-4 h-4 shrink-0 stroke-[2.2]" />
               </div>
-              <span className="text-[10px] tracking-tight mt-0.5 font-medium">
-                {tab.label}
+              <span className="text-[9.5px] font-medium tracking-tight mt-0.5">
+                {item.label}
+              </span>
+            </a>
+          );
+        })}
+
+        {/* Center Prominent Action Button (+ / Match) */}
+        <div className="flex flex-col items-center justify-center px-1">
+          <a
+            href="/matching"
+            className="w-11 h-11 -mt-5 rounded-full bg-gradient-to-tr from-orange-500 via-amber-500 to-amber-400 text-white flex items-center justify-center shadow-[0_4px_16px_rgba(249,115,22,0.45)] border-[3.5px] border-[#14151a] touch-press hover:scale-105 active:scale-95 transition-transform"
+            aria-label="Find cargo match"
+            title="Capacity Matching Engine"
+          >
+            <Plus className="w-5 h-5 stroke-[2.5]" />
+          </a>
+          <span className="text-[9px] font-semibold tracking-tight text-amber-400 mt-0.5 font-mono">
+            MATCH
+          </span>
+        </div>
+
+        {/* Right tabs (Tracking, More) */}
+        {navItems.slice(2, 4).map((item) => {
+          const Icon = item.icon;
+          return (
+            <a
+              key={item.id}
+              href={item.href}
+              className={cn(
+                "flex flex-col items-center justify-center flex-1 min-h-[42px] px-1 py-0.5 rounded-[18px] touch-press transition-all",
+                item.isActive
+                  ? "text-white"
+                  : "text-gray-400 hover:text-gray-200"
+              )}
+            >
+              <div
+                className={cn(
+                  "p-1 rounded-full transition-transform",
+                  item.isActive && "bg-white/15 text-white"
+                )}
+              >
+                <Icon className="w-4 h-4 shrink-0 stroke-[2.2]" />
+              </div>
+              <span className="text-[9.5px] font-medium tracking-tight mt-0.5">
+                {item.label}
               </span>
             </a>
           );
         })}
       </nav>
-    </>
+    </div>
   );
 }
+

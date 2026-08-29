@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import { X, ArrowRight, CheckCircle2, ShieldCheck, MapPin, Clock, Phone } from "lucide-react";
+import { X, ArrowRight } from "lucide-react";
 import { useAppStore } from "../../lib/store/useAppStore";
 import {
   MOCK_BUS_FLEET,
@@ -18,7 +18,6 @@ import {
   formatWeightKg,
   formatInr,
   formatSpeedKmh,
-  formatDurationMinutes,
 } from "../../lib/utils/formatters";
 
 export function BottomSheet() {
@@ -65,7 +64,7 @@ export function BottomSheet() {
       {/* Backdrop */}
       <div
         onClick={closeDrawer}
-        className="fixed inset-0 bg-gray-950/40 backdrop-blur-[2px] transition-opacity animate-in fade-in duration-150"
+        className="fixed inset-0 bg-black/35 backdrop-blur-[2px] transition-opacity animate-in fade-in duration-100"
       />
 
       {/* Sheet Content: Bottom Sheet on Mobile (<1024px), Side Drawer on Desktop (>=1024px) */}
@@ -74,7 +73,7 @@ export function BottomSheet() {
         style={{
           transform: touchDelta > 0 ? `translateY(${touchDelta}px)` : undefined,
         }}
-        className="relative w-full max-h-[88vh] lg:max-h-full lg:h-full lg:max-w-md bg-white rounded-t-2xl lg:rounded-none border-t lg:border-t-0 lg:border-l border-gray-200 shadow-2xl flex flex-col z-10 transition-transform duration-150 ease-out pb-safe"
+        className="relative w-full max-h-[88vh] lg:max-h-full lg:h-full lg:max-w-md bg-white rounded-t-[30px] lg:rounded-none border-t lg:border-t-0 lg:border-l border-black/[0.08] shadow-2xl flex flex-col z-10 transition-transform duration-100 ease-out pb-safe"
       >
         {/* Mobile Drag Handle */}
         <div
@@ -83,113 +82,170 @@ export function BottomSheet() {
           onTouchEnd={handleTouchEnd}
           className="lg:hidden w-full pt-2.5 pb-1 flex justify-center cursor-grab active:cursor-grabbing select-none"
         >
-          <div className="w-10 h-1 rounded-full bg-gray-300" />
+          <div className="w-10 h-1.2 rounded-full bg-gray-300" />
         </div>
 
-        {/* 1. BUS INSPECTOR */}
+        {/* 1. BUS TRACKING INSPECTOR (Uber / Google Maps style) */}
         {activeDrawerType === "BUS" && (() => {
           const bus = MOCK_BUS_FLEET.find((b) => b.id === selectedEntityId) || MOCK_BUS_FLEET[0];
-          const route = MOCK_BUS_ROUTES.find((r) => r.id === bus.routeId);
 
           return (
             <>
-              <div className="px-4 py-3 border-b border-gray-100 flex items-start justify-between">
+              {/* Header */}
+              <div className="px-4 py-3 border-b border-black/[0.05] flex items-start justify-between">
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-mono bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded font-semibold">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10.5px] font-mono bg-gray-900 text-white px-2 py-0.5 rounded-full font-bold shadow-xs">
                       {bus.plateNumber}
                     </span>
+                    <StatusBadge
+                      label={bus.status === "ON_ROUTE" ? "Transit" : bus.status}
+                      variant={bus.status === "ON_ROUTE" ? "operational" : "warning"}
+                      size="sm"
+                    />
                     <DataSourceBadge type="LIVE" />
                   </div>
-                  <h2 className="text-base font-bold text-gray-950 font-mono mt-0.5">
+                  <h2 className="text-base font-bold text-gray-950 font-mono mt-1">
                     {bus.busNumber}
                   </h2>
-                  <p className="text-xs text-gray-500">{bus.routeName}</p>
+                  <p className="text-xs text-gray-500 font-medium">{bus.routeName}</p>
                 </div>
                 <button
                   onClick={closeDrawer}
                   className="p-1.5 rounded-full text-gray-400 hover:text-gray-900 hover:bg-gray-100 touch-press"
                   aria-label="Close sheet"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs">
-                {/* 2x2 Metric Grid */}
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                    <div className="text-[10px] text-gray-500 uppercase font-mono font-medium">
+                {/* Visual Route Stepper (Uber Style) */}
+                <div className="bg-gray-50/90 p-3 rounded-2xl border border-black/[0.05] space-y-2">
+                  <div className="flex items-center justify-between text-[10px] font-mono font-semibold text-gray-500 uppercase tracking-wider">
+                    <span>Route Checkpoints</span>
+                    <span className="text-blue-700">ETA Next: {bus.etaNextStopMinutes}m</span>
+                  </div>
+                  
+                  {/* Stepper Dots & Line */}
+                  <div className="relative flex items-center justify-between px-2 pt-1 pb-1">
+                    <div className="absolute left-4 right-4 top-1/2 -translate-y-1/2 h-0.5 bg-gray-200 z-0" />
+                    <div className="relative z-10 flex flex-col items-center">
+                      <div className="w-3 h-3 rounded-full bg-emerald-600 border-2 border-white shadow-xs" />
+                      <span className="text-[9px] text-gray-600 font-medium mt-1">Depot</span>
+                    </div>
+                    <div className="relative z-10 flex flex-col items-center">
+                      <div className="w-3.5 h-3.5 rounded-full bg-blue-600 border-2 border-white shadow-sm ring-2 ring-blue-200 animate-pulse" />
+                      <span className="text-[9px] text-blue-700 font-bold mt-1 truncate max-w-[70px]">
+                        {bus.nextStopName.split(" ")[0]}
+                      </span>
+                    </div>
+                    <div className="relative z-10 flex flex-col items-center">
+                      <div className="w-2.5 h-2.5 rounded-full bg-gray-300 border border-white" />
+                      <span className="text-[9px] text-gray-400 mt-1">APMC</span>
+                    </div>
+                    <div className="relative z-10 flex flex-col items-center">
+                      <div className="w-2.5 h-2.5 rounded-full bg-gray-300 border border-white" />
+                      <span className="text-[9px] text-gray-400 mt-1">Vaijapur</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2x2 Metric Cards (Subtle Colorful UI) */}
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div className="app-card-blue p-3 rounded-2xl">
+                    <div className="text-[9.5px] text-blue-800 uppercase font-mono font-semibold">
                       Passenger Load
                     </div>
-                    <div className="text-lg font-bold font-mono text-gray-950 mt-0.5">
+                    <div className="text-lg font-bold font-mono text-blue-950 mt-0.5">
                       {formatPercent(bus.occupancyPercentage)}
                     </div>
-                    <div className="text-[10px] text-gray-500 font-mono">
+                    <div className="text-[9.5px] text-blue-700 font-mono">
                       {bus.currentPassengers} / {bus.seatingCapacity} seats
                     </div>
                   </div>
 
-                  <div className="bg-emerald-50/70 p-2.5 rounded-lg border border-emerald-100">
-                    <div className="text-[10px] text-emerald-800 uppercase font-mono font-medium">
-                      Luggage Capacity
+                  <div className="app-card-green p-3 rounded-2xl">
+                    <div className="text-[9.5px] text-emerald-800 uppercase font-mono font-semibold">
+                      Cargo Luggage
                     </div>
-                    <div className="text-lg font-bold font-mono text-emerald-800 mt-0.5">
+                    <div className="text-lg font-bold font-mono text-emerald-950 mt-0.5">
                       {formatWeightKg(bus.availableParcelCapacityKg)}
                     </div>
-                    <div className="text-[10px] text-emerald-700 font-mono">
-                      Available for parcels
+                    <div className="text-[9.5px] text-emerald-700 font-mono">
+                      Available capacity
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                    <div className="text-[10px] text-gray-500 uppercase font-mono font-medium">
-                      Next Stop & ETA
+                  <div className="app-card-peach p-3 rounded-2xl">
+                    <div className="text-[9.5px] text-amber-800 uppercase font-mono font-semibold">
+                      Live Velocity
                     </div>
-                    <div className="text-sm font-bold font-mono text-blue-700 mt-0.5">
-                      {bus.etaNextStopMinutes} min
-                    </div>
-                    <div className="text-[10px] text-gray-500 truncate">
-                      {bus.nextStopName}
-                    </div>
-                  </div>
-
-                  <div className="bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                    <div className="text-[10px] text-gray-500 uppercase font-mono font-medium">
-                      Speed & Energy
-                    </div>
-                    <div className="text-sm font-bold font-mono text-gray-950 mt-0.5">
+                    <div className="text-lg font-bold font-mono text-amber-950 mt-0.5">
                       {formatSpeedKmh(bus.speedKmh)}
                     </div>
-                    <div className="text-[10px] text-gray-500 font-mono">
-                      {bus.propulsion} ({bus.fuelBatteryLevelPercentage}%)
+                    <div className="text-[9.5px] text-amber-700 font-mono truncate">
+                      {bus.currentLocationName}
+                    </div>
+                  </div>
+
+                  <div className="app-card-purple p-3 rounded-2xl">
+                    <div className="text-[9.5px] text-purple-800 uppercase font-mono font-semibold">
+                      Energy / Battery
+                    </div>
+                    <div className="text-lg font-bold font-mono text-purple-950 mt-0.5">
+                      {bus.fuelBatteryLevelPercentage}%
+                    </div>
+                    <div className="text-[9.5px] text-purple-700 font-mono">
+                      {bus.propulsion}
                     </div>
                   </div>
                 </div>
 
-                {/* Duty & Crew Details */}
-                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 space-y-1.5">
-                  <div className="font-semibold text-gray-900 text-[11px] uppercase font-mono">
-                    Duty Roster
+                {/* Driver / Crew Contact Card (Orbix Studio Mobile App Style) */}
+                <div className="bg-gray-900 text-white p-3.5 rounded-2xl shadow-md flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500 to-orange-500 text-white font-bold flex items-center justify-center text-sm shadow-sm">
+                      {bus.driverName.charAt(0)}
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-white flex items-center gap-1">
+                        <span>{bus.driverName}</span>
+                        <span className="text-[9px] text-amber-400 bg-amber-400/15 px-1 py-0.2 rounded-full font-mono font-semibold">
+                          ★ 4.9
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-gray-400">
+                        Lead Pilot • Cond: {bus.conductorName.split(" ")[0]}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex justify-between text-gray-700">
-                    <span className="text-gray-500">Driver:</span>
-                    <span className="font-medium">{bus.driverName}</span>
-                  </div>
-                  <div className="flex justify-between text-gray-700">
-                    <span className="text-gray-500">Conductor:</span>
-                    <span className="font-medium">{bus.conductorName}</span>
-                  </div>
-                  <div className="flex justify-between text-gray-700">
-                    <span className="text-gray-500">Current Position:</span>
-                    <span className="font-medium text-right">{bus.currentLocationName}</span>
+
+                  {/* Native Call & Chat Action Buttons */}
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => alert(`Calling driver ${bus.driverName}...`)}
+                      className="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-500 to-amber-500 text-white flex items-center justify-center shadow-md touch-press hover:scale-105"
+                      title="Call Driver"
+                      aria-label="Call Driver"
+                    >
+                      📞
+                    </button>
+                    <button
+                      onClick={() => alert(`Opening dispatch radio for ${bus.driverName}...`)}
+                      className="w-8 h-8 rounded-full bg-gray-800 text-white border border-white/10 flex items-center justify-center shadow-sm touch-press hover:scale-105"
+                      title="Dispatch Message"
+                      aria-label="Dispatch Message"
+                    >
+                      💬
+                    </button>
                   </div>
                 </div>
 
-                {/* Action CTA */}
+                {/* Primary Action Button */}
                 <a
                   href="/matching"
-                  className="w-full py-2.5 px-3 bg-gray-950 text-white rounded-lg text-xs font-mono font-bold flex items-center justify-center gap-1.5 touch-press"
+                  className="w-full py-2.5 px-4 bg-gray-950 hover:bg-black text-white rounded-2xl text-xs font-mono font-semibold flex items-center justify-center gap-1.5 touch-press shadow-md"
                 >
                   <span>Match Agri Cargo to this Bus</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -205,10 +261,10 @@ export function BottomSheet() {
 
           return (
             <>
-              <div className="px-4 py-3 border-b border-gray-100 flex items-start justify-between">
+              <div className="px-4 py-3 border-b border-black/[0.05] flex items-start justify-between">
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-mono bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded font-semibold">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10.5px] font-mono bg-gray-900 text-white px-2 py-0.5 rounded-full font-bold shadow-xs">
                       {s.code}
                     </span>
                     <StatusBadge
@@ -217,53 +273,65 @@ export function BottomSheet() {
                       size="sm"
                     />
                   </div>
-                  <h2 className="text-base font-bold text-gray-950 font-mono mt-0.5">
+                  <h2 className="text-base font-bold text-gray-950 font-mono mt-1">
                     {s.commodity} • {formatWeightKg(s.totalWeightKg)}
                   </h2>
-                  <p className="text-xs text-gray-500">{s.villageClusterName}</p>
+                  <p className="text-xs text-gray-500 font-medium">{s.villageClusterName}</p>
                 </div>
                 <button
                   onClick={closeDrawer}
                   className="p-1.5 rounded-full text-gray-400 hover:text-gray-900 hover:bg-gray-100 touch-press"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs">
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                    <div className="text-[10px] text-gray-500 uppercase font-mono">APMC Deadline</div>
-                    <div className="text-base font-bold font-mono text-red-700 mt-0.5">{s.requiredArrivalDeadline}</div>
-                    <div className="text-[10px] text-gray-500">Morning auction cutoff</div>
+                {/* 2x2 Metric Cards */}
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div className="app-card-peach p-3 rounded-2xl">
+                    <div className="text-[9.5px] text-amber-900 uppercase font-mono font-semibold">APMC Deadline</div>
+                    <div className="text-base font-bold font-mono text-amber-950 mt-0.5">{s.requiredArrivalDeadline}</div>
+                    <div className="text-[9.5px] text-amber-700">Auction cutoff</div>
                   </div>
 
-                  <div className="bg-emerald-50/70 p-2.5 rounded-lg border border-emerald-100">
-                    <div className="text-[10px] text-emerald-800 uppercase font-mono">Freight Savings</div>
-                    <div className="text-base font-bold font-mono text-emerald-800 mt-0.5">{formatInr(s.freightCostInr)}</div>
-                    <div className="text-[10px] text-emerald-700">vs ₹400 charter</div>
+                  <div className="app-card-green p-3 rounded-2xl">
+                    <div className="text-[9.5px] text-emerald-900 uppercase font-mono font-semibold">Freight Savings</div>
+                    <div className="text-base font-bold font-mono text-emerald-950 mt-0.5">{formatInr(s.freightCostInr)}</div>
+                    <div className="text-[9.5px] text-emerald-700">vs ₹400 charter</div>
                   </div>
                 </div>
 
-                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 space-y-1.5">
-                  <div className="font-semibold text-gray-900 text-[11px] uppercase font-mono">Farmer Details</div>
-                  <div className="flex justify-between text-gray-700">
-                    <span className="text-gray-500">Farmer:</span>
-                    <span className="font-medium">{s.farmerName}</span>
+                {/* Farmer Contact Card */}
+                <div className="bg-gray-900 text-white p-3.5 rounded-2xl shadow-md flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-sm shadow-sm">
+                      🌾
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-white">
+                        {s.farmerName}
+                      </div>
+                      <div className="text-[10px] text-gray-400">
+                        {s.villageClusterName} • {s.destinationName}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex justify-between text-gray-700">
-                    <span className="text-gray-500">Phone:</span>
-                    <span className="font-mono">{s.farmerPhone}</span>
-                  </div>
-                  <div className="flex justify-between text-gray-700">
-                    <span className="text-gray-500">Destination:</span>
-                    <span className="font-medium">{s.destinationName}</span>
+
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => alert(`Calling farmer ${s.farmerName} (${s.farmerPhone})...`)}
+                      className="w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-500 text-white flex items-center justify-center shadow-md touch-press hover:scale-105"
+                      title="Call Farmer"
+                    >
+                      📞
+                    </button>
                   </div>
                 </div>
 
                 <a
                   href="/matching"
-                  className="w-full py-2.5 px-3 bg-emerald-700 text-white rounded-lg text-xs font-mono font-bold flex items-center justify-center gap-1.5 touch-press"
+                  className="w-full py-2.5 px-4 bg-emerald-700 hover:bg-emerald-800 text-white rounded-2xl text-xs font-mono font-semibold flex items-center justify-center gap-1.5 touch-press shadow-md"
                 >
                   <span>Open Capacity Matching</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -279,40 +347,40 @@ export function BottomSheet() {
 
           return (
             <>
-              <div className="px-4 py-3 border-b border-red-100 bg-red-50/50 flex items-start justify-between">
+              <div className="px-4 py-3 border-b border-red-200 bg-red-50/40 flex items-start justify-between">
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-mono bg-red-100 text-red-900 px-1.5 py-0.5 rounded font-bold">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10.5px] font-mono bg-red-600 text-white px-2 py-0.5 rounded-full font-bold shadow-xs">
                       {inc.code}
                     </span>
                     <StatusBadge label={inc.severity} variant="critical" size="sm" />
                   </div>
-                  <h2 className="text-sm font-bold text-red-950 font-mono mt-0.5">{inc.title}</h2>
-                  <p className="text-xs text-red-700">Reported at {inc.reportedTime}</p>
+                  <h2 className="text-base font-bold text-red-950 font-mono mt-1">{inc.title}</h2>
+                  <p className="text-[11px] text-red-700 font-medium">Reported at {inc.reportedTime}</p>
                 </div>
                 <button
                   onClick={closeDrawer}
                   className="p-1.5 rounded-full text-red-400 hover:text-red-900 hover:bg-red-100 touch-press"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 space-y-3 text-xs">
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-950 leading-relaxed">
+                <div className="p-3 bg-red-50/80 border border-red-200 rounded-2xl text-red-950 leading-relaxed text-xs">
                   {inc.impactSummary}
                 </div>
 
-                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg space-y-1">
+                <div className="app-card-green p-3.5 rounded-2xl space-y-1">
                   <div className="text-[10px] font-bold font-mono uppercase text-emerald-900">
                     Optimization Detour Directive
                   </div>
-                  <p className="text-emerald-950 font-medium">{inc.detourRecommendation}</p>
+                  <p className="text-emerald-950 font-medium text-xs leading-snug">{inc.detourRecommendation}</p>
                 </div>
 
                 <a
                   href="/incidents"
-                  className="w-full py-2.5 px-3 bg-gray-950 text-white rounded-lg text-xs font-mono font-bold flex items-center justify-center gap-1.5 touch-press"
+                  className="w-full py-2.5 px-4 bg-gray-950 hover:bg-black text-white rounded-2xl text-xs font-mono font-semibold flex items-center justify-center gap-1.5 touch-press shadow-md"
                 >
                   <span>View Full Incident Cascade</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -328,34 +396,34 @@ export function BottomSheet() {
 
           return (
             <>
-              <div className="px-4 py-3 border-b border-gray-100 flex items-start justify-between">
+              <div className="px-4 py-3 border-b border-black/[0.05] flex items-start justify-between">
                 <div>
-                  <span className="text-[11px] font-mono bg-purple-50 text-purple-800 px-1.5 py-0.5 rounded font-semibold border border-purple-200">
+                  <span className="text-[10.5px] font-mono bg-purple-600 text-white px-2 py-0.5 rounded-full font-bold shadow-xs">
                     {ch.id}
                   </span>
-                  <h2 className="text-base font-bold text-gray-950 font-mono mt-0.5">{ch.name}</h2>
-                  <p className="text-xs text-gray-500">{ch.locationName}</p>
+                  <h2 className="text-base font-bold text-gray-950 font-mono mt-1">{ch.name}</h2>
+                  <p className="text-xs text-gray-500 font-medium">{ch.locationName}</p>
                 </div>
                 <button
                   onClick={closeDrawer}
                   className="p-1.5 rounded-full text-gray-400 hover:text-gray-900 hover:bg-gray-100 touch-press"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs">
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                    <div className="text-[10px] text-gray-500 uppercase font-mono">Available Plugs</div>
-                    <div className="text-base font-bold font-mono text-emerald-700 mt-0.5">
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div className="app-card-green p-3 rounded-2xl">
+                    <div className="text-[9.5px] text-emerald-900 uppercase font-mono font-semibold">Available Plugs</div>
+                    <div className="text-lg font-bold font-mono text-emerald-700 mt-0.5">
                       {ch.availableConnectors} / {ch.totalConnectors}
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                    <div className="text-[10px] text-gray-500 uppercase font-mono">Average Wait</div>
-                    <div className="text-base font-bold font-mono text-gray-950 mt-0.5">
+                  <div className="app-card-purple p-3 rounded-2xl">
+                    <div className="text-[9.5px] text-purple-900 uppercase font-mono font-semibold">Average Wait</div>
+                    <div className="text-lg font-bold font-mono text-purple-950 mt-0.5">
                       {ch.avgWaitTimeMinutes} min
                     </div>
                   </div>
@@ -363,7 +431,7 @@ export function BottomSheet() {
 
                 <a
                   href="/ev"
-                  className="w-full py-2.5 px-3 bg-gray-950 text-white rounded-lg text-xs font-mono font-bold flex items-center justify-center gap-1.5 touch-press"
+                  className="w-full py-2.5 px-4 bg-gray-950 hover:bg-black text-white rounded-2xl text-xs font-mono font-semibold flex items-center justify-center gap-1.5 touch-press shadow-md"
                 >
                   <span>View All Chargers</span>
                   <ArrowRight className="w-3.5 h-3.5" />

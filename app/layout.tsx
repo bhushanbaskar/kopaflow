@@ -1,11 +1,21 @@
 import type { Metadata } from "next";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
+import { Silkscreen } from "next/font/google";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
+
+const geistPixel = Silkscreen({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  variable: "--font-geist-pixel",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "KOPAR-MOVE | Kopargaon Mobility Operating System",
   description:
-    "Intelligent mobility, transit dispatch, and agricultural logistics optimization platform for Kopargaon, Maharashtra.",
+    "Mobility, transit dispatch, and agricultural logistics platform for Kopargaon, Maharashtra.",
 };
 
 export default function RootLayout({
@@ -14,8 +24,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="antialiased bg-slate-50 text-slate-900">{children}</body>
+    <html
+      lang="en"
+      className={`${GeistSans.variable} ${GeistMono.variable} ${geistPixel.variable}`}
+    >
+      <body className="antialiased bg-[#f4f6f9] text-gray-950 font-sans">
+        {children}
+      </body>
     </html>
   );
 }
