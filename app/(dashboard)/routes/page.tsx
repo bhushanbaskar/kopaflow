@@ -95,13 +95,12 @@ export default function LiveRoutesPage() {
           return (
             <div
               key={route.id}
-              className={`rounded-2xl p-3.5 sm:p-4 shadow-ios-card space-y-3 transition-all touch-press animate-text-reveal ${
-                isCorrupt
+              className={`rounded-2xl p-3.5 sm:p-4 shadow-ios-card space-y-3 transition-all touch-press animate-text-reveal ${isCorrupt
                   ? "bg-rose-50/40 border border-rose-300 ring-1 ring-rose-200"
                   : isUnavail
-                  ? "bg-amber-50/30 border border-amber-300"
-                  : "bg-white border border-black/[0.07] hover:border-black/[0.15]"
-              }`}
+                    ? "bg-amber-50/30 border border-amber-300"
+                    : "bg-white border border-black/[0.07] hover:border-black/[0.15]"
+                }`}
               style={{ animationDelay: `${idx * 60}ms` }}
             >
               <div className="flex items-start justify-between gap-2">

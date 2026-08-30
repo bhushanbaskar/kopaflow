@@ -254,35 +254,38 @@ function CitizenDashboardContent() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2">
+          {/* Profile Icon Button */}
           <button
             onClick={() => setShowProfileModal(true)}
-            className="py-2 px-3 bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 rounded text-xs font-bold font-mono tracking-wider flex items-center gap-1.5 touch-press shadow-xs transition-colors"
-            title="View My Profile & Account"
+            className="w-10 h-10 rounded-xl bg-slate-100/90 hover:bg-slate-200 text-slate-800 border border-slate-300/80 flex items-center justify-center touch-press shadow-xs transition-all hover:scale-105"
+            title="My Profile & Account"
+            aria-label="My Profile & Account"
           >
-            <User className="w-3.5 h-3.5 text-emerald-700" />
-            <span className="hidden sm:inline">MY PROFILE</span>
-            <span className="sm:hidden">PROFILE</span>
+            <User className="w-4 h-4 text-emerald-700" />
           </button>
 
+          {/* Report Issue Icon Button */}
           <button
             onClick={() => {
               setComplaintSuccessRef(null);
               setShowReportModal(true);
             }}
-            className="py-2 px-3.5 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-bold font-mono tracking-wider flex items-center gap-1.5 touch-press shadow-xs"
+            className="w-10 h-10 rounded-xl bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center touch-press shadow-xs transition-all hover:scale-105"
+            title="Report Civic Issue or Road Hazard"
+            aria-label="Report Issue"
           >
-            <MessageSquareWarning className="w-3.5 h-3.5" />
-            <span>REPORT ISSUE</span>
+            <MessageSquareWarning className="w-4 h-4" />
           </button>
 
+          {/* Log Out Icon Button */}
           <button
             onClick={handleLogout}
-            className="py-2 px-3 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded text-xs font-bold font-mono tracking-wider flex items-center gap-1.5 touch-press shadow-xs transition-colors"
-            title="Sign out of Citizen Account"
+            className="w-10 h-10 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/80 flex items-center justify-center touch-press shadow-xs transition-all hover:scale-105"
+            title="Sign Out"
+            aria-label="Log Out"
           >
-            <LogOut className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">LOG OUT</span>
+            <LogOut className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -429,24 +432,22 @@ function CitizenDashboardContent() {
                     <div
                       key={comp.id}
                       onClick={() => setSelectedComplaint(comp)}
-                      className={`p-3 rounded border text-xs cursor-pointer transition-all hover:bg-gray-50 ${
-                        isResolved
+                      className={`p-3 rounded border text-xs cursor-pointer transition-all hover:bg-gray-50 ${isResolved
                           ? "border-emerald-200 bg-emerald-50/20"
                           : "border-gray-200 bg-white"
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center justify-between mb-1">
                         <span className="font-mono font-bold text-gray-900 text-[11px]">
                           {comp.reference_code}
                         </span>
                         <span
-                          className={`px-2 py-0.5 rounded text-[9.5px] font-mono font-bold uppercase ${
-                            isResolved
+                          className={`px-2 py-0.5 rounded text-[9.5px] font-mono font-bold uppercase ${isResolved
                               ? "bg-emerald-100 text-emerald-800"
                               : comp.status === "IN_PROGRESS" || comp.status === "UNDER_REVIEW"
-                              ? "bg-amber-100 text-amber-800"
-                              : "bg-slate-100 text-slate-800"
-                          }`}
+                                ? "bg-amber-100 text-amber-800"
+                                : "bg-slate-100 text-slate-800"
+                            }`}
                         >
                           {comp.status.replace(/_/g, " ")}
                         </span>
@@ -781,11 +782,11 @@ function CitizenDashboardContent() {
                 <div className="w-11 h-11 rounded-full bg-emerald-100 text-emerald-800 border-2 border-emerald-300 flex items-center justify-center font-bold text-base font-mono">
                   {profile?.fullName
                     ? profile.fullName
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                        .toUpperCase()
-                        .slice(0, 2)
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()
+                      .slice(0, 2)
                     : "CZ"}
                 </div>
                 <div>

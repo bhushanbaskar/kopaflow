@@ -56,20 +56,20 @@ export default function BusFleetPage() {
   const filteredBuses = isWiped
     ? []
     : MOCK_BUS_FLEET.filter((bus) => {
-        const matchesSearch =
-          bus.busNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          bus.plateNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          bus.driverName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          bus.routeName.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch =
+        bus.busNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        bus.plateNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        bus.driverName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        bus.routeName.toLowerCase().includes(searchQuery.toLowerCase());
 
-        const matchesStatus =
-          statusFilter === "ALL" || bus.status === statusFilter;
+      const matchesStatus =
+        statusFilter === "ALL" || bus.status === statusFilter;
 
-        const matchesPropulsion =
-          propulsionFilter === "ALL" || bus.propulsion === propulsionFilter;
+      const matchesPropulsion =
+        propulsionFilter === "ALL" || bus.propulsion === propulsionFilter;
 
-        return matchesSearch && matchesStatus && matchesPropulsion;
-      });
+      return matchesSearch && matchesStatus && matchesPropulsion;
+    });
 
   return (
     <div className="space-y-3.5 max-w-5xl mx-auto pb-4 animate-ios-slide-up">
@@ -104,11 +104,11 @@ export default function BusFleetPage() {
 
           <button
             onClick={() => setReportModalOpen(true)}
-            className="py-1 px-2.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/80 rounded text-[11px] font-mono font-bold flex items-center gap-1.5 transition-colors shadow-xs"
-            title="Report Inaccurate Route / Schedule Information"
+            className="w-8 h-8 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/80 rounded-xl flex items-center justify-center transition-all touch-press shadow-xs hover:scale-105"
+            title="Report Inaccurate Route or Schedule Information"
+            aria-label="Report Inaccuracy"
           >
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-700" />
-            <span>REPORT INACCURACY</span>
+            <AlertTriangle className="w-4 h-4 text-amber-700" />
           </button>
 
           <div className="flex items-center gap-1.5 text-xs font-mono">
@@ -197,11 +197,10 @@ export default function BusFleetPage() {
                 <button
                   key={chip.value}
                   onClick={() => setStatusFilter(chip.value)}
-                  className={`px-3 py-1 rounded text-[10.5px] font-mono whitespace-nowrap transition-all touch-press ${
-                    statusFilter === chip.value
+                  className={`px-3 py-1 rounded text-[10.5px] font-mono whitespace-nowrap transition-all touch-press ${statusFilter === chip.value
                       ? "bg-gray-950 text-white font-bold shadow-xs"
                       : "bg-gray-100/70 text-gray-600 hover:bg-gray-200/80 border border-black/[0.04]"
-                  }`}
+                    }`}
                 >
                   {chip.label}
                 </button>
@@ -246,8 +245,8 @@ export default function BusFleetPage() {
                       bus.status === "ON_ROUTE"
                         ? "operational"
                         : bus.status === "DELAYED"
-                        ? "warning"
-                        : "neutral"
+                          ? "warning"
+                          : "neutral"
                     }
                     size="sm"
                   />

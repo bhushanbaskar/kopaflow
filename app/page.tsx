@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useAuth, DEMO_CREDENTIALS } from "../lib/auth/useAuth";
 import { ScenarioSelectorModal } from "../components/resilience/ScenarioSelectorModal";
+import { InteractiveDottedShader } from "../components/shared/InteractiveDottedShader";
 
 export default function LandingLoginPage() {
   const router = useRouter();
@@ -40,13 +41,16 @@ export default function LandingLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fbfbfa] flex flex-col justify-between p-4 sm:p-6 md:p-10 text-gray-900 font-sans">
+    <div className="relative min-h-screen bg-[#fbfbfa] flex flex-col justify-between p-4 sm:p-6 md:p-10 text-gray-900 font-sans overflow-x-hidden">
+      {/* Interactive Mobile & Desktop Dotted Shader Background */}
+      <InteractiveDottedShader />
+
       <ScenarioSelectorModal
         isOpen={showScenarioModal}
         onClose={() => setShowScenarioModal(false)}
       />
       {/* Top Brand Header */}
-      <header className="flex items-center justify-between max-w-6xl w-full mx-auto pb-4 border-b border-black/[0.07]">
+      <header className="relative z-10 flex items-center justify-between max-w-6xl w-full mx-auto pb-4 border-b border-black/[0.07]">
         <div>
           <div className="text-lg font-bold font-mono tracking-wider text-gray-950">
             KOPA-MOVE
@@ -72,7 +76,7 @@ export default function LandingLoginPage() {
       </header>
 
       {/* Main Operational Hero / Access Console */}
-      <main className="max-w-6xl w-full mx-auto my-auto py-6 sm:py-8 md:py-12 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-center animate-ios-slide-up">
+      <main className="relative z-10 max-w-6xl w-full mx-auto my-auto py-6 sm:py-8 md:py-12 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-center animate-ios-slide-up">
         {/* Left Manifesto */}
         <div className="lg:col-span-7 space-y-4 sm:space-y-5">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100/90 border border-black/[0.06] rounded-full text-[11px] font-mono text-slate-800 shadow-xs animate-text-reveal">
@@ -271,7 +275,7 @@ export default function LandingLoginPage() {
       </main>
 
       {/* Bottom Legal / System Status */}
-      <footer className="max-w-6xl w-full mx-auto pt-4 border-t border-black/[0.07] flex flex-wrap items-center justify-between text-[11px] text-gray-500 font-mono">
+      <footer className="relative z-10 max-w-6xl w-full mx-auto pt-4 border-t border-black/[0.07] flex flex-wrap items-center justify-between text-[11px] text-gray-500 font-mono">
         <div>KOPAR-MOVE v1.0.0 • Supabase RLS Protected</div>
         <div className="flex items-center gap-3">
           <span>Kopargaon, Ahilyanagar District, MH</span>

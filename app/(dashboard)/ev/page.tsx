@@ -69,11 +69,11 @@ export default function EVGridPage() {
 
           <button
             onClick={() => setReportModalOpen(true)}
-            className="py-1 px-2.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/80 rounded text-[11px] font-mono font-bold flex items-center gap-1.5 transition-colors shadow-xs"
-            title="Report Inaccurate Charger Status / Closure"
+            className="w-8 h-8 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/80 rounded-xl flex items-center justify-center transition-all touch-press shadow-xs hover:scale-105"
+            title="Report Inaccurate Charger Status or Closure"
+            aria-label="Report Inaccuracy"
           >
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-700" />
-            <span>REPORT INACCURACY</span>
+            <AlertTriangle className="w-4 h-4 text-amber-700" />
           </button>
         </div>
       </div>
@@ -183,13 +183,12 @@ export default function EVGridPage() {
           return (
             <div
               key={ch.id}
-              className={`border rounded-lg p-3 sm:p-3.5 shadow-xs space-y-2.5 transition-all ${
-                isCorrupt
+              className={`border rounded-lg p-3 sm:p-3.5 shadow-xs space-y-2.5 transition-all ${isCorrupt
                   ? "bg-rose-50/40 border-rose-300 ring-1 ring-rose-200"
                   : isUnavail
-                  ? "bg-amber-50/30 border-amber-300"
-                  : "bg-white border-black/[0.07]"
-              }`}
+                    ? "bg-amber-50/30 border-amber-300"
+                    : "bg-white border-black/[0.07]"
+                }`}
             >
               <div className="flex items-start justify-between gap-2">
                 <div>

@@ -142,10 +142,11 @@ function CitizenProfileContent() {
         </Link>
         <button
           onClick={handleLogout}
-          className="py-1.5 px-3 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded text-xs font-bold font-mono tracking-wider flex items-center gap-1.5 touch-press shadow-xs transition-colors"
+          className="w-9 h-9 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/80 flex items-center justify-center touch-press shadow-xs transition-all hover:scale-105"
+          title="Sign Out"
+          aria-label="Log Out"
         >
-          <LogOut className="w-3.5 h-3.5" />
-          <span>LOG OUT</span>
+          <LogOut className="w-4 h-4" />
         </button>
       </div>
 

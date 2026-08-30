@@ -3,8 +3,10 @@
 @tailwind utilities;
 
 :root {
-  --background: #f4f6f9; /* Clean, modern mobile canvas */
-  --foreground: #111827; /* Deep readable charcoal */
+  --background: #f4f6f9;
+  /* Clean, modern mobile canvas */
+  --foreground: #111827;
+  /* Deep readable charcoal */
   --panel: #ffffff;
   --panel-subtle: #f8fafc;
   --border: rgba(0, 0, 0, 0.06);
@@ -136,20 +138,32 @@ body {
   animation: ios-fade-in 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.stagger-1 { animation-delay: 60ms; }
-.stagger-2 { animation-delay: 120ms; }
-.stagger-3 { animation-delay: 180ms; }
-.stagger-4 { animation-delay: 240ms; }
-.stagger-5 { animation-delay: 300ms; }
+.stagger-1 {
+  animation-delay: 60ms;
+}
+
+.stagger-2 {
+  animation-delay: 120ms;
+}
+
+.stagger-3 {
+  animation-delay: 180ms;
+}
+
+.stagger-4 {
+  animation-delay: 240ms;
+}
+
+.stagger-5 {
+  animation-delay: 300ms;
+}
 
 /* Skeleton Loading Shimmer Gradient */
 .skeleton-shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(226, 232, 240, 0.6) 0%,
-    rgba(241, 245, 249, 0.95) 50%,
-    rgba(226, 232, 240, 0.6) 100%
-  );
+  background: linear-gradient(90deg,
+      rgba(226, 232, 240, 0.6) 0%,
+      rgba(241, 245, 249, 0.95) 50%,
+      rgba(226, 232, 240, 0.6) 100%);
   background-size: 200% 100%;
   animation: shimmer 1.6s infinite linear;
 }
@@ -158,6 +172,7 @@ body {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
