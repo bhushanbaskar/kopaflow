@@ -7,10 +7,11 @@ import { MobileHeader } from "./MobileHeader";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { BottomSheet } from "../shared/BottomSheet";
 import { SafeModeBanner } from "../resilience/SafeModeBanner";
+import { PageTransitionLoader } from "../shared/PageTransitionLoader";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#f9fafb] text-gray-900 font-sans">
+    <div className="flex h-screen w-screen overflow-hidden bg-[#f4f6f9] text-gray-900 font-sans">
       {/* Desktop Persistent Operational Sidebar (Hidden on Mobile/Tablet <1024px) */}
       <div className="hidden lg:flex shrink-0">
         <Sidebar />
@@ -30,8 +31,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <SafeModeBanner />
 
         {/* Scrollable Content Area */}
-        <main className="flex-1 overflow-y-auto p-3.5 sm:p-4 lg:p-5 pb-24 lg:pb-5 relative bg-[#f9fafb]">
-          {children}
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-5 pb-28 lg:pb-5 relative bg-[#f4f6f9]">
+          <PageTransitionLoader>{children}</PageTransitionLoader>
         </main>
 
         {/* Mobile Bottom Navigation (<1024px) */}

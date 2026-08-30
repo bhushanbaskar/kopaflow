@@ -11,6 +11,7 @@ import {
   MOCK_INCIDENTS,
   MOCK_EV_CHARGERS,
   MOCK_VILLAGE_CLUSTERS,
+  MOCK_ACCIDENT_ZONES,
 } from "../../mock/kopargaonData";
 import {
   getBusRouteRoadGeometry,
@@ -22,7 +23,7 @@ import { cn } from "../../lib/utils/cn";
 interface KopargaonMapProps {
   height?: string;
   selectedEntityId?: string | null;
-  onSelectEntity?: (type: "BUS" | "SHIPMENT" | "INCIDENT" | "CHARGER" | "SEGMENT" | "ROUTE", id: string) => void;
+  onSelectEntity?: (type: "BUS" | "SHIPMENT" | "INCIDENT" | "CHARGER" | "SEGMENT" | "ROUTE" | "ACCIDENT_ZONE", id: string) => void;
   className?: string;
   allowFullscreen?: boolean;
 }
@@ -47,6 +48,7 @@ export default function KopargaonMap({
     ev?: L.LayerGroup;
     infra?: L.LayerGroup;
     detours?: L.LayerGroup;
+    blackspots?: L.LayerGroup;
   }>({});
 
   const { mapLayers, openDrawer, activeOptimizationRun } = useAppStore();
@@ -79,6 +81,7 @@ export default function KopargaonMap({
       ev: L.layerGroup().addTo(map),
       infra: L.layerGroup().addTo(map),
       detours: L.layerGroup().addTo(map),
+      blackspots: L.layerGroup().addTo(map),
     };
 
     mapInstanceRef.current = map;
@@ -182,7 +185,7 @@ export default function KopargaonMap({
         iconAnchor: [40, 14],
       });
       L.marker([19.8812, 74.472], { icon: depotIcon })
-        .bindPopup("<b>Kopargaon Bus Depot & Workshop</b><br/>Fleet dispatch, maintenance bays & EV charging hub")
+        .bindPopup("<b>Kopargaon Bus Depot & Workshop</b><br/>Fleet dispatch & maintenance bays")
         .addTo(infra);
     }
 
@@ -306,6 +309,84 @@ export default function KopargaonMap({
           const marker = L.marker([charger.coordinates.lat, charger.coordinates.lng], { icon: chIcon }).addTo(ev);
           marker.on("click", () => {
             openDrawer("CHARGER", charger.id);
+          });
+        });
+      }
+    }
+
+    // F. Accident-Prone Zones (Blackspots) - Pulsing Danger Beacon & Risk Radius Circle
+    const { blackspots } = layerGroupsRef.current;
+    if (blackspots) {
+      blackspots.clearLayers();
+      if (mapLayers.showBlackspots) {
+        MOCK_ACCIDENT_ZONES.forEach((zone) => {
+          const isCritical = zone.severityLevel === "CRITICAL_BLACKSPOT";
+          const isHigh = zone.severityLevel === "HIGH_RISK";
+
+          const primaryColor = isCritical ? "#be123c" : isHigh ? "#c2410c" : "#d97706";
+          const haloColor = isCritical ? "rgba(225, 29, 72, 0.35)" : isHigh ? "rgba(234, 88, 12, 0.35)" : "rgba(217, 119, 6, 0.35)";
+          const badgeBg = isCritical ? "#881337" : isHigh ? "#7c2d12" : "#78350f";
+
+          // 1. Render Safety Risk Radius Circle
+          L.circle([zone.coordinates.lat, zone.coordinates.lng], {
+            radius: zone.riskRadiusMeters,
+            color: primaryColor,
+            fillColor: primaryColor,
+            fillOpacity: 0.16,
+            weight: 2,
+            dashArray: "5, 5",
+          }).addTo(blackspots);
+
+          // 2. Render Interactive Hazard Marker
+          const blackspotIcon = L.divIcon({
+            className: "uber-pin-marker",
+            html: `
+              <div style="position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer;">
+                <div style="position: relative; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+                  <div style="position: absolute; inset: 0; border-radius: 50%; background: ${haloColor}; animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+                  <div style="position: relative; width: 24px; height: 24px; border-radius: 50%; background: ${primaryColor}; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; box-shadow: 0 4px 12px ${haloColor}; border: 2.5px solid #ffffff;">
+                    ⚠️
+                  </div>
+                </div>
+                <div style="margin-top: 1.5px; background: ${badgeBg}; color: #ffffff; border: 1px solid rgba(255,255,255,0.4); padding: 1px 6px; border-radius: 9999px; font-weight: 800; font-size: 8px; white-space: nowrap; font-family: monospace; box-shadow: 0 2px 5px rgba(0,0,0,0.35);">
+                  ${zone.id} • ${isCritical ? "CRITICAL" : "ACCIDENT ZONE"}
+                </div>
+              </div>
+            `,
+            iconSize: [80, 44],
+            iconAnchor: [40, 15],
+          });
+
+          const marker = L.marker([zone.coordinates.lat, zone.coordinates.lng], { icon: blackspotIcon }).addTo(blackspots);
+
+          // Tooltip preview
+          marker.bindTooltip(
+            `
+              <div style="font-family: inherit; font-size: 11px; line-height: 1.4; max-width: 240px; padding: 2px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; border-bottom: 1px solid #e5e7eb; padding-bottom: 3px;">
+                  <span style="font-weight: 800; color: ${primaryColor}; font-family: monospace;">${zone.code}</span>
+                  <span style="font-size: 9px; background: ${isCritical ? '#fee2e2' : '#ffedd5'}; color: ${primaryColor}; padding: 1px 5px; border-radius: 9999px; font-weight: 800; border: 1px solid ${primaryColor}40;">
+                    Risk Score: ${zone.riskScore}/100
+                  </span>
+                </div>
+                <div style="font-weight: 700; color: #111827; margin-top: 4px; font-size: 11.5px;">${zone.name}</div>
+                <div style="margin-top: 5px; padding: 4px 6px; background: #f9fafb; border: 1px solid rgba(0,0,0,0.08); border-radius: 4px; font-size: 10px; color: #374151;">
+                  <div>📊 3-Yr Crash Toll: <strong>${zone.totalRecordedAccidents3Years} incidents (${zone.totalFatalities3Years} fatal)</strong></div>
+                  <div>🕒 Peak Danger: <strong>${zone.peakRiskHours.split("(")[0]}</strong></div>
+                  <div style="margin-top: 3px; color: #047857; font-weight: 700; display: flex; align-items: center; gap: 3px;">
+                    <span>🏛️ Official Sources: Police, Municipal PWD, EMS</span>
+                  </div>
+                </div>
+                <div style="margin-top: 4px; font-size: 9.5px; color: #2563eb; font-weight: 700; text-align: center;">
+                  Click marker to view past trends & source logs ➔
+                </div>
+              </div>
+            `,
+            { direction: "top", offset: [0, -12], opacity: 0.98 }
+          );
+
+          marker.on("click", () => {
+            openDrawer("ACCIDENT_ZONE", zone.id);
           });
         });
       }

@@ -104,15 +104,15 @@ export default function OptimizationEnginePage() {
       {
         id: "REC-03",
         type: "EV_DISPATCH" as const,
-        title: "Dispatch Returning Electric Buses to Depot Fast Station B",
+        title: "Dispatch Electric Vehicles to Public Fast Station B",
         targetEntityId: "EV-02",
-        targetEntityName: "Depot Fast Station B (150 kW)",
+        targetEntityName: "Public Fast Station B (150 kW)",
         actionText: "Balance EV Queue",
         confidenceScore: 0.92,
         explainableReasons: [
           "Station A currently has 18 min average queue with 3 active sessions",
           "Station B has 3 available connectors with 4 min wait time",
-          "Cuts EV fleet turnaround time by 14 minutes",
+          "Cuts EV charging wait time by 14 minutes",
         ],
         impactMetrics: {
           timeSavedMinutes: 14,

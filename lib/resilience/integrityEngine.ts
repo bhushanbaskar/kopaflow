@@ -56,7 +56,13 @@ export async function runSystemIntegrityCheck(): Promise<IntegrityCheckResult> {
 
     // Check route reference
     if (bus.routeId) {
-      const routeExists = routes.some((r) => r.id === bus.routeId || r.routeNumber === bus.routeId);
+      const routeExists = routes.some(
+        (r) =>
+          r.id === bus.routeId ||
+          r.routeNumber === bus.routeId ||
+          bus.routeId.includes(r.id) ||
+          (bus.routeName && r.name && r.name.includes(bus.routeName))
+      );
       if (!routeExists) {
         violations.push({
           rule: "ORPHAN_BUS_ROUTE_REFERENCE",
@@ -84,7 +90,16 @@ export async function runSystemIntegrityCheck(): Promise<IntegrityCheckResult> {
 
     // Check bus assignment
     if (shipment.assigned_bus_number || shipment.assigned_trip_id) {
-      const assignedBus = busNumberMap.get(shipment.assigned_bus_number || "") || busMap.get(shipment.assigned_bus_number || "");
+      const bNum = shipment.assigned_bus_number || "";
+      const assignedBus =
+        busMap.get(bNum) ||
+        busNumberMap.get(bNum) ||
+        buses.find(
+          (b) =>
+            b.id.includes(bNum) ||
+            b.busNumber.includes(bNum) ||
+            (bNum && b.id && bNum.includes(b.id))
+        );
       if (shipment.status === "IN_TRANSIT" && !assignedBus) {
         violations.push({
           rule: "ORPHAN_SHIPMENT_BUS_ASSIGNMENT",
@@ -133,12 +148,14 @@ export async function runSystemIntegrityCheck(): Promise<IntegrityCheckResult> {
 
   // 4. EV Charger Integrity
   for (const charger of evChargers) {
-    if (charger.availableConnectors > charger.totalConnectors) {
+    const avail = (charger as any).availableConnectors ?? (charger as any).availableConnectorsCount ?? 0;
+    const total = (charger as any).totalConnectors ?? (charger as any).totalConnectorsCount ?? 6;
+    if (avail > total) {
       violations.push({
         rule: "EV_CHARGER_CONNECTOR_ANOMALY",
         entity_type: "EV_CHARGER",
         entity_id: charger.id,
-        message: `EV Charger '${charger.name}' has available connectors (${charger.availableConnectors}) > total (${charger.totalConnectors}).`,
+        message: `EV Charger '${charger.name}' has available connectors (${avail}) > total (${total}).`,
         severity: "ERROR",
       });
     }

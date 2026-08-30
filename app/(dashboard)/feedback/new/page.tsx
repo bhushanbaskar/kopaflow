@@ -102,7 +102,7 @@ export default function NewFeedbackReportPage() {
     {
       id: "EV_CHARGING",
       title: "EV Charging",
-      description: "Depot fast charger faults, queues, payment issues",
+      description: "Public EV charger faults, queues, payment issues",
       icon: Zap,
     },
     {
@@ -158,7 +158,7 @@ export default function NewFeedbackReportPage() {
         return [
           { id: "CHARGER_MALFUNCTION", label: "Charger fault code / handshake error" },
           { id: "CHARGER_UNAVAILABLE", label: "Charger offline or occupied by ICE vehicle" },
-          { id: "LONG_QUEUE", label: "Excessive wait queue for electric bus charging" },
+          { id: "LONG_QUEUE", label: "Excessive wait queue for electric vehicle charging" },
           { id: "INCORRECT_AVAILABILITY", label: "App status showed available but charger occupied" },
         ];
       case "BUS_STOP":
@@ -173,16 +173,16 @@ export default function NewFeedbackReportPage() {
 
   // Known Transit Entities for linking
   const knownEntities = [
-    { type: "BUS", id: "BUS-108", name: "Bus BUS-108 (Route 01)" },
-    { type: "BUS", id: "BUS-102", name: "Bus BUS-102 (Electric - Route 02)" },
-    { type: "BUS", id: "BUS-104", name: "Bus BUS-104 (Route 03)" },
+    { type: "BUS", id: "BUS-108", name: "Bus BUS-108 (Diesel - Route 01)" },
+    { type: "BUS", id: "BUS-102", name: "Bus BUS-102 (Diesel - Route 02)" },
+    { type: "BUS", id: "BUS-104", name: "Bus BUS-104 (CNG - Route 03)" },
     { type: "ROUTE", id: "R-01", name: "Route 01 (Bus Stand ↔ Pohegaon)" },
     { type: "ROUTE", id: "R-02", name: "Route 02 (Bus Stand ↔ Shirdi Border)" },
     { type: "ROUTE", id: "R-04", name: "Route 04 (Station ↔ Dhamori)" },
     { type: "ROAD_SEGMENT", id: "KPG-14", name: "Road Corridor KPG-14 (SH-7 Savalyavihar)" },
     { type: "ROAD_SEGMENT", id: "KPG-01", name: "Road Corridor KPG-01 (Kopargaon Bus Stand Road)" },
-    { type: "EV_CHARGER", id: "chg-01", name: "Depot Fast Charger Bay A (60kW)" },
-    { type: "EV_CHARGER", id: "chg-02", name: "Depot Fast Charger Bay B (60kW)" },
+    { type: "EV_CHARGER", id: "chg-01", name: "Public Fast Charger Station A (60kW)" },
+    { type: "EV_CHARGER", id: "chg-02", name: "Public Fast Charger Station B (60kW)" },
   ];
 
   // Preset Landmarks

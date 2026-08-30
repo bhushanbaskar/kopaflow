@@ -87,7 +87,7 @@ export default function DepotOpsPage() {
               </div>
 
               <div>
-                <span className="text-[9.5px] text-gray-500 uppercase">Energy: </span>
+                <span className="text-[9.5px] text-gray-500 uppercase">Fuel: </span>
                 <span className="font-bold text-gray-900">{d.fuelBatteryLevel}%</span>
               </div>
             </div>

@@ -182,14 +182,14 @@ export async function runHeuristicOptimization(input: HeuristicOptimizationInput
   recommendations.push({
     id: "REC-EV-DISPATCH-01",
     type: "EV_DISPATCH",
-    title: "Balance Depot Charger Queues: Direct Inbound Electric Buses to Fast Station B",
+    title: "Balance EV Charging Queues: Direct Inbound Electric Vehicles to Station B",
     targetEntityId: "EV-02",
-    targetEntityName: "Depot Fast Station B (150 kW)",
+    targetEntityName: "Public Fast Station B (150 kW)",
     actionText: "Route EV charging requests to Station B",
     confidenceScore: 0.93,
     explainableReasons: [
       "Station A queue is 18 min with 75% load; Station B has 3 available 150 kW connectors (4 min wait)",
-      "Reduces fleet turnaround latency and ensures on-time afternoon departures",
+      "Reduces EV turnaround latency and prevents local grid congestion",
     ],
     impactMetrics: {
       timeSavedMinutes: 14,
@@ -235,8 +235,8 @@ export async function runHeuristicOptimization(input: HeuristicOptimizationInput
     },
     {
       id: "C-05",
-      constraintName: "Depot Charging Grid Power Limit",
-      description: "Total simultaneous depot charging power cannot exceed 250 kW",
+      constraintName: "Public EV Charging Grid Power Limit",
+      description: "Total simultaneous public EV charging power cannot exceed 250 kW",
       status: "SATISFIED",
       threshold: "Max 250 kW",
       observedValue: "Current peak aggregate load 165 kW",

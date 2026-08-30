@@ -27,6 +27,7 @@ import {
 } from "../../../lib/domain/types";
 import { formatTimeAgo } from "../../../lib/utils/formatters";
 import { cn } from "../../../lib/utils/cn";
+import { useResilience } from "../../../lib/resilience/useResilience";
 
 export default function PublicFeedbackPage() {
   const router = useRouter();
@@ -35,6 +36,11 @@ export default function PublicFeedbackPage() {
   const [searchRef, setSearchRef] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<FeedbackCategory | "ALL">("ALL");
   const [selectedStatus, setSelectedStatus] = useState<FeedbackStatus | "ALL">("ALL");
+  const { systemImpact, refreshStats } = useResilience();
+
+  useEffect(() => {
+    refreshStats();
+  }, [refreshStats]);
 
   useEffect(() => {
     loadReports();
@@ -176,13 +182,31 @@ export default function PublicFeedbackPage() {
             </p>
           </div>
 
-          <Link
-            href="/feedback/new"
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-950 hover:bg-gray-850 text-white rounded-[8px] text-xs font-semibold tracking-tight transition-colors shadow-xs touch-press shrink-0"
-          >
-            <MessageSquarePlus className="w-4 h-4" />
-            <span>Report a Problem</span>
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1.5 text-xs font-mono">
+              <span className="bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300/40 text-emerald-800 font-bold">
+                ✓ {systemImpact.complaints.healthy} Verified
+              </span>
+              {systemImpact.complaints.unavailable > 0 && (
+                <span className="bg-amber-50 px-2 py-0.5 rounded border border-amber-300/60 text-amber-800 font-bold animate-in fade-in">
+                  ⚠ {systemImpact.complaints.unavailable} Unavailable
+                </span>
+              )}
+              {systemImpact.complaints.corrupted > 0 && (
+                <span className="bg-rose-50 px-2 py-0.5 rounded border border-rose-300/60 text-rose-800 font-bold animate-in fade-in">
+                  ⛔ {systemImpact.complaints.corrupted} Corrupted
+                </span>
+              )}
+            </div>
+
+            <Link
+              href="/feedback/new"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-950 hover:bg-gray-850 text-white rounded-[8px] text-xs font-semibold tracking-tight transition-colors shadow-xs touch-press shrink-0"
+            >
+              <MessageSquarePlus className="w-4 h-4" />
+              <span>Report a Problem</span>
+            </Link>
+          </div>
         </div>
 
         {/* Search Reference Code Input */}

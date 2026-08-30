@@ -73,16 +73,16 @@ export function BottomSheet() {
         style={{
           transform: touchDelta > 0 ? `translateY(${touchDelta}px)` : undefined,
         }}
-        className="relative w-full max-h-[88vh] lg:max-h-full lg:h-full lg:max-w-md bg-white rounded-t-xl lg:rounded-none border-t lg:border-t-0 lg:border-l border-black/[0.08] shadow-2xl flex flex-col z-10 transition-transform duration-100 ease-out pb-safe"
+        className="relative w-full max-h-[90vh] lg:max-h-full lg:h-full lg:max-w-md bg-white rounded-t-[32px] lg:rounded-none lg:rounded-l-[24px] border-t lg:border-t-0 lg:border-l border-black/[0.08] shadow-2xl flex flex-col z-10 transition-transform duration-100 ease-out pb-safe"
       >
-        {/* Mobile Drag Handle */}
+        {/* Mobile iOS Drag Handle */}
         <div
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          className="lg:hidden w-full pt-2.5 pb-1 flex justify-center cursor-grab active:cursor-grabbing select-none"
+          className="lg:hidden w-full pt-3 pb-1 flex justify-center cursor-grab active:cursor-grabbing select-none"
         >
-          <div className="w-10 h-1 rounded-full bg-gray-300" />
+          <div className="ios-sheet-handle" />
         </div>
 
         {/* 1. BUS TRACKING INSPECTOR */}
@@ -189,14 +189,14 @@ export function BottomSheet() {
                     </div>
                   </div>
 
-                  <div className="app-card-purple p-3 rounded-lg">
-                    <div className="text-[9.5px] text-purple-800 uppercase font-mono font-semibold">
-                      Energy / Battery
+                  <div className="app-card-blue p-3 rounded-lg">
+                    <div className="text-[9.5px] text-blue-800 uppercase font-mono font-semibold">
+                      Fuel Level
                     </div>
-                    <div className="text-lg font-bold font-mono text-purple-950 mt-0.5">
+                    <div className="text-lg font-bold font-mono text-blue-950 mt-0.5">
                       {bus.fuelBatteryLevelPercentage}%
                     </div>
-                    <div className="text-[9.5px] text-purple-700 font-mono">
+                    <div className="text-[9.5px] text-blue-700 font-mono">
                       {bus.propulsion}
                     </div>
                   </div>

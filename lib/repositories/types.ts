@@ -51,7 +51,8 @@ export interface ITrafficRepository {
 export interface IEVRepository {
   getAllChargers(): Promise<EVCharger[]>;
   getChargerById(id: string): Promise<EVCharger | null>;
-  queueBusForCharging(chargerId: string, busId: string): Promise<EVCharger>;
+  queueVehicleForCharging(chargerId: string, vehicleId: string): Promise<EVCharger>;
+  queueBusForCharging(chargerId: string, vehicleId: string): Promise<EVCharger>;
 }
 
 export interface IDepotRepository {

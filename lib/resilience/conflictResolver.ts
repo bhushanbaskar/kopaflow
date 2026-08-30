@@ -163,15 +163,15 @@ async function checkBusConflict(
       existing = await db.buses.get(busId);
     }
 
-    if (existing && payload.status === "CHARGING" && existing.status === "ON_ROUTE") {
+    if (existing && payload.status === "MAINTENANCE" && existing.status === "ON_ROUTE") {
       // If server recorded bus as ON_ROUTE recently, flag for verification
       return {
         hasConflict: true,
-        reason: `Bus ${existing.busNumber || busId} is telemetry-tracked as ON_ROUTE; status update to CHARGING requires depot arrival confirmation.`,
+        reason: `Bus ${existing.busNumber || busId} is telemetry-tracked as ON_ROUTE; status update to MAINTENANCE requires depot arrival confirmation.`,
         serverState: { status: existing.status, location: existing.currentLocationName },
         clientState: { status: payload.status },
         suggestedResolution: "MANUAL_REVIEW",
-        resolutionOptions: ["Confirm bus reached depot bay and is docked", "Keep status ON_ROUTE"],
+        resolutionOptions: ["Confirm bus reached depot bay and is docked for maintenance", "Keep status ON_ROUTE"],
       };
     }
   }

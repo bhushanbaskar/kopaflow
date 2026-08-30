@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useAppStore } from "../../lib/store/useAppStore";
-import { Bus, Route, Activity, Package, AlertTriangle, Zap } from "lucide-react";
+import { Bus, Route, Activity, Package, AlertTriangle, Zap, ShieldAlert } from "lucide-react";
 import { cn } from "../../lib/utils/cn";
 
 interface MapLayerControlsProps {
@@ -17,6 +17,7 @@ export function MapLayerControls({ className, showLabel = true }: MapLayerContro
     { key: "showBuses" as const, label: "Buses", icon: Bus, activeColor: "text-blue-700 bg-blue-50 border-blue-200/80 shadow-xs" },
     { key: "showRoutes" as const, label: "Routes", icon: Route, activeColor: "text-indigo-700 bg-indigo-50 border-indigo-200/80 shadow-xs" },
     { key: "showTraffic" as const, label: "Traffic", icon: Activity, activeColor: "text-amber-700 bg-amber-50 border-amber-200/80 shadow-xs" },
+    { key: "showBlackspots" as const, label: "Accident Zones", icon: ShieldAlert, activeColor: "text-rose-700 bg-rose-50 border-rose-300 shadow-xs font-bold" },
     { key: "showLogistics" as const, label: "Agri", icon: Package, activeColor: "text-emerald-700 bg-emerald-50 border-emerald-200/80 shadow-xs" },
     { key: "showIncidents" as const, label: "Alerts", icon: AlertTriangle, activeColor: "text-red-700 bg-red-50 border-red-200/80 shadow-xs" },
     { key: "showEV" as const, label: "EV", icon: Zap, activeColor: "text-purple-700 bg-purple-50 border-purple-200/80 shadow-xs" },

@@ -37,11 +37,13 @@ import {
 } from "../../../../lib/cargoflow/cargoOpportunityEngine";
 import { cargoFlowRepository } from "../../../../lib/repositories/cargoFlowRepository";
 import { DataSourceBadge } from "../../../../components/shared/DataSourceBadge";
+import { useResilience } from "../../../../lib/resilience/useResilience";
 
 function CargoFlowSendInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isFarmerMode = searchParams.get("mode") === "farmer";
+  const { systemStatus, isSafeMode, isOnline } = useResilience();
 
   // Form State
   const [originQuery, setOriginQuery] = useState(isFarmerMode ? "Sonewadi" : "");
@@ -214,6 +216,22 @@ function CargoFlowSendInner() {
               </h2>
             </div>
           </div>
+
+          {(isSafeMode || !isOnline || systemStatus === "SAFE_MODE" || systemStatus === "DEGRADED") && (
+            <div className="p-3 bg-amber-50/90 border border-amber-300 rounded-lg text-xs space-y-1.5 animate-in fade-in">
+              <div className="flex items-center gap-1.5 font-bold text-amber-950 font-mono text-[11.5px]">
+                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                <span>⚠️ PRIMARY DATA SERVICE CURRENTLY UNAVAILABLE</span>
+              </div>
+              <p className="text-amber-900 text-[11.5px] leading-relaxed">
+                Your cargo reservation has been <strong>safely stored locally on this device</strong>.
+              </p>
+              <div className="flex items-center justify-between text-[10.5px] font-mono text-amber-800 pt-0.5 border-t border-amber-200">
+                <span>Status: <strong>PENDING RECONCILIATION</strong></span>
+                <span>Protected in IndexedDB Outbox</span>
+              </div>
+            </div>
+          )}
 
           <div className="p-3 bg-gray-50 rounded-md border border-black/[0.05] space-y-2 text-xs font-mono">
             <div className="flex justify-between border-b border-black/[0.04] pb-1.5">

@@ -9,6 +9,8 @@ import {
   RecoveryReportData,
   TimelineEntry,
   FailureSimulationType,
+  ScenarioType,
+  SystemImpactMetrics,
 } from "./types";
 import { syncEngine } from "./syncEngine";
 import { ResilienceSimulator } from "./simulator";
@@ -21,6 +23,8 @@ interface ResilienceState {
   isOnline: boolean;
   isSimulatedOffline: boolean;
   isSafeMode: boolean;
+  isSimulationActive: boolean;
+  activeScenario: ScenarioType | null;
   primaryHealth: "HEALTHY" | "CORRUPTED" | "UNAVAILABLE";
   localDbHealth: "HEALTHY" | "DEGRADED";
   ledgerHealth: "HEALTHY" | "WARNING";
@@ -28,6 +32,14 @@ interface ResilienceState {
   syncedOpsCount: number;
   conflictOpsCount: number;
   recoveryEventsCount: number;
+
+  systemImpact: SystemImpactMetrics;
+  liveRoutes: any[];
+  liveEVChargers: any[];
+  liveRoadSegments: any[];
+  liveBuses: any[];
+  liveShipments: any[];
+  liveComplaints: any[];
 
   lastSnapshot: RecoverySnapshot | null;
   lastIntegrityCheck: IntegrityCheckResult | null;
@@ -42,6 +54,7 @@ interface ResilienceState {
   refreshStats: () => Promise<void>;
   toggleSimulatedOffline: () => Promise<void>;
   triggerSimulation: (scenario: FailureSimulationType) => Promise<void>;
+  triggerScenario: (scenario: ScenarioType) => Promise<void>;
   startRecovery: () => Promise<void>;
   resetDemo: () => Promise<void>;
   syncNow: () => Promise<void>;
@@ -59,6 +72,8 @@ export const useResilienceStore = create<ResilienceState>((set, get) => ({
   isOnline: true,
   isSimulatedOffline: false,
   isSafeMode: false,
+  isSimulationActive: false,
+  activeScenario: null,
   primaryHealth: "HEALTHY",
   localDbHealth: "HEALTHY",
   ledgerHealth: "HEALTHY",
@@ -66,6 +81,20 @@ export const useResilienceStore = create<ResilienceState>((set, get) => ({
   syncedOpsCount: 0,
   conflictOpsCount: 0,
   recoveryEventsCount: 0,
+
+  systemImpact: {
+    routes: { total: 42, healthy: 42, unavailable: 0, corrupted: 0 },
+    evStations: { total: 18, healthy: 18, unavailable: 0, corrupted: 0 },
+    complaints: { total: 126, healthy: 126, unavailable: 0, corrupted: 0 },
+    cargo: { total: 42, healthy: 42, pendingReconciliation: 0, unavailable: 0 },
+    traffic: { total: 12, healthy: 12, unavailable: 0, corrupted: 0 },
+  },
+  liveRoutes: [],
+  liveEVChargers: [],
+  liveRoadSegments: [],
+  liveBuses: [],
+  liveShipments: [],
+  liveComplaints: [],
 
   lastSnapshot: null,
   lastIntegrityCheck: null,
@@ -144,8 +173,19 @@ export const useResilienceStore = create<ResilienceState>((set, get) => ({
       const isOffline = syncEngine.isOffline();
       const isSafe = syncEngine.isSafeMode();
 
+      // Compute live dynamic system impact
+      const impact = await ResilienceSimulator.computeSystemImpact();
+
+      // Load all live domain entity arrays from Dexie
+      const routes = await db.routes.toArray();
+      const chargers = await db.evChargers.toArray();
+      const incidents = await db.roadIncidents.toArray();
+      const buses = await db.buses.toArray();
+      const shipments = await db.cargoShipments.toArray();
+      const complaints = await db.complaints.toArray();
+
       let currentStatus: SystemIntegrityStatus = "HEALTHY";
-      if (isSafe) {
+      if (isSafe || impact.routes.unavailable > 0 || impact.evStations.unavailable > 0 || impact.complaints.unavailable > 0) {
         currentStatus = "SAFE_MODE";
       } else if (isOffline) {
         currentStatus = "OFFLINE";
@@ -157,6 +197,7 @@ export const useResilienceStore = create<ResilienceState>((set, get) => ({
         systemStatus: currentStatus,
         isOnline: !isOffline,
         isSafeMode: isSafe,
+        isSimulationActive: isSafe || get().activeScenario !== null,
         primaryHealth: syncEngine.getPrimaryDatastoreHealth(),
         pendingOpsCount: pendingCount + inFlightCount,
         syncedOpsCount: syncedCount,
@@ -164,6 +205,13 @@ export const useResilienceStore = create<ResilienceState>((set, get) => ({
         recoveryEventsCount: eventsCount,
         lastSnapshot: latestSnapshot,
         activeIncident: latestIncident || null,
+        systemImpact: impact,
+        liveRoutes: routes,
+        liveEVChargers: chargers,
+        liveRoadSegments: incidents,
+        liveBuses: buses,
+        liveShipments: shipments,
+        liveComplaints: complaints,
       });
     } catch (err) {
       console.error("[useResilience] refreshStats error:", err);
@@ -184,6 +232,43 @@ export const useResilienceStore = create<ResilienceState>((set, get) => ({
     await get().refreshStats();
   },
 
+  triggerScenario: async (scenario: ScenarioType) => {
+    set({ activeScenario: scenario, isSimulationActive: true });
+    get().addTimelineEntry("WARNING", `Executing Failure Scenario: ${scenario}...`);
+
+    try {
+      switch (scenario) {
+        case "ROUTE_DATA_LOSS":
+          await ResilienceSimulator.injectRouteFailure();
+          get().addTimelineEntry("ERROR", "Transit Route partition corrupted: 8 unavailable, 5 corrupted.", "ROUTE");
+          break;
+        case "EV_DATA_LOSS":
+          await ResilienceSimulator.injectEVFailure();
+          get().addTimelineEntry("ERROR", "EV Charging grid telemetry unreadable: 3 unavailable, 2 corrupted.", "EV_CHARGER");
+          break;
+        case "COMPLAINT_DATA_LOSS":
+          await ResilienceSimulator.injectComplaintFailure();
+          get().addTimelineEntry("ERROR", "Civic complaints datastore drop: 5 unavailable, 2 corrupted.", "COMPLAINT");
+          break;
+        case "CARGO_DATA_LOSS":
+          await ResilienceSimulator.injectCargoFailure();
+          get().addTimelineEntry("ERROR", "In-flight cargo booking interrupted: Safe reconciliation queued.", "CARGO");
+          break;
+        case "MULTI_MODULE_FAILURE":
+          await ResilienceSimulator.injectMultiModuleFailure();
+          get().addTimelineEntry("ERROR", "CRITICAL: Coordinated Multi-Module Data Failure across Routes, EV, Complaints & Cargo!", "SYSTEM");
+          break;
+        case "MID_OPERATION_FAILURE":
+          await ResilienceSimulator.injectMidOperationFailure();
+          get().addTimelineEntry("WARNING", "Citizen transaction failed mid-flight: Operation stored locally on device.", "CARGO");
+          break;
+      }
+      await get().refreshStats();
+    } catch (err: any) {
+      get().addTimelineEntry("ERROR", `Scenario failed: ${err.message || err}`);
+    }
+  },
+
   triggerSimulation: async (scenario: FailureSimulationType) => {
     get().addTimelineEntry("WARNING", `Initiating simulation scenario: ${scenario}...`);
 
@@ -201,15 +286,10 @@ export const useResilienceStore = create<ResilienceState>((set, get) => ({
         }
 
         case "PRIMARY_DATASTORE_CORRUPTION": {
-          const inc = await ResilienceSimulator.runScenario2DatastoreFailure();
+          await ResilienceSimulator.runScenario2DatastoreFailure();
           get().addTimelineEntry(
             "ERROR",
             "Primary datastore corruption detected! Integrity checks failed.",
-            "SYSTEM"
-          );
-          get().addTimelineEntry(
-            "WARNING",
-            "System transitioning to SAFE MODE to protect operational state.",
             "SYSTEM"
           );
           break;
@@ -239,11 +319,20 @@ export const useResilienceStore = create<ResilienceState>((set, get) => ({
           await ResilienceSimulator.runScenario5PartialDataLoss();
           get().addTimelineEntry(
             "ERROR",
-            "Partial storage partition corruption detected: 80 recoverable, 15 partial, 5 unrecoverable.",
+            "Partial storage partition corruption detected.",
             "SYSTEM"
           );
           break;
         }
+
+        case "ROUTE_DATA_LOSS":
+        case "EV_DATA_LOSS":
+        case "COMPLAINT_DATA_LOSS":
+        case "CARGO_DATA_LOSS":
+        case "MULTI_MODULE_FAILURE":
+        case "MID_OPERATION_FAILURE":
+          await get().triggerScenario(scenario);
+          break;
       }
 
       await get().refreshStats();
@@ -274,6 +363,8 @@ export const useResilienceStore = create<ResilienceState>((set, get) => ({
       set({
         recoveryReport: report,
         recoveryProgress: null,
+        activeScenario: null,
+        isSimulationActive: false,
         systemStatus: report.integrity_status === "PASSED" ? "RESTORED" : "SAFE_MODE",
       });
 
@@ -297,9 +388,12 @@ export const useResilienceStore = create<ResilienceState>((set, get) => ({
     await ResilienceSimulator.resetDemo();
     set({
       isSimulatedOffline: false,
+      activeScenario: null,
+      isSimulationActive: false,
       recoveryReport: null,
       recoveryProgress: null,
       activeIncident: null,
+      systemStatus: "HEALTHY",
     });
     get().addTimelineEntry("SUCCESS", "Demo environment reset complete. All domains healthy.");
     await get().refreshStats();

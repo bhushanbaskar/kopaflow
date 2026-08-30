@@ -9,9 +9,11 @@ import {
 import { appendRecoveryEvent } from "./recoveryLedger";
 import { evaluateDomainConflict } from "./conflictResolver";
 import { replayEventOnState } from "./recoveryLedger";
+import { getSupabaseClient } from "../supabase/client";
+import { validateSyncOperationAuthorization } from "../auth/authorization";
 
 export type SyncEventListener = (event: {
-  type: "SAVED_LOCAL" | "SYNC_STARTED" | "SYNC_COMPLETED" | "SYNC_CONFLICT" | "SYNC_FAILED" | "STATUS_CHANGE";
+  type: "SAVED_LOCAL" | "SYNC_STARTED" | "SYNC_COMPLETED" | "SYNC_CONFLICT" | "SYNC_FAILED" | "STATUS_CHANGE" | "AUTH_REJECTED";
   message: string;
   count?: number;
   operation?: Operation;
@@ -85,12 +87,11 @@ class ResilienceSyncEngine {
   }
 
   /**
-   * Submit an operational state change.
+   * Submit an operational state change with actor and authority context.
    */
   public async submitOperation<T = any>(
     input: CreateOperationInput<T>
   ): Promise<Operation<T>> {
-    // If in safe mode, block unsafe state mutations unless bypass flag
     if (this.safeMode) {
       throw new Error("System is currently in SAFE MODE. New writes are temporarily paused to protect data integrity.");
     }
@@ -99,7 +100,7 @@ class ResilienceSyncEngine {
       input.idempotency_key ||
       `IDEMP-${input.entity_type}-${input.entity_id}-${input.operation_type}-${Date.now()}`;
 
-    // 1. Idempotency Check: Don't duplicate business records
+    // 1. Idempotency Check
     const existing = await db.operations
       .where("idempotency_key")
       .equals(idempotencyKey)
@@ -132,6 +133,8 @@ class ResilienceSyncEngine {
       payload: input.payload,
       created_at: createdAt,
       user_id: input.user_id || "CURRENT_OFFICER",
+      actor_user_id: input.actor_user_id,
+      authority_id: input.authority_id,
       device_id: input.device_id || "KPG-MOBILE-CLIENT",
       sequence_number: seq,
       status: "PENDING",
@@ -156,7 +159,6 @@ class ResilienceSyncEngine {
         operation,
       });
     } else {
-      // Synchronize immediately
       await this.syncPendingOperations();
     }
 
@@ -252,21 +254,23 @@ class ResilienceSyncEngine {
   }
 
   /**
-   * Synchronize all pending operations with exponential backoff & conflict evaluation.
+   * Synchronize all pending operations with server authorization revalidation & conflict checks.
    */
   public async syncPendingOperations(): Promise<{
     synced: number;
     conflicts: number;
     failed: number;
+    authRejected: number;
   }> {
     if (this.isSyncing || this.isOffline() || this.safeMode) {
-      return { synced: 0, conflicts: 0, failed: 0 };
+      return { synced: 0, conflicts: 0, failed: 0, authRejected: 0 };
     }
 
     this.isSyncing = true;
     let synced = 0;
     let conflicts = 0;
     let failed = 0;
+    let authRejected = 0;
 
     try {
       const pendingOps = await db.operations
@@ -276,7 +280,7 @@ class ResilienceSyncEngine {
 
       if (pendingOps.length === 0) {
         this.isSyncing = false;
-        return { synced: 0, conflicts: 0, failed: 0 };
+        return { synced: 0, conflicts: 0, failed: 0, authRejected: 0 };
       }
 
       this.notify({
@@ -285,11 +289,12 @@ class ResilienceSyncEngine {
         count: pendingOps.length,
       });
 
+      const supabase = getSupabaseClient();
+
       for (const op of pendingOps) {
-        // Mark SYNCING
         await db.operations.update(op.operation_id, { status: "SYNCING" });
 
-        // Simulate network / primary failure if configured
+        // Simulate primary failure if configured
         if (this.isSimulatedPrimaryFailure) {
           await db.operations.update(op.operation_id, {
             status: "IN_FLIGHT",
@@ -299,7 +304,57 @@ class ResilienceSyncEngine {
           continue;
         }
 
-        // Domain Conflict Check
+        // 1. REVALIDATE SERVER AUTHORIZATION
+        // When reconnecting, ensure actor profile is still ACTIVE and holds authority
+        if (op.actor_user_id) {
+          try {
+            const { data: currentProfile } = await supabase
+              .from("profiles")
+              .select("*, role_permissions(permission_id)")
+              .eq("id", op.actor_user_id)
+              .single();
+
+            if (currentProfile) {
+              const formattedProfile = {
+                id: currentProfile.id,
+                email: currentProfile.email,
+                fullName: currentProfile.full_name,
+                userType: currentProfile.user_type,
+                authorityId: currentProfile.authority_id,
+                roleId: currentProfile.role_id,
+                status: currentProfile.status,
+                permissions: currentProfile.role_permissions?.map((r: any) => r.permission_id) || [],
+                createdAt: currentProfile.created_at,
+                updatedAt: currentProfile.updated_at,
+              };
+
+              const authCheck = validateSyncOperationAuthorization(formattedProfile, {
+                entity_type: op.entity_type,
+                operation_type: op.operation_type,
+                authority_id: op.authority_id,
+                actor_user_id: op.actor_user_id,
+              });
+
+              if (!authCheck.authorized) {
+                await db.operations.update(op.operation_id, {
+                  status: "REJECTED_BY_AUTHORIZATION",
+                  error_message: `AUTHORIZATION_REVOKED: ${authCheck.reason}`,
+                });
+                authRejected++;
+                this.notify({
+                  type: "AUTH_REJECTED",
+                  message: `Operation rejected during sync: ${authCheck.reason}`,
+                  operation: op,
+                });
+                continue;
+              }
+            }
+          } catch (authErr) {
+            console.warn("[SyncEngine] Failed server auth check, falling back to local policy", authErr);
+          }
+        }
+
+        // 2. Domain Conflict Check
         const conflict = await evaluateDomainConflict(op);
 
         if (conflict.hasConflict) {
@@ -342,7 +397,7 @@ class ResilienceSyncEngine {
       this.isSyncing = false;
     }
 
-    return { synced, conflicts, failed };
+    return { synced, conflicts, failed, authRejected };
   }
 
   /**
@@ -357,7 +412,6 @@ class ResilienceSyncEngine {
     let reconciledCount = 0;
 
     for (const op of inFlightOps) {
-      // Evaluate conflict against restored state
       const conflict = await evaluateDomainConflict(op);
 
       if (!conflict.hasConflict) {

@@ -11,7 +11,7 @@ export type UserRole =
   | "Driver/Field Staff"
   | "Citizen/Farmer";
 
-export type DataSourceType = "LIVE" | "SIMULATED" | "HISTORICAL" | "ESTIMATED" | "MANUAL" | "DEMO";
+export type DataSourceType = "LIVE" | "SIMULATED" | "HISTORICAL" | "ESTIMATED" | "MANUAL" | "DEMO" | "CACHED";
 
 export interface GeoLocation {
   lat: number;
@@ -77,6 +77,9 @@ export interface BusRoute {
   geometry?: { type: "LineString"; coordinates: [number, number][] }; // GeoJSON LineString
   roadDistanceKm?: number;
   roadDurationMin?: number;
+  integrity_state?: "HEALTHY" | "UNAVAILABLE" | "CORRUPTED" | "RECOVERED";
+  last_known_status?: string;
+  last_verified_at?: string;
 }
 
 export interface BusVehicle {
@@ -85,7 +88,7 @@ export interface BusVehicle {
   plateNumber: string; // e.g. "MH-17-BT-4412"
   routeId: string;
   routeName: string;
-  propulsion: "ELECTRIC" | "DIESEL" | "CNG";
+  propulsion: "DIESEL" | "CNG";
   seatingCapacity: number;
   currentPassengers: number;
   occupancyPercentage: number;
@@ -94,7 +97,7 @@ export interface BusVehicle {
   currentParcelWeightKg: number;
   availableParcelCapacityKg: number;
   fuelBatteryLevelPercentage: number;
-  status: "ON_ROUTE" | "AT_DEPOT" | "MAINTENANCE" | "CHARGING" | "DELAYED";
+  status: "ON_ROUTE" | "AT_DEPOT" | "MAINTENANCE" | "DELAYED";
   currentLocationName: string;
   nextStopName: string;
   etaNextStopMinutes: number;
@@ -170,7 +173,7 @@ export interface APMCArrival {
 
 export interface EVCharger {
   id: string;
-  name: string; // e.g. "Kopargaon Bus Depot Fast Charger A"
+  name: string; // e.g. "Kopargaon Central Public EV Charging Station A"
   locationName: string;
   coordinates: GeoLocation;
   connectorTypes: ("CCS2" | "Type 2" | "GB/T")[];
@@ -183,7 +186,10 @@ export interface EVCharger {
   status: "OPERATIONAL" | "WARNING" | "OFFLINE";
   pricingPerKwhInr: number;
   activeSessionsCount: number;
-  queuedBuses: string[];
+  queuedBuses: string[]; // Queued electric vehicles (e-rickshaws, commercial vans, private EVs)
+  integrity_state?: "HEALTHY" | "UNAVAILABLE" | "CORRUPTED" | "RECOVERED";
+  last_known_status?: string;
+  last_verified_at?: string;
 }
 
 export interface RoadIncident {
@@ -209,6 +215,9 @@ export interface RoadIncident {
   detourRecommendation?: string;
   impactSummary: string;
   delayPropagationMinutes: number;
+  integrity_state?: "HEALTHY" | "UNAVAILABLE" | "CORRUPTED" | "RECOVERED";
+  last_known_status?: string;
+  last_verified_at?: string;
 }
 
 export interface DriverWorkforce {
@@ -489,6 +498,9 @@ export interface FeedbackReport {
   recurringCount?: number;
   promotedIncidentId?: string; // Links to RoadIncident when promoted
   verifiedBy?: string;
+  integrity_state?: "HEALTHY" | "UNAVAILABLE" | "CORRUPTED" | "RECOVERED";
+  last_known_status?: string;
+  last_verified_at?: string;
 }
 
 export interface FeedbackAnalyticsSummary {
@@ -498,5 +510,87 @@ export interface FeedbackAnalyticsSummary {
   reportsThisWeekCount: number;
   safetyReportsCount: number;
   recurringIssuesCount: number;
+}
+
+// ==========================================
+// ACCIDENT-PRONE ZONES & DATA PROVENANCE
+// ==========================================
+
+export interface AccidentYearlyTrend {
+  year: number;
+  totalAccidents: number;
+  fatalities: number;
+  severeInjuries: number;
+  minorInjuries: number;
+  twoWheelersInvolved: number;
+  commercialVehiclesInvolved: number;
+  pedestriansInvolved: number;
+}
+
+export interface AccidentTimeDistribution {
+  timeSlot: string; // e.g. "18:00 - 22:00 (Night Heavy Freight Rush)"
+  percentage: number;
+  riskRating: "HIGH" | "MEDIUM" | "LOW";
+  primaryContributingFactor: string;
+}
+
+export type ProvenanceAgency =
+  | "POLICE"
+  | "MUNICIPALITY"
+  | "MSRTC_DEPOT"
+  | "EMS_HOSPITAL"
+  | "CITIZEN_REPORTS"
+  | "HIGHWAY_AUTHORITY";
+
+export interface DataSourceProvenance {
+  sourceAgency: ProvenanceAgency;
+  sourceName: string; // e.g. "Maharashtra State Highway Police (Kopargaon Traffic Branch)"
+  department: string; // e.g. "CCTNS Accident Investigation Registry & FIR Database"
+  recordReference: string; // e.g. "FIR-LOG-2024-KPG-902 / CCTNS-MH17-381"
+  dataProvided: string; // e.g. "Official FIR crash logs, fatality counts & forensic road geometry audit"
+  verificationStatus: "GOVERNMENT_VERIFIED" | "AUDITED" | "MULTI_AGENCY_CONFIRMED";
+  lastAuditDate: string; // e.g. "15 Aug 2026"
+  officerInCharge?: string;
+  confidenceScore: number; // 0 to 100
+}
+
+export interface AccidentProneZone {
+  id: string; // e.g. "BLK-01"
+  code: string; // e.g. "BLACKSPOT-KPG-01"
+  name: string; // e.g. "Godavari River Old Bridge Northern Approach"
+  locationDescription: string;
+  coordinates: GeoLocation;
+  riskRadiusMeters: number; // e.g. 150
+  severityLevel: "CRITICAL_BLACKSPOT" | "HIGH_RISK" | "MODERATE_RISK";
+  riskScore: number; // 0 to 100
+  roadSegmentId?: string;
+  roadName: string; // e.g. "State Highway 10 (Ahmednagar-Manmad Corridor)"
+
+  // Historical Summary
+  totalRecordedAccidents3Years: number;
+  totalFatalities3Years: number;
+  totalInjuries3Years: number;
+  mostFrequentAccidentType: string;
+
+  // Past Trends (Year-over-Year)
+  yearlyTrends: AccidentYearlyTrend[];
+
+  // Peak Risk Window & Timing Distribution
+  peakRiskHours: string;
+  timeDistributions: AccidentTimeDistribution[];
+
+  // Root Causes & Environmental Factors
+  primaryCauses: string[];
+  roadSurfaceCondition: string;
+  speedLimitKmh: number;
+  actualAvgSpeedKmh: number;
+
+  // Mitigation & PWD Progress
+  completedMitigations: string[];
+  pendingWorkOrders: string[];
+  mitigationProgressPercentage: number;
+
+  // Multi-Agency Data Provenance Disclosures
+  provenance: DataSourceProvenance[];
 }
 

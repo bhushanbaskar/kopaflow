@@ -45,7 +45,7 @@ export default function IncidentsPage() {
             actionText: "Show provisional charging delay warning; hold terminal dispatch rerouting.",
             status: "PROVISIONAL_ALLOWED",
             operationalEffect: "Provisional warning active on EV driver consoles.",
-            authorizedScope: "Depot Fast Charger A.",
+            authorizedScope: "Public Fast Station A.",
           },
           evidenceCount: 2,
         };

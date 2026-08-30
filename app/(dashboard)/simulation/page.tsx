@@ -182,7 +182,7 @@ export default function SimulationPage() {
 
           <div className="space-y-0.5 bg-gray-50/70 p-2 rounded-md border border-black/[0.05]">
             <div className="flex justify-between text-[10.5px]">
-              <span className="text-gray-500">EV Fleet:</span>
+              <span className="text-gray-500">EV Demand:</span>
               <span className="font-bold text-purple-800">{Math.round(evMultiplier * 100)}%</span>
             </div>
             <input

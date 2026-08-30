@@ -243,23 +243,27 @@ export class MockEVRepository implements IEVRepository {
     return c ? { ...c } : null;
   }
 
-  async queueBusForCharging(chargerId: string, busId: string): Promise<EVCharger> {
+  async queueVehicleForCharging(chargerId: string, vehicleId: string): Promise<EVCharger> {
     const index = chargersState.findIndex((c) => c.id === chargerId);
     if (index === -1) throw new Error(`Charger ${chargerId} not found`);
 
     chargersState[index] = {
       ...chargersState[index],
-      queuedBuses: [...chargersState[index].queuedBuses, busId],
+      queuedBuses: [...(chargersState[index].queuedBuses || []), vehicleId],
     };
 
     await syncEngine.submitOperation({
       entity_type: "EV_CHARGER",
       entity_id: chargerId,
       operation_type: "EV_BUS_QUEUED",
-      payload: { chargerId, busId },
+      payload: { chargerId, vehicleId },
     });
 
     return { ...chargersState[index] };
+  }
+
+  async queueBusForCharging(chargerId: string, busId: string): Promise<EVCharger> {
+    return this.queueVehicleForCharging(chargerId, busId);
   }
 }
 

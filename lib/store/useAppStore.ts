@@ -13,6 +13,7 @@ export interface MapLayerState {
   showLogistics: boolean;
   showIncidents: boolean;
   showEV: boolean;
+  showBlackspots: boolean;
 }
 
 export type DrawerType =
@@ -22,6 +23,7 @@ export type DrawerType =
   | "CHARGER"
   | "ROUTE"
   | "SEGMENT"
+  | "ACCIDENT_ZONE"
   | "OPTIMIZATION_DETAIL"
   | null;
 
@@ -79,6 +81,7 @@ export const useAppStore = create<AppState>((set) => ({
     showLogistics: true,
     showIncidents: true,
     showEV: true,
+    showBlackspots: true,
   },
   toggleMapLayer: (layerKey) =>
     set((state) => ({

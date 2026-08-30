@@ -121,6 +121,9 @@ export interface CargoShipment {
 
   created_at: string;
   updated_at: string;
+  integrity_state?: "HEALTHY" | "UNAVAILABLE" | "CORRUPTED" | "RECOVERED";
+  last_known_status?: string;
+  last_verified_at?: string;
 }
 
 export interface CargoOpportunityOption {

@@ -1,878 +1,912 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   ShieldAlert,
   ShieldCheck,
-  RotateCcw,
-  WifiOff,
-  Wifi,
+  Activity,
   Database,
-  Layers,
+  RefreshCw,
   Play,
+  RotateCcw,
   AlertTriangle,
   CheckCircle2,
-  Clock,
-  RefreshCw,
+  XCircle,
   FileText,
-  Activity,
-  HardDrive,
-  Cpu,
+  Clock,
+  Layers,
   ArrowRight,
-  Sparkles,
+  Radio,
   Server,
   Zap,
-  Package,
+  Lock,
+  Loader2,
+  Check,
   Bus,
+  Package,
   MessageSquareWarning,
+  SlidersHorizontal,
 } from "lucide-react";
+import { ProtectedRoute } from "../../../../components/auth/ProtectedRoute";
+import { useAuth } from "../../../../lib/auth/useAuth";
 import { useResilience } from "../../../../lib/resilience/useResilience";
-import { useAppStore } from "../../../../lib/store/useAppStore";
+import {
+  ResilienceSimulator,
+  SimulationStepLog,
+} from "../../../../lib/resilience/simulator";
+import { verifyLedgerIntegrityChain } from "../../../../lib/resilience/recoveryLedger";
 import { db } from "../../../../lib/resilience/db";
-import { cn } from "../../../../lib/utils/cn";
+import { RecoveryReportData, ScenarioType } from "../../../../lib/resilience/types";
+import { ScenarioSelectorModal } from "../../../../components/resilience/ScenarioSelectorModal";
+import { SimulationVisualizer } from "../../../../components/resilience/SimulationVisualizer";
 
-export default function ResilienceAdminPage() {
-  const { isDemoMode } = useAppStore();
+export default function ResilienceLabPage() {
+  return (
+    <ProtectedRoute requireAdmin={true}>
+      <ResilienceLabContent />
+    </ProtectedRoute>
+  );
+}
+
+function ResilienceLabContent() {
+  const { profile } = useAuth();
   const {
     systemStatus,
+    systemImpact,
+    activeScenario,
+    isSimulationActive,
     isOnline,
     isSimulatedOffline,
     isSafeMode,
     primaryHealth,
-    localDbHealth,
-    ledgerHealth,
     pendingOpsCount,
-    syncedOpsCount,
-    conflictOpsCount,
-    recoveryEventsCount,
     lastSnapshot,
-    lastIntegrityCheck,
-    activeIncident,
-    liveTimeline,
-    recoveryProgress,
-    recoveryReport,
-    init,
-    toggleSimulatedOffline,
-    triggerSimulation,
+    triggerScenario,
     startRecovery,
     resetDemo,
-    syncNow,
+    refreshStats,
     runIntegrityCheckNow,
+    lastIntegrityCheck,
   } = useResilience();
 
-  const [activeTab, setActiveTab] = useState<"SIMULATOR" | "TIMELINE" | "RECOVERY" | "DOMAINS">("SIMULATOR");
-  const [selectedDomain, setSelectedDomain] = useState<"CARGO" | "COMPLAINTS" | "FLEET" | "OUTBOX">("OUTBOX");
-  const [domainData, setDomainData] = useState<any[]>([]);
+  // Simulation & Demo State
+  const [runningDemo, setRunningDemo] = useState(false);
+  const [scenarioModalOpen, setScenarioModalOpen] = useState(false);
+  const [demoStep, setDemoStep] = useState(0);
+  const [totalDemoSteps, setTotalDemoSteps] = useState(21);
+  const [currentStepTitle, setCurrentStepTitle] = useState("");
+  const [stepLogs, setStepLogs] = useState<SimulationStepLog[]>([]);
+  const [recoveryReport, setRecoveryReport] = useState<RecoveryReportData | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [hashAuditResult, setHashAuditResult] = useState<any | null>(null);
+
+  // Reconcile Modal State
+  const [conflictModalOpen, setConflictModalOpen] = useState(false);
+  const [reconcileSuccessNotice, setReconcileSuccessNotice] = useState<string | null>(null);
+
+  // Statistics
+  const [eventJournalCount, setEventJournalCount] = useState<number>(0);
 
   useEffect(() => {
-    init();
-  }, [init]);
+    fetchStats();
+    refreshStats();
+  }, [systemStatus, isSimulatedOffline, pendingOpsCount, refreshStats]);
 
-  useEffect(() => {
-    loadDomainData();
-  }, [selectedDomain, systemStatus, pendingOpsCount]);
-
-  const loadDomainData = async () => {
+  const fetchStats = async () => {
     try {
-      if (selectedDomain === "OUTBOX") {
-        const ops = await db.operations.orderBy("sequence_number").reverse().toArray();
-        setDomainData(ops);
-      } else if (selectedDomain === "CARGO") {
-        const ships = await db.cargoShipments.toArray();
-        setDomainData(ships);
-      } else if (selectedDomain === "COMPLAINTS") {
-        const comps = await db.complaints.toArray();
-        setDomainData(comps);
-      } else if (selectedDomain === "FLEET") {
-        const buses = await db.buses.toArray();
-        setDomainData(buses);
-      }
-    } catch (e) {
-      console.error("Failed to load domain data", e);
+      const count = await db.recoveryEvents.count();
+      setEventJournalCount(count);
+    } catch {
+      // ignore
     }
   };
 
-  const getStatusBadge = () => {
-    switch (systemStatus) {
-      case "HEALTHY":
-        return { label: "HEALTHY", color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/50" };
-      case "RESTORED":
-        return { label: "RESTORED", color: "bg-emerald-500/20 text-emerald-300 border-emerald-400" };
-      case "SAFE_MODE":
-        return { label: "SAFE MODE", color: "bg-rose-500/20 text-rose-300 border-rose-500/60 animate-pulse" };
-      case "OFFLINE":
-        return { label: "OFFLINE", color: "bg-amber-500/20 text-amber-300 border-amber-500/50" };
-      case "RECOVERING":
-        return { label: "RECOVERING", color: "bg-blue-500/20 text-blue-300 border-blue-500/50" };
-      default:
-        return { label: "DEGRADED", color: "bg-amber-500/20 text-amber-400 border-amber-500/40" };
+  // Run the 21-Step One-Click Demo
+  const handleRunFullDemo = async () => {
+    setRunningDemo(true);
+    setDemoStep(0);
+    setStepLogs([]);
+    setRecoveryReport(null);
+
+    try {
+      await ResilienceSimulator.runOneClickHackathonDemo(
+        async (stepNum, total, title, log) => {
+          setDemoStep(stepNum);
+          setTotalDemoSteps(total);
+          setCurrentStepTitle(title);
+          setStepLogs((prev) => [log, ...prev]);
+        }
+      );
+    } catch (err: any) {
+      console.error("[ResilienceLab] Demo error:", err);
+      setStepLogs((prev) => [
+        {
+          timestamp: new Date().toLocaleTimeString(),
+          step: "Simulation Stopped with Error",
+          status: "ERROR",
+          details: err.message || "Execution exception.",
+        },
+        ...prev,
+      ]);
+    } finally {
+      setRunningDemo(false);
+      fetchStats();
     }
   };
 
-  const statusBadge = getStatusBadge();
+  // Trigger Individual Failure Simulations
+  const handleSimulateDatastoreFailure = async () => {
+    setActionLoading("CORRUPT_DATASTORE");
+    try {
+      await ResilienceSimulator.runScenario2DatastoreFailure();
+      setStepLogs((prev) => [
+        {
+          timestamp: new Date().toLocaleTimeString(),
+          step: "Primary Datastore Failure Simulated",
+          status: "ERROR",
+          details: "Active database partition marked unreadable. Safe Mode automatically engaged.",
+        },
+        ...prev,
+      ]);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleSimulateMidOperationFailure = async () => {
+    setActionLoading("MID_OP_FAILURE");
+    try {
+      const res = await ResilienceSimulator.runScenario3MidOperationFailure();
+      setStepLogs((prev) => [
+        {
+          timestamp: new Date().toLocaleTimeString(),
+          step: "Mid-Operation Failure Handled",
+          status: "WARNING",
+          details: `Operation ${res.operationId} preserved as ${res.status}: "${res.userNotice}"`,
+        },
+        ...prev,
+      ]);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleSimulateNetworkOutage = async () => {
+    setActionLoading("NETWORK_OUTAGE");
+    try {
+      const res = await ResilienceSimulator.runScenario1NetworkOutage();
+      setStepLogs((prev) => [
+        {
+          timestamp: new Date().toLocaleTimeString(),
+          step: "Network Partition Engaged",
+          status: "WARNING",
+          details: `System operating in offline mode. ${res.queuedOperations} local operations queued in append-only journal.`,
+        },
+        ...prev,
+      ]);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleVerifyHashChain = async () => {
+    setActionLoading("HASH_AUDIT");
+    try {
+      const res = await verifyLedgerIntegrityChain();
+      setHashAuditResult(res);
+      setStepLogs((prev) => [
+        {
+          timestamp: new Date().toLocaleTimeString(),
+          step: "Cryptographic Tamper-Evidence Audit",
+          status: res.valid ? "SUCCESS" : "ERROR",
+          details: res.message,
+        },
+        ...prev,
+      ]);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleExecuteRecoveryPipeline = async () => {
+    setActionLoading("RECOVER");
+    try {
+      const report = await ResilienceSimulator.executeRecoveryPipeline((stage, pct) => {
+        setCurrentStepTitle(`${stage} (${pct}%)`);
+      });
+      setRecoveryReport(report);
+      setStepLogs((prev) => [
+        {
+          timestamp: new Date().toLocaleTimeString(),
+          step: "Deterministic Recovery Completed",
+          status: "SUCCESS",
+          details: `Replayed ${report.operations_replayed} operations. Examined ${report.records_examined} records. Status: ${report.integrity_status}`,
+        },
+        ...prev,
+      ]);
+    } catch (err: any) {
+      console.error("Recovery failed:", err);
+      alert(err.message || "Recovery failed.");
+    } finally {
+      setActionLoading(null);
+      await fetchStats();
+      await refreshStats();
+    }
+  };
+
+  const handleResetDemo = async () => {
+    setActionLoading("RESET");
+    try {
+      await resetDemo();
+      setStepLogs([
+        {
+          timestamp: new Date().toLocaleTimeString(),
+          step: "System Reset to Clean Baseline",
+          status: "INFO",
+          details: "All simulation logs and partition flags cleared. Fresh verified snapshot recorded.",
+        },
+      ]);
+      setRecoveryReport(null);
+      setHashAuditResult(null);
+    } finally {
+      setActionLoading(null);
+      await fetchStats();
+      await refreshStats();
+    }
+  };
 
   return (
-    <div className="space-y-4 max-w-6xl mx-auto pb-8">
-      {/* Top Header Card */}
-      <div className="bg-[#111827] text-white p-4 sm:p-5 rounded-lg border border-white/[0.08] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="max-w-6xl mx-auto space-y-6 pb-16 font-sans">
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white border border-black/[0.08] rounded-lg p-6 shadow-xs">
         <div>
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <h1 className="text-base sm:text-lg font-bold font-mono tracking-tight text-white flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-emerald-400" />
-              SYSTEM RESILIENCE LAB & RECOVERY CORE
-            </h1>
-            <span
-              className={cn(
-                "px-2.5 py-0.5 rounded text-[11px] font-mono font-bold border",
-                statusBadge.color
-              )}
-            >
-              ● {statusBadge.label}
+          <div className="flex items-center gap-2">
+            <span className="text-[10.5px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 uppercase">
+              Super Admin Resilience Console
+            </span>
+            <span className="text-xs text-gray-500 font-mono">
+              Kopargaon Mobility OS v2.4 (Resilience Lab)
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1 max-w-2xl">
-            Offline-First local persistence (IndexedDB), append-only recovery event stream, automated state integrity checks, and deterministic failure simulation.
+          <h1 className="text-2xl font-bold tracking-tight text-gray-950 mt-1">
+            Resilience Lab & Recovery Center
+          </h1>
+          <p className="text-xs text-gray-600 mt-0.5 max-w-2xl">
+            Controlled failure simulation, append-only event replay, tamper-evident hash chaining, and deterministic disaster recovery for Kopargaon public transit.
           </p>
         </div>
 
-        {/* Global Action Bar */}
-        <div className="flex items-center gap-2 shrink-0 flex-wrap">
+        <div className="flex flex-wrap items-center gap-2">
           <button
-            onClick={resetDemo}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-mono bg-slate-800 hover:bg-slate-700 text-slate-200 border border-white/10 transition-colors shadow-xs"
-            title="Restore demo database to clean baseline"
+            onClick={() => setScenarioModalOpen(true)}
+            className="py-2 px-3.5 bg-rose-700 hover:bg-rose-800 text-white rounded text-xs font-mono font-bold flex items-center gap-1.5 shadow-xs transition-colors touch-press"
+          >
+            <Play className="w-3.5 h-3.5 fill-current" />
+            <span>CHOOSE FAILURE SCENARIO</span>
+          </button>
+
+          <button
+            onClick={handleResetDemo}
+            disabled={!!actionLoading || runningDemo}
+            className="py-2 px-3.5 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded text-xs font-mono font-bold flex items-center gap-1.5 shadow-xs transition-colors"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset Demo</span>
+            <span>RESET TO BASELINE</span>
           </button>
+        </div>
+      </div>
+
+      <ScenarioSelectorModal
+        isOpen={scenarioModalOpen}
+        onClose={() => setScenarioModalOpen(false)}
+      />
+
+      {/* Live Holographic Simulation Visualizer */}
+      <SimulationVisualizer />
+
+      {/* 1. Live System Status Bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {/* Primary DB */}
+        <div className="bg-white border border-black/[0.08] rounded-lg p-4 shadow-xs space-y-1">
+          <div className="text-[11px] text-gray-500 font-medium flex items-center justify-between">
+            <span>Primary Datastore</span>
+            <Database className="w-3.5 h-3.5 text-gray-400" />
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span
+              className={`w-2.5 h-2.5 rounded-full ${
+                primaryHealth !== "HEALTHY" || isSimulationActive
+                  ? "bg-rose-500 animate-ping"
+                  : isSafeMode
+                  ? "bg-amber-500"
+                  : "bg-emerald-500"
+              }`}
+            />
+            <span className="text-sm font-bold font-mono text-gray-950">
+              {primaryHealth !== "HEALTHY" || isSimulationActive
+                ? "DEGRADED / CORRUPTED"
+                : isSafeMode
+                ? "SAFE MODE"
+                : "HEALTHY"}
+            </span>
+          </div>
+          <p className="text-[10px] text-gray-400 font-mono">
+            {isSafeMode || isSimulationActive ? "Serving safe local cache" : "Postgres + IndexedDB Live"}
+          </p>
+        </div>
+
+        {/* Event Journal */}
+        <div className="bg-white border border-black/[0.08] rounded-lg p-4 shadow-xs space-y-1">
+          <div className="text-[11px] text-gray-500 font-medium flex items-center justify-between">
+            <span>Event Journal</span>
+            <FileText className="w-3.5 h-3.5 text-gray-400" />
+          </div>
+          <div className="text-sm font-bold font-mono text-gray-950">
+            {eventJournalCount} Events
+          </div>
+          <p className="text-[10px] text-emerald-700 font-mono">
+            Append-only hash chain active
+          </p>
+        </div>
+
+        {/* Local Sync Outbox */}
+        <div className="bg-white border border-black/[0.08] rounded-lg p-4 shadow-xs space-y-1">
+          <div className="text-[11px] text-gray-500 font-medium flex items-center justify-between">
+            <span>Sync Outbox</span>
+            <Radio className="w-3.5 h-3.5 text-gray-400" />
+          </div>
+          <div className="text-sm font-bold font-mono text-gray-950">
+            {isSimulatedOffline ? "OFFLINE (PARTITION)" : `${pendingOpsCount} Pending`}
+          </div>
+          <p className="text-[10px] text-gray-400 font-mono">
+            Idempotency keys enforced
+          </p>
+        </div>
+
+        {/* Last Checkpoint */}
+        <div className="bg-white border border-black/[0.08] rounded-lg p-4 shadow-xs space-y-1">
+          <div className="text-[11px] text-gray-500 font-medium flex items-center justify-between">
+            <span>Last Checkpoint</span>
+            <Clock className="w-3.5 h-3.5 text-gray-400" />
+          </div>
+          <div className="text-xs font-bold font-mono text-gray-950 truncate">
+            {lastSnapshot?.snapshot_id || "CHK-20260830-BASELINE"}
+          </div>
+          <p className="text-[10px] text-emerald-700 font-mono">
+            Verified recovery baseline
+          </p>
+        </div>
+      </div>
+
+      {/* 2. DYNAMIC SYSTEM IMPACT PANEL (Dynamic counts across all 5 domains) */}
+      <div className="bg-white border border-black/[0.08] rounded-lg p-5 shadow-xs space-y-3">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-gray-100 pb-3">
+          <div>
+            <h3 className="text-sm font-bold text-gray-950 font-mono uppercase tracking-tight flex items-center gap-2">
+              <Activity className="w-4 h-4 text-emerald-700" />
+              <span>Real-Time Domain Record Integrity Matrix</span>
+            </h3>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Live partition metrics calculated from Dexie IndexedDB records.
+            </p>
+          </div>
+          {isSimulationActive && (
+            <span className="bg-rose-100 text-rose-800 border border-rose-300 px-2.5 py-1 rounded text-xs font-mono font-bold flex items-center gap-1.5 animate-pulse">
+              <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
+              <span>ACTIVE SCENARIO: {activeScenario}</span>
+            </span>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          {/* Domain 1: Routes */}
+          <div className="p-3 bg-gray-50 rounded-lg border border-black/[0.06] space-y-1.5">
+            <div className="flex items-center justify-between text-xs font-bold font-mono text-gray-900">
+              <span className="flex items-center gap-1">
+                <Bus className="w-3.5 h-3.5 text-blue-700" />
+                <span>Routes ({systemImpact.routes.total})</span>
+              </span>
+            </div>
+            <div className="space-y-1 text-xs font-mono">
+              <div className="flex justify-between text-emerald-800">
+                <span>Healthy:</span>
+                <strong className="font-bold">{systemImpact.routes.healthy}</strong>
+              </div>
+              <div className="flex justify-between text-amber-800">
+                <span>Unavailable:</span>
+                <strong className="font-bold">{systemImpact.routes.unavailable}</strong>
+              </div>
+              <div className="flex justify-between text-rose-800">
+                <span>Corrupted:</span>
+                <strong className="font-bold">{systemImpact.routes.corrupted}</strong>
+              </div>
+            </div>
+          </div>
+
+          {/* Domain 2: EV Stations */}
+          <div className="p-3 bg-gray-50 rounded-lg border border-black/[0.06] space-y-1.5">
+            <div className="flex items-center justify-between text-xs font-bold font-mono text-gray-900">
+              <span className="flex items-center gap-1">
+                <Zap className="w-3.5 h-3.5 text-purple-700" />
+                <span>EV Stations ({systemImpact.evStations.total})</span>
+              </span>
+            </div>
+            <div className="space-y-1 text-xs font-mono">
+              <div className="flex justify-between text-emerald-800">
+                <span>Operational:</span>
+                <strong className="font-bold">{systemImpact.evStations.healthy}</strong>
+              </div>
+              <div className="flex justify-between text-amber-800">
+                <span>Unavailable:</span>
+                <strong className="font-bold">{systemImpact.evStations.unavailable}</strong>
+              </div>
+              <div className="flex justify-between text-rose-800">
+                <span>Corrupted:</span>
+                <strong className="font-bold">{systemImpact.evStations.corrupted}</strong>
+              </div>
+            </div>
+          </div>
+
+          {/* Domain 3: Citizen Complaints */}
+          <div className="p-3 bg-gray-50 rounded-lg border border-black/[0.06] space-y-1.5">
+            <div className="flex items-center justify-between text-xs font-bold font-mono text-gray-900">
+              <span className="flex items-center gap-1">
+                <MessageSquareWarning className="w-3.5 h-3.5 text-orange-700" />
+                <span>Complaints ({systemImpact.complaints.total})</span>
+              </span>
+            </div>
+            <div className="space-y-1 text-xs font-mono">
+              <div className="flex justify-between text-emerald-800">
+                <span>Verified:</span>
+                <strong className="font-bold">{systemImpact.complaints.healthy}</strong>
+              </div>
+              <div className="flex justify-between text-amber-800">
+                <span>Unavailable:</span>
+                <strong className="font-bold">{systemImpact.complaints.unavailable}</strong>
+              </div>
+              <div className="flex justify-between text-rose-800">
+                <span>Corrupted:</span>
+                <strong className="font-bold">{systemImpact.complaints.corrupted}</strong>
+              </div>
+            </div>
+          </div>
+
+          {/* Domain 4: Cargo Logistics */}
+          <div className="p-3 bg-gray-50 rounded-lg border border-black/[0.06] space-y-1.5">
+            <div className="flex items-center justify-between text-xs font-bold font-mono text-gray-900">
+              <span className="flex items-center gap-1">
+                <Package className="w-3.5 h-3.5 text-emerald-700" />
+                <span>Cargo ({systemImpact.cargo.total})</span>
+              </span>
+            </div>
+            <div className="space-y-1 text-xs font-mono">
+              <div className="flex justify-between text-emerald-800">
+                <span>Healthy:</span>
+                <strong className="font-bold">{systemImpact.cargo.healthy}</strong>
+              </div>
+              <div className="flex justify-between text-amber-800">
+                <span>Pending Outbox:</span>
+                <strong className="font-bold">{systemImpact.cargo.pendingReconciliation}</strong>
+              </div>
+              <div className="flex justify-between text-rose-800">
+                <span>Unavailable:</span>
+                <strong className="font-bold">{systemImpact.cargo.unavailable}</strong>
+              </div>
+            </div>
+          </div>
+
+          {/* Domain 5: Traffic Feeds */}
+          <div className="p-3 bg-gray-50 rounded-lg border border-black/[0.06] space-y-1.5">
+            <div className="flex items-center justify-between text-xs font-bold font-mono text-gray-900">
+              <span className="flex items-center gap-1">
+                <Radio className="w-3.5 h-3.5 text-indigo-700" />
+                <span>Traffic Feeds ({systemImpact.traffic.total})</span>
+              </span>
+            </div>
+            <div className="space-y-1 text-xs font-mono">
+              <div className="flex justify-between text-emerald-800">
+                <span>Live Sensors:</span>
+                <strong className="font-bold">{systemImpact.traffic.healthy}</strong>
+              </div>
+              <div className="flex justify-between text-amber-800">
+                <span>Last Known:</span>
+                <strong className="font-bold">{systemImpact.traffic.unavailable}</strong>
+              </div>
+              <div className="flex justify-between text-rose-800">
+                <span>Corrupted:</span>
+                <strong className="font-bold">{systemImpact.traffic.corrupted}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. BEFORE / DURING / AFTER COMPARISON MATRIX */}
+      <div className="bg-white border border-black/[0.08] rounded-lg p-5 shadow-xs space-y-3">
+        <h3 className="text-sm font-bold text-gray-950 font-mono uppercase tracking-tight flex items-center gap-2">
+          <Layers className="w-4 h-4 text-emerald-700" />
+          <span>Before / During / After Resilience Behavior Matrix</span>
+        </h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs font-sans border-collapse">
+            <thead>
+              <tr className="border-b border-gray-200 bg-gray-50 font-mono text-gray-600">
+                <th className="py-2.5 px-3">System Domain</th>
+                <th className="py-2.5 px-3">Normal State (Before)</th>
+                <th className="py-2.5 px-3">Degraded Mode (During Failure)</th>
+                <th className="py-2.5 px-3">Restored State (After Recovery)</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 text-gray-800">
+              <tr>
+                <td className="py-2.5 px-3 font-bold font-mono">Transit Routes</td>
+                <td className="py-2.5 px-3 text-emerald-800">✓ 42 Corridors Live Dispatched</td>
+                <td className="py-2.5 px-3 text-amber-800">⚠ 29 Live • 8 Last Known (10:41 AM) • 5 Corrupted Isolated</td>
+                <td className="py-2.5 px-3 text-emerald-800">✓ 42 Restored via Verified Snapshot</td>
+              </tr>
+              <tr>
+                <td className="py-2.5 px-3 font-bold font-mono">EV Stations</td>
+                <td className="py-2.5 px-3 text-emerald-800">✓ 18 Stations Real-time Telemetry</td>
+                <td className="py-2.5 px-3 text-amber-800">⚠ 13 Live • 3 Cached Plug Status • 2 Corrupted Offline</td>
+                <td className="py-2.5 px-3 text-emerald-800">✓ 18 Telemetry Handshakes Restored</td>
+              </tr>
+              <tr>
+                <td className="py-2.5 px-3 font-bold font-mono">Cargo Bookings</td>
+                <td className="py-2.5 px-3 text-emerald-800">✓ Synchronous Postgres Insertion</td>
+                <td className="py-2.5 px-3 text-amber-800">⚠ IndexedDB Local Outbox • PENDING RECONCILIATION</td>
+                <td className="py-2.5 px-3 text-emerald-800">✓ Replayed & Reconciled without Data Loss</td>
+              </tr>
+              <tr>
+                <td className="py-2.5 px-3 font-bold font-mono">Citizen Reports</td>
+                <td className="py-2.5 px-3 text-emerald-800">✓ 126 Authoritative Records</td>
+                <td className="py-2.5 px-3 text-amber-800">⚠ Device Local Receipt • 119 Live • 5 Degraded • 2 Isolated</td>
+                <td className="py-2.5 px-3 text-emerald-800">✓ 126 Reports Reconstructed + Ledger Replayed</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* 2. ONE-CLICK HACKATHON DEMO HERO CARD */}
+      <div className="bg-gradient-to-r from-gray-950 via-slate-900 to-gray-900 border border-black/20 rounded-lg p-6 text-white shadow-md space-y-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 uppercase">
+                Hackathon Showcase
+              </span>
+              <span className="text-xs text-gray-400 font-mono">21-Step Automated Pipeline</span>
+            </div>
+            <h2 className="text-xl font-bold tracking-tight text-white">
+              One-Click Resilience & Misinformation Defense Demo
+            </h2>
+            <p className="text-xs text-gray-300 max-w-2xl">
+              Executes complete live scenario: Citizen cargo &amp; complaint ➔ Unverified bus cancellation claim ➔ Mid-operation database failure ➔ Safe mode ➔ Offline journal durability ➔ Snapshot restore ➔ Tamper audit ➔ Conflict reconciliation ➔ Telematics fact-check ➔ Public debunking notice!
+            </p>
+          </div>
 
           <button
-            onClick={runIntegrityCheckNow}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-mono bg-slate-800 hover:bg-slate-700 text-slate-200 border border-white/10 transition-colors shadow-xs"
+            onClick={handleRunFullDemo}
+            disabled={runningDemo}
+            className="py-3 px-6 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-gray-950 font-bold font-mono text-xs rounded-md shadow-lg flex items-center gap-2 touch-press transition-all shrink-0 disabled:opacity-50"
           >
-            <Activity className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Run Integrity Check</span>
-          </button>
-
-          {isSafeMode && (
-            <button
-              onClick={startRecovery}
-              disabled={recoveryProgress?.isRunning}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-mono font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs transition-colors"
-            >
-              <RefreshCw className={cn("w-3.5 h-3.5", recoveryProgress?.isRunning && "animate-spin")} />
-              <span>{recoveryProgress?.isRunning ? "Recovering..." : "Start Recovery"}</span>
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Grid: 6 Operational Vital Signs */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-        {/* Vital 1: System State */}
-        <div className="bg-white p-3 rounded-lg border border-black/[0.06] shadow-xs">
-          <div className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-wider">
-            System State
-          </div>
-          <div className="flex items-center gap-1.5 mt-1.5">
-            <span
-              className={cn(
-                "w-2 h-2 rounded-full",
-                systemStatus === "HEALTHY" || systemStatus === "RESTORED"
-                  ? "bg-emerald-500"
-                  : systemStatus === "SAFE_MODE"
-                  ? "bg-rose-500 animate-pulse"
-                  : "bg-amber-500"
-              )}
-            />
-            <span className="text-xs font-mono font-bold text-gray-900 truncate">
-              {systemStatus}
-            </span>
-          </div>
-        </div>
-
-        {/* Vital 2: Network Connectivity */}
-        <div className="bg-white p-3 rounded-lg border border-black/[0.06] shadow-xs">
-          <div className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-wider">
-            Network
-          </div>
-          <div className="flex items-center gap-1.5 mt-1.5">
-            {isOnline ? (
-              <Wifi className="w-3.5 h-3.5 text-emerald-600" />
+            {runningDemo ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin text-gray-950" />
+                <span>EXECUTING STEP {demoStep}/{totalDemoSteps}...</span>
+              </>
             ) : (
-              <WifiOff className="w-3.5 h-3.5 text-amber-600" />
+              <>
+                <Play className="w-4 h-4 fill-current" />
+                <span>RUN FULL RESILIENCE DEMO</span>
+              </>
             )}
-            <span className="text-xs font-mono font-bold text-gray-900">
-              {isOnline ? "ONLINE" : "OFFLINE"}
-            </span>
-          </div>
+          </button>
         </div>
 
-        {/* Vital 3: Primary Datastore */}
-        <div className="bg-white p-3 rounded-lg border border-black/[0.06] shadow-xs">
-          <div className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-wider">
-            Primary Datastore
+        {/* Active Demo Progress Bar */}
+        {runningDemo && (
+          <div className="space-y-2 pt-2 border-t border-white/10 animate-in fade-in">
+            <div className="flex justify-between text-xs font-mono">
+              <span className="text-emerald-400 font-semibold">
+                Step {demoStep} of {totalDemoSteps}: {currentStepTitle}
+              </span>
+              <span className="text-gray-400">
+                {Math.round((demoStep / totalDemoSteps) * 100)}%
+              </span>
+            </div>
+            <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden">
+              <div
+                className="bg-emerald-400 h-full transition-all duration-300 rounded-full"
+                style={{ width: `${(demoStep / totalDemoSteps) * 100}%` }}
+              />
+            </div>
           </div>
-          <div className="flex items-center gap-1.5 mt-1.5">
-            <Server
-              className={cn(
-                "w-3.5 h-3.5",
-                primaryHealth === "HEALTHY" ? "text-emerald-600" : "text-rose-600"
-              )}
-            />
-            <span className="text-xs font-mono font-bold text-gray-900">
-              {primaryHealth}
-            </span>
-          </div>
-        </div>
-
-        {/* Vital 4: Local DB (IndexedDB) */}
-        <div className="bg-white p-3 rounded-lg border border-black/[0.06] shadow-xs">
-          <div className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-wider">
-            Local IndexedDB
-          </div>
-          <div className="flex items-center gap-1.5 mt-1.5">
-            <HardDrive className="w-3.5 h-3.5 text-emerald-600" />
-            <span className="text-xs font-mono font-bold text-gray-900">
-              {localDbHealth}
-            </span>
-          </div>
-        </div>
-
-        {/* Vital 5: Recovery Ledger */}
-        <div className="bg-white p-3 rounded-lg border border-black/[0.06] shadow-xs">
-          <div className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-wider">
-            Recovery Ledger
-          </div>
-          <div className="flex items-center gap-1.5 mt-1.5">
-            <FileText className="w-3.5 h-3.5 text-indigo-600" />
-            <span className="text-xs font-mono font-bold text-gray-900">
-              {recoveryEventsCount} events
-            </span>
-          </div>
-        </div>
-
-        {/* Vital 6: Sync Outbox */}
-        <div className="bg-white p-3 rounded-lg border border-black/[0.06] shadow-xs">
-          <div className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-wider">
-            Outbox Queue
-          </div>
-          <div className="flex items-center gap-1.5 mt-1.5">
-            <Layers
-              className={cn(
-                "w-3.5 h-3.5",
-                pendingOpsCount > 0 ? "text-amber-600" : "text-emerald-600"
-              )}
-            />
-            <span className="text-xs font-mono font-bold text-gray-900">
-              {pendingOpsCount} pending
-            </span>
-          </div>
-        </div>
+        )}
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-black/[0.08] pb-1 overflow-x-auto no-scrollbar">
-        <button
-          onClick={() => setActiveTab("SIMULATOR")}
-          className={cn(
-            "px-3 py-1.5 text-xs font-mono font-semibold rounded-t-md transition-colors",
-            activeTab === "SIMULATOR"
-              ? "bg-white text-gray-950 border-t-2 border-emerald-600 shadow-xs"
-              : "text-gray-500 hover:text-gray-800"
-          )}
-        >
-          Failure Simulator (5 Scenarios)
-        </button>
-
-        <button
-          onClick={() => setActiveTab("RECOVERY")}
-          className={cn(
-            "px-3 py-1.5 text-xs font-mono font-semibold rounded-t-md transition-colors flex items-center gap-1.5",
-            activeTab === "RECOVERY"
-              ? "bg-white text-gray-950 border-t-2 border-emerald-600 shadow-xs"
-              : "text-gray-500 hover:text-gray-800"
-          )}
-        >
-          <span>Recovery Center & Report</span>
-          {isSafeMode && (
-            <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-          )}
-        </button>
-
-        <button
-          onClick={() => setActiveTab("TIMELINE")}
-          className={cn(
-            "px-3 py-1.5 text-xs font-mono font-semibold rounded-t-md transition-colors",
-            activeTab === "TIMELINE"
-              ? "bg-white text-gray-950 border-t-2 border-emerald-600 shadow-xs"
-              : "text-gray-500 hover:text-gray-800"
-          )}
-        >
-          Live Incident Timeline ({liveTimeline.length})
-        </button>
-
-        <button
-          onClick={() => setActiveTab("DOMAINS")}
-          className={cn(
-            "px-3 py-1.5 text-xs font-mono font-semibold rounded-t-md transition-colors",
-            activeTab === "DOMAINS"
-              ? "bg-white text-gray-950 border-t-2 border-emerald-600 shadow-xs"
-              : "text-gray-500 hover:text-gray-800"
-          )}
-        >
-          Domain Data Inspector
-        </button>
-      </div>
-
-      {/* TAB 1: FAILURE SIMULATOR */}
-      {activeTab === "SIMULATOR" && (
-        <div className="space-y-4">
-          <div className="bg-amber-50 border border-amber-200/80 rounded-lg p-3 text-xs text-amber-900 flex items-start gap-2.5">
-            <Sparkles className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-            <div>
-              <strong className="font-semibold">DEMO MODE SIMULATION SUITE:</strong>
-              <p className="mt-0.5 text-amber-800">
-                These controls trigger deterministic failures on the local Kopargaon dataset to demonstrate local persistence, event replay, domain conflict resolution, and snapshot recovery during hackathon evaluations. Real production data is never touched.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {/* Scenario 1 */}
-            <div className="bg-white p-4 rounded-lg border border-black/[0.06] shadow-xs flex flex-col justify-between space-y-3">
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono font-bold text-gray-400">SCENARIO 1</span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
-                    Offline Sync
-                  </span>
-                </div>
-                <h3 className="text-xs font-bold text-gray-900 mt-1 font-mono">
-                  NETWORK OUTAGE & AUTO-SYNC
-                </h3>
-                <p className="text-[11.5px] text-gray-600 mt-1 leading-relaxed">
-                  Disconnects internet, performs actions in Cargo, Complaint & Demand domains, saves locally on device, then restores connection and auto-syncs.
-                </p>
-              </div>
-              <div className="flex items-center gap-2 pt-2 border-t border-black/[0.04]">
-                <button
-                  onClick={() => triggerSimulation("NETWORK_OUTAGE")}
-                  className="flex-1 py-1.5 rounded text-xs font-mono font-semibold bg-gray-900 text-white hover:bg-gray-800 transition-colors shadow-xs text-center"
-                >
-                  Simulate Outage
-                </button>
-                <button
-                  onClick={toggleSimulatedOffline}
-                  className={cn(
-                    "px-2.5 py-1.5 rounded text-xs font-mono border transition-colors shadow-xs",
-                    isSimulatedOffline
-                      ? "bg-amber-100 text-amber-900 border-amber-300 font-bold"
-                      : "bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200"
-                  )}
-                  title="Toggle offline switch"
-                >
-                  {isSimulatedOffline ? "Offline" : "Online"}
-                </button>
-              </div>
-            </div>
-
-            {/* Scenario 2 */}
-            <div className="bg-white p-4 rounded-lg border border-black/[0.06] shadow-xs flex flex-col justify-between space-y-3">
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono font-bold text-gray-400">SCENARIO 2</span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200">
-                    Corruption
-                  </span>
-                </div>
-                <h3 className="text-xs font-bold text-gray-900 mt-1 font-mono">
-                  PRIMARY DATASTORE FAILURE
-                </h3>
-                <p className="text-[11.5px] text-gray-600 mt-1 leading-relaxed">
-                  Corrupts primary operational tables while preserving the append-only recovery ledger. System enters SAFE MODE and recovers via snapshot + event replay.
-                </p>
-              </div>
-              <div className="pt-2 border-t border-black/[0.04]">
-                <button
-                  onClick={() => triggerSimulation("PRIMARY_DATASTORE_CORRUPTION")}
-                  className="w-full py-1.5 rounded text-xs font-mono font-semibold bg-rose-700 text-white hover:bg-rose-800 transition-colors shadow-xs"
-                >
-                  Simulate Database Failure
-                </button>
-              </div>
-            </div>
-
-            {/* Scenario 3 */}
-            <div className="bg-white p-4 rounded-lg border border-black/[0.06] shadow-xs flex flex-col justify-between space-y-3">
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono font-bold text-gray-400">SCENARIO 3</span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
-                    Transaction Drop
-                  </span>
-                </div>
-                <h3 className="text-xs font-bold text-gray-900 mt-1 font-mono">
-                  IN-FLIGHT OPERATION FAILURE
-                </h3>
-                <p className="text-[11.5px] text-gray-600 mt-1 leading-relaxed">
-                  Starts a cargo reservation but interrupts network before confirmation. Operation marked IN_FLIGHT and safely reconciled without double-booking.
-                </p>
-              </div>
-              <div className="pt-2 border-t border-black/[0.04]">
-                <button
-                  onClick={() => triggerSimulation("IN_FLIGHT_FAILURE")}
-                  className="w-full py-1.5 rounded text-xs font-mono font-semibold bg-amber-700 text-white hover:bg-amber-800 transition-colors shadow-xs"
-                >
-                  Simulate In-Flight Drop
-                </button>
-              </div>
-            </div>
-
-            {/* Scenario 4 */}
-            <div className="bg-white p-4 rounded-lg border border-black/[0.06] shadow-xs flex flex-col justify-between space-y-3">
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono font-bold text-gray-400">SCENARIO 4</span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200">
-                    Capacity Conflict
-                  </span>
-                </div>
-                <h3 className="text-xs font-bold text-gray-900 mt-1 font-mono">
-                  DOMAIN CAPACITY CONFLICT
-                </h3>
-                <p className="text-[11.5px] text-gray-600 mt-1 leading-relaxed">
-                  Reduces bus capacity on server to 30 kg while offline client requests 80 kg. Reconnecting triggers domain conflict resolution without overbooking.
-                </p>
-              </div>
-              <div className="pt-2 border-t border-black/[0.04]">
-                <button
-                  onClick={() => triggerSimulation("DOMAIN_CONFLICT")}
-                  className="w-full py-1.5 rounded text-xs font-mono font-semibold bg-purple-700 text-white hover:bg-purple-800 transition-colors shadow-xs"
-                >
-                  Simulate Domain Conflict
-                </button>
-              </div>
-            </div>
-
-            {/* Scenario 5 */}
-            <div className="bg-white p-4 rounded-lg border border-black/[0.06] shadow-xs flex flex-col justify-between space-y-3">
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono font-bold text-gray-400">SCENARIO 5</span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-300">
-                    Partial Loss
-                  </span>
-                </div>
-                <h3 className="text-xs font-bold text-gray-900 mt-1 font-mono">
-                  PARTIAL DATA LOSS & AUDIT
-                </h3>
-                <p className="text-[11.5px] text-gray-600 mt-1 leading-relaxed">
-                  Creates 100 affected records: 80 recoverable, 15 partially recoverable, 5 unrecoverable. Honestly exposes unrecoverable records in Recovery UI.
-                </p>
-              </div>
-              <div className="pt-2 border-t border-black/[0.04]">
-                <button
-                  onClick={() => triggerSimulation("PARTIAL_DATA_LOSS")}
-                  className="w-full py-1.5 rounded text-xs font-mono font-semibold bg-slate-800 text-white hover:bg-slate-700 transition-colors shadow-xs"
-                >
-                  Simulate Partial Loss
-                </button>
-              </div>
-            </div>
-
-            {/* Recovery Shortcut Card */}
-            <div className="bg-emerald-950 text-white p-4 rounded-lg border border-emerald-800 shadow-xs flex flex-col justify-between space-y-3">
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono font-bold text-emerald-400">RECOVERY CORE</span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-900 text-emerald-200 border border-emerald-700">
-                    Engine
-                  </span>
-                </div>
-                <h3 className="text-xs font-bold text-emerald-100 mt-1 font-mono">
-                  SNAPSHOT & LEDGER REPLAY
-                </h3>
-                <p className="text-[11.5px] text-emerald-300 mt-1 leading-relaxed">
-                  Loads last verified snapshot, replays events sequentially, reconciles in-flight transactions, and executes complete integrity verification.
-                </p>
-              </div>
-              <div className="pt-2 border-t border-emerald-800/80">
-                <button
-                  onClick={startRecovery}
-                  disabled={recoveryProgress?.isRunning}
-                  className="w-full py-1.5 rounded text-xs font-mono font-bold bg-emerald-500 text-gray-950 hover:bg-emerald-400 transition-colors shadow-xs flex items-center justify-center gap-1.5"
-                >
-                  <RefreshCw className={cn("w-3.5 h-3.5", recoveryProgress?.isRunning && "animate-spin")} />
-                  <span>{recoveryProgress?.isRunning ? "Restoring..." : "Execute Full Recovery"}</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 2: RECOVERY CENTER & REPORT */}
-      {activeTab === "RECOVERY" && (
-        <div className="space-y-4">
-          {/* Recovery Progress Display */}
-          {recoveryProgress && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
-              <div className="flex items-center justify-between text-xs font-mono text-blue-900">
-                <span className="font-bold">{recoveryProgress.stage}</span>
-                <span>{recoveryProgress.percent}%</span>
-              </div>
-              <div className="w-full bg-blue-200 rounded-full h-2 overflow-hidden">
-                <div
-                  className="bg-blue-600 h-2 transition-all duration-300 ease-out"
-                  style={{ width: `${recoveryProgress.percent}%` }}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Active Incident Overview */}
-          {activeIncident ? (
-            <div className="bg-white rounded-lg border border-black/[0.08] shadow-xs overflow-hidden">
-              <div className="p-4 bg-gray-50 border-b border-black/[0.06] flex items-center justify-between">
-                <div>
-                  <div className="text-[10px] font-mono font-bold text-gray-500 uppercase">
-                    ACTIVE INCIDENT DETECTED
-                  </div>
-                  <div className="text-sm font-bold font-mono text-gray-900 mt-0.5">
-                    {activeIncident.incident_id} — {activeIncident.failure_type}
-                  </div>
-                </div>
-                <span className="text-xs font-mono px-2.5 py-0.5 rounded bg-rose-50 text-rose-800 border border-rose-200 font-semibold">
-                  {activeIncident.status}
-                </span>
-              </div>
-
-              <div className="p-4 space-y-4">
-                <p className="text-xs text-gray-700 bg-gray-50 p-3 rounded border border-black/[0.04]">
-                  {activeIncident.details}
-                </p>
-
-                {/* Honest Classification Breakdown */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200 text-center">
-                    <div className="text-[10px] font-mono font-bold text-emerald-800 uppercase">
-                      RECOVERABLE
-                    </div>
-                    <div className="text-xl font-bold font-mono text-emerald-950 mt-1">
-                      {activeIncident.recoverable_count}
-                    </div>
-                    <div className="text-[10px] text-emerald-700 mt-0.5">Verified in Ledger</div>
-                  </div>
-
-                  <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 text-center">
-                    <div className="text-[10px] font-mono font-bold text-amber-800 uppercase">
-                      PARTIALLY RECOVERABLE
-                    </div>
-                    <div className="text-xl font-bold font-mono text-amber-950 mt-1">
-                      {activeIncident.partially_recoverable_count}
-                    </div>
-                    <div className="text-[10px] text-amber-700 mt-0.5">Missing Metadata</div>
-                  </div>
-
-                  <div className="p-3 bg-rose-50 rounded-lg border border-rose-200 text-center">
-                    <div className="text-[10px] font-mono font-bold text-rose-800 uppercase">
-                      UNRECOVERABLE
-                    </div>
-                    <div className="text-xl font-bold font-mono text-rose-950 mt-1">
-                      {activeIncident.unrecoverable_count}
-                    </div>
-                    <div className="text-[10px] text-rose-700 mt-0.5">Corrupted / Missing Payload</div>
-                  </div>
-
-                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-200 text-center">
-                    <div className="text-[10px] font-mono font-bold text-blue-800 uppercase">
-                      IN-FLIGHT OPS
-                    </div>
-                    <div className="text-xl font-bold font-mono text-blue-950 mt-1">
-                      {activeIncident.reconciled_operations_count || pendingOpsCount}
-                    </div>
-                    <div className="text-[10px] text-blue-700 mt-0.5">To Reconcile</div>
-                  </div>
-                </div>
-
-                {/* Unrecoverable Items Audit List if present */}
-                {activeIncident.unrecoverable_reasons && activeIncident.unrecoverable_reasons.length > 0 && (
-                  <div className="space-y-1.5">
-                    <div className="text-xs font-mono font-bold text-gray-700">
-                      Unrecoverable Record Audit Log:
-                    </div>
-                    <div className="divide-y divide-black/[0.04] border border-black/[0.06] rounded-lg overflow-hidden text-xs">
-                      {activeIncident.unrecoverable_reasons.map((item, idx) => (
-                        <div key={idx} className="p-2.5 bg-gray-50 flex items-start gap-2 text-gray-700">
-                          <span className="font-mono font-bold text-rose-700 shrink-0">
-                            {item.entity_id}:
-                          </span>
-                          <span>{item.reason}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="bg-white p-6 rounded-lg border border-black/[0.06] text-center space-y-2">
-              <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto" />
-              <h3 className="text-sm font-bold text-gray-900 font-mono">No Active Incident Detected</h3>
-              <p className="text-xs text-gray-500 max-w-md mx-auto">
-                All primary datastores, local IndexedDB tables, and recovery ledgers are currently consistent and operating normally.
-              </p>
-            </div>
-          )}
-
-          {/* Detailed Recovery Report if available */}
-          {recoveryReport && (
-            <div className="bg-white rounded-lg border border-black/[0.08] shadow-xs overflow-hidden">
-              <div className="p-4 bg-emerald-950 text-white flex items-center justify-between">
-                <div>
-                  <div className="text-[10px] font-mono font-bold text-emerald-400 uppercase">
-                    POST-RECOVERY AUDIT REPORT
-                  </div>
-                  <div className="text-sm font-bold font-mono text-white mt-0.5">
-                    Incident {recoveryReport.incident_id} — {recoveryReport.failure_type}
-                  </div>
-                </div>
-                <span
-                  className={cn(
-                    "text-xs font-mono font-bold px-2.5 py-1 rounded border",
-                    recoveryReport.integrity_status === "PASSED"
-                      ? "bg-emerald-500/20 text-emerald-300 border-emerald-500"
-                      : "bg-rose-500/20 text-rose-300 border-rose-500"
-                  )}
-                >
-                  INTEGRITY: {recoveryReport.integrity_status}
-                </span>
-              </div>
-
-              <div className="p-4 space-y-4 text-xs">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="p-3 bg-gray-50 rounded border border-black/[0.06]">
-                    <div className="text-gray-500 font-mono">Records Examined</div>
-                    <div className="text-base font-bold font-mono text-gray-900 mt-0.5">
-                      {recoveryReport.records_examined}
-                    </div>
-                  </div>
-                  <div className="p-3 bg-emerald-50 rounded border border-emerald-200">
-                    <div className="text-emerald-800 font-mono">Restored Records</div>
-                    <div className="text-base font-bold font-mono text-emerald-950 mt-0.5">
-                      {recoveryReport.recovered_count}
-                    </div>
-                  </div>
-                  <div className="p-3 bg-indigo-50 rounded border border-indigo-200">
-                    <div className="text-indigo-800 font-mono">Operations Replayed</div>
-                    <div className="text-base font-bold font-mono text-indigo-950 mt-0.5">
-                      {recoveryReport.operations_replayed}
-                    </div>
-                  </div>
-                  <div className="p-3 bg-blue-50 rounded border border-blue-200">
-                    <div className="text-blue-800 font-mono">In-Flight Reconciled</div>
-                    <div className="text-base font-bold font-mono text-blue-950 mt-0.5">
-                      {recoveryReport.in_flight_reconciled}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Before / After Table */}
-                <div>
-                  <div className="font-mono font-bold text-gray-800 mb-1.5">
-                    Before vs After Record Counts:
-                  </div>
-                  <table className="w-full text-left border border-black/[0.06] rounded divide-y divide-black/[0.06]">
-                    <thead className="bg-gray-50 text-[11px] font-mono text-gray-600">
-                      <tr>
-                        <th className="p-2">Domain Entity</th>
-                        <th className="p-2">Before Recovery</th>
-                        <th className="p-2">After Recovery</th>
-                        <th className="p-2">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-black/[0.04] text-xs">
-                      <tr>
-                        <td className="p-2 font-medium">Buses & Fleets</td>
-                        <td className="p-2 font-mono">{recoveryReport.before_counts.buses}</td>
-                        <td className="p-2 font-mono font-semibold text-emerald-700">
-                          {recoveryReport.after_counts.buses}
-                        </td>
-                        <td className="p-2 text-emerald-600 font-mono font-semibold">✓ Verified</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 font-medium">Cargo Shipments</td>
-                        <td className="p-2 font-mono">{recoveryReport.before_counts.shipments}</td>
-                        <td className="p-2 font-mono font-semibold text-emerald-700">
-                          {recoveryReport.after_counts.shipments}
-                        </td>
-                        <td className="p-2 text-emerald-600 font-mono font-semibold">✓ Verified</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 font-medium">Complaints & Feedback</td>
-                        <td className="p-2 font-mono">{recoveryReport.before_counts.complaints}</td>
-                        <td className="p-2 font-mono font-semibold text-emerald-700">
-                          {recoveryReport.after_counts.complaints}
-                        </td>
-                        <td className="p-2 text-emerald-600 font-mono font-semibold">✓ Verified</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 font-medium">Road Incidents</td>
-                        <td className="p-2 font-mono">{recoveryReport.before_counts.incidents}</td>
-                        <td className="p-2 font-mono font-semibold text-emerald-700">
-                          {recoveryReport.after_counts.incidents}
-                        </td>
-                        <td className="p-2 text-emerald-600 font-mono font-semibold">✓ Verified</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* TAB 3: LIVE INCIDENT TIMELINE */}
-      {activeTab === "TIMELINE" && (
-        <div className="bg-white rounded-lg border border-black/[0.08] shadow-xs p-4 space-y-3">
-          <div className="flex items-center justify-between border-b border-black/[0.06] pb-2">
-            <h3 className="text-xs font-bold font-mono text-gray-900">
-              REAL-TIME RESILIENCE OPERATION TIMELINE
+      {/* 3. Interactive Simulation Suite & Recovery Controls */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left: Controlled Failure Triggers */}
+        <div className="bg-white border border-black/[0.08] rounded-lg p-5 shadow-xs space-y-4">
+          <div>
+            <h3 className="text-sm font-bold text-gray-950 font-mono uppercase tracking-tight flex items-center gap-2">
+              <ShieldAlert className="w-4 h-4 text-rose-600" />
+              <span>Controlled Failure Simulation Suite</span>
             </h3>
-            <span className="text-[11px] font-mono text-gray-500">
-              Showing {liveTimeline.length} events
-            </span>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Trigger isolated real failures to evaluate application durability and safe mode response.
+            </p>
           </div>
 
-          <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
-            {liveTimeline.map((item) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <button
+              onClick={handleSimulateDatastoreFailure}
+              disabled={!!actionLoading || runningDemo}
+              className="p-3 border border-rose-200 bg-rose-50/60 hover:bg-rose-100/80 rounded-md text-left transition-all group"
+            >
+              <div className="font-bold text-xs text-rose-950 flex items-center justify-between">
+                <span>Database Corruption</span>
+                <Database className="w-3.5 h-3.5 text-rose-700" />
+              </div>
+              <p className="text-[11px] text-rose-800/80 mt-1 leading-snug">
+                Simulates active table wipe mid-operation; enters Safe Mode.
+              </p>
+            </button>
+
+            <button
+              onClick={handleSimulateMidOperationFailure}
+              disabled={!!actionLoading || runningDemo}
+              className="p-3 border border-amber-200 bg-amber-50/60 hover:bg-amber-100/80 rounded-md text-left transition-all group"
+            >
+              <div className="font-bold text-xs text-amber-950 flex items-center justify-between">
+                <span>Mid-Operation Failure</span>
+                <Clock className="w-3.5 h-3.5 text-amber-700" />
+              </div>
+              <p className="text-[11px] text-amber-800/80 mt-1 leading-snug">
+                Citizen submits action during outage; tests LOCAL_PENDING state.
+              </p>
+            </button>
+
+            <button
+              onClick={handleSimulateNetworkOutage}
+              disabled={!!actionLoading || runningDemo}
+              className="p-3 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-md text-left transition-all group"
+            >
+              <div className="font-bold text-xs text-gray-950 flex items-center justify-between">
+                <span>Network Partition (Offline)</span>
+                <Radio className="w-3.5 h-3.5 text-slate-700" />
+              </div>
+              <p className="text-[11px] text-gray-600 mt-1 leading-snug">
+                Disconnects backend; queues local actions in IndexedDB outbox.
+              </p>
+            </button>
+
+            <button
+              onClick={handleVerifyHashChain}
+              disabled={!!actionLoading || runningDemo}
+              className="p-3 border border-blue-200 bg-blue-50/60 hover:bg-blue-100/80 rounded-md text-left transition-all group"
+            >
+              <div className="font-bold text-xs text-blue-950 flex items-center justify-between">
+                <span>Tamper-Evidence Audit</span>
+                <Lock className="w-3.5 h-3.5 text-blue-700" />
+              </div>
+              <p className="text-[11px] text-blue-800/80 mt-1 leading-snug">
+                Verifies cryptographic SHA-256 links across event journal.
+              </p>
+            </button>
+          </div>
+
+          {hashAuditResult && (
+            <div
+              className={`p-3 rounded text-xs border ${
+                hashAuditResult.valid
+                  ? "bg-emerald-50 text-emerald-950 border-emerald-200"
+                  : "bg-rose-50 text-rose-950 border-rose-200"
+              }`}
+            >
+              <div className="font-bold font-mono flex items-center gap-1.5">
+                {hashAuditResult.valid ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <XCircle className="w-4 h-4 text-rose-600" />}
+                <span>{hashAuditResult.valid ? "Hash Chain Intact" : "Integrity Breach Detected"}</span>
+              </div>
+              <p className="mt-1 text-[11px]">{hashAuditResult.message}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Right: Recovery & Reconstruction Pipeline */}
+        <div className="bg-white border border-black/[0.08] rounded-lg p-5 shadow-xs space-y-4">
+          <div>
+            <h3 className="text-sm font-bold text-gray-950 font-mono uppercase tracking-tight flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-700" />
+              <span>Deterministic Recovery Pipeline</span>
+            </h3>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Reconstruct authoritative state from snapshot baselines, replayed operations, and conflict reconciliation.
+            </p>
+          </div>
+
+          <div className="p-4 bg-slate-50 border border-slate-200 rounded-md space-y-2 text-xs">
+            <div className="flex justify-between items-center">
+              <span className="font-semibold text-gray-700">Recovery Strategy:</span>
+              <span className="font-mono font-bold text-gray-900">Priority Tiered (Fin/Cargo → Authority → Complaints)</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="font-semibold text-gray-700">Recovery Baseline:</span>
+              <span className="font-mono text-gray-900">{lastSnapshot?.snapshot_id || "Snapshot CHK-BASELINE"}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="font-semibold text-gray-700">Journal Continuity:</span>
+              <span className="font-mono text-emerald-700 font-bold">SHA-256 Sequential</span>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={handleExecuteRecoveryPipeline}
+              disabled={!!actionLoading || runningDemo}
+              className="py-2.5 px-4 bg-emerald-700 hover:bg-emerald-800 text-white rounded text-xs font-mono font-bold flex items-center gap-1.5 shadow-xs transition-colors disabled:opacity-50"
+            >
+              {actionLoading === "RECOVER" ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>RECOVERING DATASTORE...</span>
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>EXECUTE DETERMINISTIC RECOVERY</span>
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={() => setConflictModalOpen(true)}
+              className="py-2.5 px-3.5 border border-gray-300 hover:bg-gray-50 text-gray-800 rounded text-xs font-mono font-semibold transition-colors"
+            >
+              RECONCILE CONFLICTS
+            </button>
+          </div>
+
+          {/* Recovery Report Card if generated */}
+          {recoveryReport && (
+            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-md text-xs text-emerald-950 space-y-2 animate-in fade-in">
+              <div className="font-bold font-mono text-emerald-900 flex items-center justify-between">
+                <span>RECOVERY METRICS REPORT</span>
+                <span className="text-[10px] bg-emerald-200/60 px-2 py-0.5 rounded">
+                  {recoveryReport.integrity_status}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
+                <div>Recovered Records: {recoveryReport.recovered_count}</div>
+                <div>Replayed Events: {recoveryReport.operations_replayed}</div>
+                <div>In-Flight Reconciled: {recoveryReport.in_flight_reconciled}</div>
+                <div>Unrecoverable: {recoveryReport.unrecoverable_count}</div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 4. Live Dynamic Timeline & Event Logs */}
+      <div className="bg-white border border-black/[0.08] rounded-lg p-5 shadow-xs space-y-4">
+        <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+          <div>
+            <h3 className="text-sm font-bold text-gray-950 font-mono uppercase tracking-tight flex items-center gap-2">
+              <Activity className="w-4 h-4 text-emerald-700" />
+              <span>Live Dynamic Simulation & Recovery Timeline</span>
+            </h3>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Real-time chronological telemetry generated during failure simulation, event replay, and truth defense.
+            </p>
+          </div>
+
+          <span className="text-[11px] text-gray-400 font-mono">
+            {stepLogs.length} events logged
+          </span>
+        </div>
+
+        {stepLogs.length === 0 ? (
+          <div className="py-8 text-center text-xs text-gray-400 font-mono bg-gray-50 rounded border border-dashed border-gray-200">
+            No simulation runs yet. Click "RUN FULL RESILIENCE DEMO" or select a trigger above.
+          </div>
+        ) : (
+          <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+            {stepLogs.map((log, index) => (
               <div
-                key={item.id}
-                className={cn(
-                  "p-2.5 rounded-lg border text-xs flex items-start gap-3 transition-colors",
-                  item.type === "SUCCESS"
-                    ? "bg-emerald-50/70 border-emerald-200 text-emerald-900"
-                    : item.type === "ERROR"
-                    ? "bg-rose-50/70 border-rose-200 text-rose-900"
-                    : item.type === "WARNING"
-                    ? "bg-amber-50/70 border-amber-200 text-amber-900"
-                    : "bg-gray-50 border-gray-200 text-gray-800"
-                )}
+                key={index}
+                className="p-3 rounded border text-xs flex items-start gap-3 bg-white transition-all border-gray-200"
               >
-                <div className="font-mono text-[10.5px] text-gray-500 shrink-0 mt-0.5">
-                  {item.timestamp}
-                </div>
-
                 <div className="shrink-0 mt-0.5">
-                  {item.type === "SUCCESS" && (
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  )}
-                  {item.type === "ERROR" && (
-                    <ShieldAlert className="w-3.5 h-3.5 text-rose-600" />
-                  )}
-                  {item.type === "WARNING" && (
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
-                  )}
-                  {item.type === "INFO" && (
-                    <Activity className="w-3.5 h-3.5 text-gray-500" />
-                  )}
+                  {log.status === "SUCCESS" && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                  {log.status === "WARNING" && <AlertTriangle className="w-4 h-4 text-amber-600" />}
+                  {log.status === "ERROR" && <XCircle className="w-4 h-4 text-rose-600" />}
+                  {log.status === "INFO" && <Activity className="w-4 h-4 text-blue-600" />}
                 </div>
 
-                <div className="flex-1">
-                  <div className="font-medium leading-tight">{item.message}</div>
-                  {item.domain && (
-                    <span className="inline-block mt-1 px-1.5 py-0.5 bg-black/5 rounded text-[10px] font-mono text-gray-600">
-                      {item.domain}
-                    </span>
+                <div className="flex-1 space-y-0.5">
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-gray-950">{log.step}</span>
+                    <span className="text-[10px] text-gray-400 font-mono">{log.timestamp}</span>
+                  </div>
+                  {log.details && (
+                    <p className="text-gray-600 text-[11px] leading-relaxed font-mono">
+                      {log.details}
+                    </p>
                   )}
                 </div>
               </div>
             ))}
+          </div>
+        )}
+      </div>
+
+      {/* Modal: Conflict Reconciliation */}
+      {conflictModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-lg w-full p-6 shadow-xl border border-black/[0.1] space-y-4 text-xs font-sans">
+            <div className="flex justify-between items-start border-b border-gray-100 pb-3">
+              <div>
+                <h3 className="font-bold text-gray-950 text-base">Administrative Conflict Reconciliation</h3>
+                <p className="text-xs text-gray-500">Record: Cargo Reservation #KM-CARGO-102</p>
+              </div>
+              <button onClick={() => setConflictModalOpen(false)} className="text-gray-400 hover:text-gray-700">
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded">
+                  <div className="font-bold text-emerald-900 font-mono text-[11px]">LOCAL DEVICE EVIDENCE:</div>
+                  <div className="text-xs text-emerald-950 font-bold mt-1">Status: CONFIRMED</div>
+                  <div className="text-[10.5px] text-emerald-800 mt-0.5">Source: Signed Citizen Receipt with HMAC Hash</div>
+                </div>
+
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded">
+                  <div className="font-bold text-amber-900 font-mono text-[11px]">RECOVERED SERVER SNAPSHOT:</div>
+                  <div className="text-xs text-amber-950 font-bold mt-1">Status: PENDING</div>
+                  <div className="text-[10.5px] text-amber-800 mt-0.5">Source: Snapshot CHK-20260830</div>
+                </div>
+              </div>
+
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded text-gray-700 text-[11px] leading-relaxed">
+                <strong>Resolution Policy:</strong> In agricultural cargo reservations, local cryptographically signed citizen receipts take precedence over stale server checkpoints when sequence continuity is verified.
+              </div>
+
+              <div className="flex flex-col gap-2 pt-2 border-t border-gray-100">
+                <button
+                  onClick={() => {
+                    setReconcileSuccessNotice("Reconciled: Local Evidence UPHELD (Status: CONFIRMED). Authoritative record synced.");
+                    setConflictModalOpen(false);
+                    setTimeout(() => setReconcileSuccessNotice(null), 4000);
+                  }}
+                  className="w-full py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded text-xs font-mono font-bold"
+                >
+                  UPHOLD LOCAL EVIDENCE (USE LOCAL EVENT)
+                </button>
+
+                <button
+                  onClick={() => {
+                    setReconcileSuccessNotice("Reconciled: Server Snapshot APPLIED (Status: PENDING).");
+                    setConflictModalOpen(false);
+                    setTimeout(() => setReconcileSuccessNotice(null), 4000);
+                  }}
+                  className="w-full py-2 border border-gray-300 hover:bg-gray-50 text-gray-800 rounded text-xs font-mono font-bold"
+                >
+                  ENFORCE SERVER SNAPSHOT (USE SERVER)
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* TAB 4: DOMAIN DATA INSPECTOR */}
-      {activeTab === "DOMAINS" && (
-        <div className="bg-white rounded-lg border border-black/[0.08] shadow-xs p-4 space-y-3">
-          <div className="flex items-center gap-2 border-b border-black/[0.06] pb-2 overflow-x-auto no-scrollbar">
-            <button
-              onClick={() => setSelectedDomain("OUTBOX")}
-              className={cn(
-                "px-2.5 py-1 rounded text-xs font-mono transition-colors",
-                selectedDomain === "OUTBOX"
-                  ? "bg-gray-900 text-white font-bold"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              )}
-            >
-              Sync Outbox ({pendingOpsCount} pend)
-            </button>
-            <button
-              onClick={() => setSelectedDomain("CARGO")}
-              className={cn(
-                "px-2.5 py-1 rounded text-xs font-mono transition-colors",
-                selectedDomain === "CARGO"
-                  ? "bg-gray-900 text-white font-bold"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              )}
-            >
-              Cargo Shipments
-            </button>
-            <button
-              onClick={() => setSelectedDomain("COMPLAINTS")}
-              className={cn(
-                "px-2.5 py-1 rounded text-xs font-mono transition-colors",
-                selectedDomain === "COMPLAINTS"
-                  ? "bg-gray-900 text-white font-bold"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              )}
-            >
-              Citizen Feedback
-            </button>
-            <button
-              onClick={() => setSelectedDomain("FLEET")}
-              className={cn(
-                "px-2.5 py-1 rounded text-xs font-mono transition-colors",
-                selectedDomain === "FLEET"
-                  ? "bg-gray-900 text-white font-bold"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              )}
-            >
-              Bus Fleet
-            </button>
-          </div>
-
-          <div className="max-h-[500px] overflow-y-auto space-y-2">
-            {domainData.map((item, i) => (
-              <div
-                key={i}
-                className="p-3 bg-gray-50 rounded-lg border border-black/[0.04] text-xs font-mono space-y-1"
-              >
-                <div className="flex items-center justify-between text-gray-900 font-bold">
-                  <span>{item.operation_id || item.reference_code || item.referenceCode || item.busNumber || item.id}</span>
-                  <span
-                    className={cn(
-                      "px-2 py-0.5 rounded text-[10px]",
-                      item.status === "SYNCED" || item.status === "ON_ROUTE" || item.status === "RESOLVED"
-                        ? "bg-emerald-100 text-emerald-800"
-                        : item.status === "PENDING" || item.status === "RESERVED"
-                        ? "bg-amber-100 text-amber-800"
-                        : item.status === "CONFLICT" || item.status === "IN_FLIGHT"
-                        ? "bg-rose-100 text-rose-800 font-bold"
-                        : "bg-gray-200 text-gray-800"
-                    )}
-                  >
-                    {item.status || item.operation_type}
-                  </span>
-                </div>
-                <div className="text-gray-600 text-[11px] truncate">
-                  {item.operation_type ? `Op Type: ${item.operation_type} | Seq: ${item.sequence_number}` : JSON.stringify(item.cargo_specs || item.issueTitle || item.routeName || item.locationName || {})}
-                </div>
-              </div>
-            ))}
-          </div>
+      {reconcileSuccessNotice && (
+        <div className="fixed bottom-6 right-6 z-50 p-4 bg-emerald-950 text-white rounded-lg shadow-xl border border-emerald-500/40 text-xs font-mono flex items-center gap-2 animate-in slide-in-from-bottom duration-200">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span>{reconcileSuccessNotice}</span>
         </div>
       )}
     </div>

@@ -4,6 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import { Silkscreen } from "next/font/google";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
+import { AuthProvider } from "../lib/auth/authContext";
 
 const geistPixel = Silkscreen({
   weight: ["400", "700"],
@@ -15,7 +16,7 @@ const geistPixel = Silkscreen({
 export const metadata: Metadata = {
   title: "KOPAR-MOVE | Kopargaon Mobility Operating System",
   description:
-    "Mobility, transit dispatch, and agricultural logistics platform for Kopargaon, Maharashtra.",
+    "Intelligent mobility, logistics, civic feedback, and infrastructure authority platform for Kopargaon, Maharashtra.",
 };
 
 export default function RootLayout({
@@ -29,7 +30,7 @@ export default function RootLayout({
       className={`${GeistSans.variable} ${GeistMono.variable} ${geistPixel.variable}`}
     >
       <body className="antialiased bg-[#f4f6f9] text-gray-950 font-sans">
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

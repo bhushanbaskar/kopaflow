@@ -117,7 +117,7 @@ export default function MoreHubPage() {
         },
         {
           label: "EV Charging Grid",
-          description: "Depot fast-chargers & queue balancing",
+          description: "Public EV fast chargers & queue balancing",
           href: "/ev",
           icon: Zap,
           badge: "4 Plugs Avail",

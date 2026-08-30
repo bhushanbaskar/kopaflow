@@ -1,12 +1,33 @@
-// Supabase Server Stub for Kopargaon Mobility OS Server Actions & API Routes
+// Supabase Server Client & Service Role Admin Client for KOPA-MOVE
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
-import { getSupabaseConfig } from "./client";
+export function createServerClient(): SupabaseClient | null {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-export function createServerClient() {
-  const config = getSupabaseConfig();
-  if (!config.isLiveConnection) {
+  if (!url || !anonKey || url.includes("your-project")) {
     return null;
   }
-  // When live, return createServerClient from @supabase/ssr or @supabase/supabase-js
-  return null;
+
+  return createClient(url, anonKey, {
+    auth: {
+      persistSession: false,
+    },
+  });
+}
+
+export function createAdminClient(): SupabaseClient | null {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!url || !serviceRoleKey || url.includes("your-project")) {
+    return null;
+  }
+
+  return createClient(url, serviceRoleKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
 }

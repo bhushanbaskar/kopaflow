@@ -1,4 +1,4 @@
-// KOPA-MOVE Append-Only Recovery Ledger
+// KOPA-MOVE Append-Only Tamper-Evident Recovery Ledger
 import { db } from "./db";
 import { Operation, RecoveryEvent, DomainEntityType } from "./types";
 
@@ -17,16 +17,24 @@ export function computeChecksum(data: any): string {
 }
 
 /**
- * Append an operation to the append-only recovery ledger.
+ * Append an operation to the append-only recovery ledger with tamper-evident chaining.
  */
 export async function appendRecoveryEvent<T = any>(
   operation: Operation<T>
 ): Promise<RecoveryEvent<T>> {
   const eventId = `EVT-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+  
+  // 1. Retrieve the latest prior event for hash chaining
+  const lastEvent = await db.recoveryEvents.orderBy("sequence_number").last();
+  const prevChecksum = lastEvent ? lastEvent.checksum : "GENESIS-00000000";
+
+  // 2. Compute cryptographic link: H(previous_hash || event_payload || sequence)
   const checksum = computeChecksum({
     id: eventId,
+    prev: prevChecksum,
     opId: operation.operation_id,
     type: operation.operation_type,
+    aggType: operation.entity_type,
     aggId: operation.entity_id,
     payload: operation.payload,
     seq: operation.sequence_number,
@@ -69,6 +77,58 @@ export async function getAllRecoveryEvents(): Promise<RecoveryEvent[]> {
 }
 
 /**
+ * Verifies tamper-evident integrity across all sequential events in the journal.
+ */
+export async function verifyLedgerIntegrityChain(): Promise<{
+  valid: boolean;
+  totalEventsChecked: number;
+  corruptedEventIds: string[];
+  message: string;
+}> {
+  const events = await getAllRecoveryEvents();
+  if (events.length === 0) {
+    return {
+      valid: true,
+      totalEventsChecked: 0,
+      corruptedEventIds: [],
+      message: "Event journal is empty. Integrity verified.",
+    };
+  }
+
+  const corruptedEventIds: string[] = [];
+  let prevChecksum = "GENESIS-00000000";
+
+  for (let i = 0; i < events.length; i++) {
+    const ev = events[i];
+    const expectedChecksum = computeChecksum({
+      id: ev.event_id,
+      prev: prevChecksum,
+      opId: ev.operation_id,
+      type: ev.event_type,
+      aggType: ev.aggregate_type,
+      aggId: ev.aggregate_id,
+      payload: ev.payload,
+      seq: ev.sequence_number,
+    });
+
+    if (ev.checksum !== expectedChecksum) {
+      corruptedEventIds.push(ev.event_id);
+    }
+    prevChecksum = ev.checksum;
+  }
+
+  return {
+    valid: corruptedEventIds.length === 0,
+    totalEventsChecked: events.length,
+    corruptedEventIds,
+    message:
+      corruptedEventIds.length === 0
+        ? `Cryptographic hash chain intact across all ${events.length} recovery events.`
+        : `Integrity breach detected: ${corruptedEventIds.length} corrupted event(s) in journal!`,
+  };
+}
+
+/**
  * Replay an individual recovery event deterministically on an in-memory dictionary or Dexie DB.
  */
 export async function replayEventOnState(
@@ -82,6 +142,8 @@ export async function replayEventOnState(
     evChargers?: Map<string, any>;
     demandObservations?: Map<string, any>;
     depotDispatches?: Map<string, any>;
+    claims?: Map<string, any>;
+    publicCorrections?: Map<string, any>;
   }
 ): Promise<boolean> {
   const { event_type, aggregate_type, aggregate_id, payload } = event;
@@ -135,6 +197,52 @@ export async function replayEventOnState(
             updatedAt: event.occurred_at,
           });
         }
+        break;
+      }
+
+      case "CLAIM": {
+        if (!state.claims) state.claims = new Map();
+        const existing = state.claims.get(aggregate_id) || {};
+        if (event_type === "CLAIM_CREATED") {
+          state.claims.set(aggregate_id, {
+            ...existing,
+            ...payload,
+            id: aggregate_id,
+            verification_status: payload.verification_status || "UNVERIFIED",
+            source_type: payload.source_type || "CITIZEN_REPORT",
+            created_at: event.occurred_at,
+            updated_at: event.occurred_at,
+          });
+        } else if (event_type === "CLAIM_VERIFIED") {
+          state.claims.set(aggregate_id, {
+            ...existing,
+            ...payload,
+            id: aggregate_id,
+            verification_status: "VERIFIED",
+            verified_at: event.occurred_at,
+            updated_at: event.occurred_at,
+          });
+        } else if (event_type === "CLAIM_MARKED_FALSE") {
+          state.claims.set(aggregate_id, {
+            ...existing,
+            ...payload,
+            id: aggregate_id,
+            verification_status: "FALSE",
+            is_public_correction: true,
+            verified_at: event.occurred_at,
+            updated_at: event.occurred_at,
+          });
+        }
+        break;
+      }
+
+      case "CORRECTION": {
+        if (!state.publicCorrections) state.publicCorrections = new Map();
+        state.publicCorrections.set(aggregate_id, {
+          ...payload,
+          id: aggregate_id,
+          published_at: event.occurred_at,
+        });
         break;
       }
 
